@@ -196,3 +196,14 @@ Whenever the system gains a part (an adapter, a board type, a check, a service),
 5. Priority weights (the user plans to tune these), and the default ETA if a user gives none (or require it).
 6. The notice channel besides the Claude plugin: email, desktop, or chat.
 7. Whether the workstation can run MariaDB for Slurm accounting.
+
+**Answers (2026-11-22).** User names stay out of git; they live in a local config that the `deploy/` scripts read.
+1. GitHub `HeshanDissanayake/kotl`. The user pushes.
+2. Workstation `comparch`. One VCU118 PC at `192.168.1.2` (`vcu118-pc1`); PC 2 is later. Admin: one configurable account, changeable with a `deploy/` script.
+3. `kotl-users`: every regular account on the workstation, with scripts to add and remove users.
+4. Users' own Chipyard 1.11.0 and FireSim 1.18.0 (reference copy `/research/heshds/chipyard`, **read-only, never modify**). M3 smoke test: `linux-poweroff` on `xilinx_vcu118_firesim_rocket_singlecore_4GB_no_nic`.
+5. Rough weights from the view's `slurm.conf` card. **ETA is required**; there is no default.
+6. Notices: the Claude plugin only (plus `kotl status`).
+7. MariaDB: yes, slurmdbd on the workstation.
+- PC FireSim account: `virtex-host`, which receives job keys. Kotl owns its `authorized_keys`, and the end step kills all of its processes.
+- The old `fpga-vcu118` xlock is retired: Kotl replaces it.

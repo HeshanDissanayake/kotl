@@ -2,7 +2,7 @@
  "schema": 1,
  "title": "Kotl Architecture",
  "intro": "Teal is Kotl, our product. Purple is Slurm. Gray is everything else off the shelf, plus the hardware. The dot on each box is its build status; click a box for exactly what's happening.",
- "latest": "Latest: the FireSim adapter's arrow now reads \"calls · as you\": it runs the user's own FireSim, never one of its own.",
+ "latest": "Latest: lab answers in. virtex-host is the PC's FireSim account, ETA is required, notices go through the Claude plugin only, Slurm accounting uses MariaDB, and Kotl replaces xlock.",
  "canvas": {
   "w": 1520,
   "h": 820
@@ -1389,7 +1389,8 @@
     "Your FireSim's own <code>deploy/</code> stays where it is: FireSim's setup adds it to the end of PATH, so the wrapper is found first and calls it.",
     "<b>kotl new my-job</b> copies the job template (marshal.json, run.sh, kotl.json).",
     "Refuses a batch job that can't end on its own (no <code>run</code> script, no <code>--expect</code>), and says how to fix it.",
-    "Cancel works only for the job's owner or root."
+    "Cancel works only for the job's owner or root.",
+    "<b>ETA is required:</b> <code>--eta</code>, <code>\"eta\"</code> in <code>kotl.json</code>, or <code>KOTL_ETA</code> for plain <code>firesim</code>. Without one, Kotl refuses and says how to give it."
    ],
    "term": [
     {
@@ -1397,6 +1398,9 @@
      "lines": [
       {
        "k": "# plain FireSim: the wrapper queues for you"
+      },
+      {
+       "c": "export KOTL_ETA=1h            # required (or \"eta\" in kotl.json)"
       },
       {
        "c": "firesim infrasetup"
@@ -1588,10 +1592,11 @@
    "title": "ETA notifier",
    "what": "A short Kotl program that a systemd timer starts every minute. It asks Slurm who is running and for how long, then sends notices. It never kills anything.",
    "bullets": [
-    "Job passes its ETA: tells the owner and their Claude session.",
-    "Job passes 2× its ETA: also tells the admin.",
+    "Job passes its ETA: tells the owner through their Claude plugin and <code>kotl status</code>.",
+    "Job passes 2× its ETA: also tells the admin, the same way.",
     "Queued jobs whose start estimate slipped: tells those users.",
-    "Board down or back: tells the admin."
+    "Board down or back: tells the admin.",
+    "<b>Channel:</b> the Claude plugin only for now (no email or chat). Notices wait in a per-user inbox that the plugin and <code>kotl status</code> read."
    ],
    "term": [
     {
@@ -1697,7 +1702,8 @@
     "<b>Prepare:</b> copies your <code>config_runtime.yaml</code> into the job folder with the run farm pointed at the claimed board and PC account.",
     "<b>Check (batch):</b> the job follows the template: a FireMarshal <code>run</code>/<code>command</code> (powers off when done) or <code>--expect</code>. Interactive jobs are allowed, with the idle guard.",
     "<b>Polite stop:</b> <code>firesim kill</code> before the core's end step. <b>Collect:</b> copies results, reads the <code>KOTL RESULT</code> line from <code>uartlog</code>.",
-    "<b>What users get:</b> plain <code>firesim</code> keeps working, <code>kotl new</code> (the template), a one-page guide, the Claude skill, and refusals that say exactly what to fix."
+    "<b>What users get:</b> plain <code>firesim</code> keeps working, <code>kotl new</code> (the template), a one-page guide, the Claude skill, and refusals that say exactly what to fix.",
+    "<b>Board smoke test (M3):</b> FireSim's stock <code>linux-poweroff</code> on <code>xilinx_vcu118_firesim_rocket_singlecore_4GB_no_nic</code>."
    ],
    "term": [
     {
@@ -1818,8 +1824,8 @@
    "what": "Slurm's queue holds waiting jobs and orders them. Kotl's CLI uses it through normal Slurm commands.",
    "bullets": [
     "Each board type is a license, counted per board (<code>vcu118:1</code> today, one board). A job needs one to start.",
-    "<b>Priority (rough sketch, tune later):</b> fair-share + waiting time + an \"urgent\" level only the admin grants. Maintenance has its own admin-only level.",
-    "The ETA is the job's time limit; Slurm uses it to estimate start times.",
+    "<b>Priority (rough sketch, tune later):</b> fair-share + waiting time + an \"urgent\" level only the admin grants. Maintenance has its own admin-only level. Fair-share uses Slurm accounting (slurmdbd + MariaDB on the workstation).",
+    "The ETA is required and becomes the job's time limit; Slurm uses it to estimate start times.",
     "Never kills a job for passing its ETA. Only the owner or root can cancel."
    ],
    "term": [
@@ -1937,7 +1943,7 @@
    "what": "Hosts the lab's VCU118, at <code>192.168.1.2</code> (<code>vcu118-pc1</code> in kotl's SSH config). Reachable only from the workstation.",
    "bullets": [
     "Runs sshd, the XDMA driver, FireSim's helper scripts and a small key helper. No other Kotl code.",
-    "Accounts: kotl, the FireSim account (job keys only) and the admin.",
+    "Accounts: kotl, <code>virtex-host</code> (FireSim; job keys only, managed by Kotl) and the admin.",
     "Reboots are harmless: the health check sees it come back."
    ],
    "files": [
@@ -1997,10 +2003,11 @@
    "title": "PC access (job keys)",
    "what": "Lets a job's owner, and their own FireSim, reach the board's PC for exactly as long as the job runs. No timers: access follows the job.",
    "bullets": [
-    "<b>Job start:</b> the launcher makes a key for this job and adds it to the PC's FireSim account (<code>&lt;pc-user&gt;</code>, name to be confirmed), using the kotl key.",
+    "<b>Job start:</b> the launcher makes a key for this job and adds it to the PC's FireSim account (<code>virtex-host</code>), using the kotl key.",
     "<b>Job end</b> (adapter end trigger, <code>kotl release</code>, cancel or a tripped guard): removes the key, closes SSH sessions and kills every process of the PC account, then the board is freed.",
     "<b>Backup:</b> Slurm's epilog runs the same end step after every job, even if the launcher crashed. It is safe to run twice.",
-    "Only the board this job claimed gets the key. Outside a job, users can't reach any PC."
+    "Only the board this job claimed gets the key. Outside a job, users can't reach any PC.",
+    "<b>virtex-host is Kotl's while a job runs:</b> the end step kills every virtex-host process, and only Kotl-managed keys stay in its <code>authorized_keys</code> (older personal keys are removed in M1, or the lockdown has a hole)."
    ],
    "term": [
     {
@@ -2112,7 +2119,7 @@
    "path": "/srv/kotl/jobs/<job>/",
    "ext": "yaml",
    "desc": "A copy of your config_runtime.yaml, with the run farm pointed at the claimed board (check field names against your FireSim version)",
-   "body": "# copied from your deploy/config_runtime.yaml; Kotl changes only run_farm\nrun_farm:\n  base_recipe: run-farm-recipes/externally_provisioned.yaml\n  recipe_arg_overrides:\n    default_platform: XilinxVCU118InstanceDeployManager\n    default_simulation_dir: /home/<pc-user>/sims/job-1240\n    run_farm_hosts_to_use:\n      - <pc-user>@vcu118-pc1: one_fpga_spec   # the board Kotl claimed\n\n# target_config, workload, ... : unchanged from yours"
+   "body": "# copied from your deploy/config_runtime.yaml; Kotl changes only run_farm\nrun_farm:\n  base_recipe: run-farm-recipes/externally_provisioned.yaml\n  recipe_arg_overrides:\n    default_platform: XilinxVCU118InstanceDeployManager\n    default_simulation_dir: /home/virtex-host/sims/job-1240\n    run_farm_hosts_to_use:\n      - virtex-host@vcu118-pc1: one_fpga_spec   # the board Kotl claimed\n\n# target_config, workload, ... : unchanged from yours"
   },
   "workloadjson": {
    "name": "marshal.json",
@@ -2140,7 +2147,7 @@
    "path": "/etc/ssh/sshd_config.d/ (on each FPGA PC)",
    "ext": "conf",
    "desc": "Only kotl, the FireSim account (job keys) and the admin can log in, and only with keys",
-   "body": "# kotl: Kotl's own key (grant/remove job keys, health, cleanup)\n# <pc-user>: FireSim account; job keys only, added and removed by Kotl\nAllowUsers kotl <pc-user> <admin>\nPasswordAuthentication no\nKbdInteractiveAuthentication no\nPermitRootLogin no"
+   "body": "# kotl: Kotl's own key (grant/remove job keys, health, cleanup)\n# virtex-host: FireSim account; job keys only, added and removed by Kotl\nAllowUsers kotl virtex-host <admin>\nPasswordAuthentication no\nKbdInteractiveAuthentication no\nPermitRootLogin no"
   },
   "screenrc": {
    "name": ".screenrc",
@@ -2168,7 +2175,7 @@
    "path": "my-job/ (from kotl new)",
    "ext": "json",
    "desc": "Template · Kotl settings for this job. The wrapper also reads it from your FireSim deploy folder.",
-   "body": "{\n  \"mode\": \"batch\",          // or \"interactive\" (idle guard always on)\n  \"eta\": \"1h\",              // queue estimate; never kills the job\n  \"max\": \"2h\",              // optional hang guard (default 2x eta)\n  \"idle\": \"30m\",            // free the board after this long with no console activity\n  \"hwdb\": \"xilinx_vcu118_firesim_rocket_singlecore_4GB_no_nic\"\n}"
+   "body": "{\n  \"mode\": \"batch\",          // or \"interactive\" (idle guard always on)\n  \"eta\": \"1h\",              // required; queue estimate, never kills the job\n  \"max\": \"2h\",              // optional hang guard (default 2x eta)\n  \"idle\": \"30m\",            // free the board after this long with no console activity\n  \"hwdb\": \"xilinx_vcu118_firesim_rocket_singlecore_4GB_no_nic\"\n}"
   },
   "epilog": {
    "name": "epilog.sh",
@@ -2179,10 +2186,10 @@
   },
   "authkeys": {
    "name": "authorized_keys",
-   "path": "/home/<pc-user>/.ssh/ (on each FPGA PC)",
+   "path": "/home/virtex-host/.ssh/ (on each FPGA PC)",
    "ext": "conf",
    "desc": "Managed by Kotl: one line per running job, removed when the job ends",
-   "body": "# managed by kotl-keys; do not edit by hand\nrestrict,pty ssh-ed25519 AAAA… kotl-job-1240"
+   "body": "# managed by kotl-keys; do not edit by hand\n# no permanent keys here: they would bypass the queue\nrestrict,pty ssh-ed25519 AAAA… kotl-job-1240"
   },
   "profiled": {
    "name": "kotl.sh",

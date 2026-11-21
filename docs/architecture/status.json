@@ -134,7 +134,12 @@
       },
       "last_commit": null,
       "issues": [],
-      "log": []
+      "log": [
+        {
+          "date": "2026-11-22",
+          "text": "Lab answer: slurmdbd with MariaDB on the workstation."
+        }
+      ]
     },
     "os": {
       "title": "Workstation OS setup",
@@ -218,6 +223,10 @@
         {
           "date": "2026-11-22",
           "text": "Lab fact: the only VCU118 PC is at 192.168.1.2."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "Lab answer: FireSim account is virtex-host; Kotl replaces the old xlock."
         }
       ]
     },
@@ -308,6 +317,10 @@
         {
           "date": "2026-11-22",
           "text": "Design: kotl lease / release / run for any tool."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "Lab answer: ETA is required (--eta, kotl.json or KOTL_ETA)."
         }
       ]
     },
@@ -354,6 +367,10 @@
         {
           "date": "2026-11-22",
           "text": "View: arrow to the user's FireSim relabelled \"calls · as you\"; details state the call path."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "Lab answer: M3 smoke test is linux-poweroff on xilinx_vcu118_firesim_rocket_singlecore_4GB_no_nic."
         }
       ]
     },
@@ -389,7 +406,12 @@
       },
       "last_commit": null,
       "issues": [],
-      "log": []
+      "log": [
+        {
+          "date": "2026-11-22",
+          "text": "Lab answer: notices via the Claude plugin only."
+        }
+      ]
     },
     "attach": {
       "title": "Console attach",
@@ -542,7 +564,7 @@
       },
       "last_commit": null,
       "issues": [
-        "PC FireSim account name not decided (kotl or virtex-host)."
+        "Existing permanent keys in virtex-host's authorized_keys must go (M1), or users bypass the queue."
       ],
       "log": [
         {
@@ -552,6 +574,10 @@
         {
           "date": "2026-11-22",
           "text": "Design: end step kills every process of the PC account."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "Lab answer: job keys go to virtex-host; Kotl owns its authorized_keys."
         }
       ]
     }
