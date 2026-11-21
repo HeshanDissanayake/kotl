@@ -1,0 +1,4 @@
+# managed by kotl (deploy/accounts.sh)
+# Users in kotl-users may run exactly two programs as kotl. Both check that the
+# caller owns the job before doing anything.
+%kotl-users ALL=(kotl) NOPASSWD: /opt/kotl/launch, /opt/kotl/attach

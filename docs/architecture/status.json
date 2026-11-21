@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "updated": "2026-11-21T12:58:20Z",
-  "repo_commit": "9eaa0aa27b6e80d37b6298c1e334fe30a08b98e6",
+  "updated": "2026-11-21T14:38:04Z",
+  "repo_commit": "844ef4ff5b69c6e5958c430509c4b1ff59bff7a3",
   "watch": [
     "kotl/",
     "deploy/",
@@ -43,7 +43,7 @@
         "unit": {
           "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-21T12:58:20Z"
+          "ran_at": "2026-11-21T14:38:04Z"
         },
         "hardware": null
       },
@@ -63,14 +63,18 @@
     },
     "queue": {
       "title": "Slurm queue + priority",
-      "status": "planned",
+      "status": "in_progress",
       "milestone": "M1",
-      "now": "",
+      "now": "Scripts written and dry-run tested; waiting for the admin to run them, then verify-m1.sh.",
       "code": [
         "deploy/slurm/"
       ],
       "tests": {
-        "unit": null,
+        "unit": {
+          "passed": 4,
+          "failed": 0,
+          "ran_at": "2026-11-21T14:38:04Z"
+        },
         "hardware": null
       },
       "last_commit": null,
@@ -79,20 +83,28 @@
         {
           "date": "2026-11-22",
           "text": "slurm.conf card: Licenses=vcu118:1 (one board)."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "deploy/slurm/install.sh + slurm.conf.in: license vcu118:1, multifactor priority, QOS urgent/maint, users added to the kotl account."
         }
       ]
     },
     "starter": {
       "title": "Slurm job starter",
-      "status": "planned",
+      "status": "in_progress",
       "milestone": "M1",
-      "now": "",
+      "now": "Scripts written and dry-run tested; waiting for the admin to run them, then verify-m1.sh.",
       "code": [
         "deploy/epilog.sh",
         "deploy/slurm/"
       ],
       "tests": {
-        "unit": null,
+        "unit": {
+          "passed": 2,
+          "failed": 0,
+          "ran_at": "2026-11-21T14:38:04Z"
+        },
         "hardware": null
       },
       "last_commit": null,
@@ -101,35 +113,52 @@
         {
           "date": "2026-11-22",
           "text": "Design: job.sh runs as the user; Epilog= runs Kotl's end step after every job."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "slurm.conf: OverTimeLimit=UNLIMITED, KillWait=120, Epilog=/opt/kotl/epilog.sh (no-op placeholder until M2)."
         }
       ]
     },
     "runner": {
       "title": "Slurm health runner",
-      "status": "planned",
+      "status": "in_progress",
       "milestone": "M1",
-      "now": "",
+      "now": "Scripts written and dry-run tested; waiting for the admin to run them, then verify-m1.sh.",
       "code": [
         "deploy/slurm/"
       ],
       "tests": {
-        "unit": null,
+        "unit": {
+          "passed": 1,
+          "failed": 0,
+          "ran_at": "2026-11-21T14:38:04Z"
+        },
         "hardware": null
       },
       "last_commit": null,
       "issues": [],
-      "log": []
+      "log": [
+        {
+          "date": "2026-11-22",
+          "text": "slurm.conf: HealthCheckProgram=/opt/kotl/health.sh every 300 s (no-op placeholder until M4)."
+        }
+      ]
     },
     "acct": {
       "title": "Slurm accounting",
-      "status": "planned",
+      "status": "in_progress",
       "milestone": "M1",
-      "now": "",
+      "now": "Scripts written and dry-run tested; waiting for the admin to run them, then verify-m1.sh.",
       "code": [
         "deploy/slurm/"
       ],
       "tests": {
-        "unit": null,
+        "unit": {
+          "passed": 2,
+          "failed": 0,
+          "ran_at": "2026-11-21T14:38:04Z"
+        },
         "hardware": null
       },
       "last_commit": null,
@@ -138,21 +167,31 @@
         {
           "date": "2026-11-22",
           "text": "Lab answer: slurmdbd with MariaDB on the workstation."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "slurmdbd.conf.in + MariaDB database; password generated on the machine, kept on re-runs."
         }
       ]
     },
     "os": {
       "title": "Workstation OS setup",
-      "status": "planned",
+      "status": "in_progress",
       "milestone": "M1",
-      "now": "",
+      "now": "Scripts written and dry-run tested; waiting for the admin to run them, then verify-m1.sh.",
       "code": [
         "deploy/accounts.sh",
+        "deploy/lib.sh",
         "deploy/sudoers/",
-        "deploy/systemd/"
+        "deploy/systemd/",
+        "deploy/verify-m1.sh"
       ],
       "tests": {
-        "unit": null,
+        "unit": {
+          "passed": 9,
+          "failed": 0,
+          "ran_at": "2026-11-21T14:38:04Z"
+        },
         "hardware": null
       },
       "last_commit": null,
@@ -161,19 +200,27 @@
         {
           "date": "2026-11-22",
           "text": "View: System files tab lists every change on the workstation."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "deploy/accounts.sh (kotl account, kotl-users, kotl.conf, folders, sudoers; add/remove user, set-admin), lib.sh, verify-m1.sh."
         }
       ]
     },
     "firesim": {
       "title": "Users' FireSim (check, no install)",
-      "status": "planned",
+      "status": "in_progress",
       "milestone": "M1",
-      "now": "",
+      "now": "Scripts written and dry-run tested; waiting for the admin to run them, then verify-m1.sh.",
       "code": [
         "deploy/firesim/"
       ],
       "tests": {
-        "unit": null,
+        "unit": {
+          "passed": 2,
+          "failed": 0,
+          "ran_at": "2026-11-21T14:38:04Z"
+        },
         "hardware": null
       },
       "last_commit": null,
@@ -186,19 +233,27 @@
         {
           "date": "2026-11-22",
           "text": "No shared install: M1 now only checks that the PC side works with a user's FireSim 1.18.0."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "deploy/firesim/check.sh: read-only check of kotl login, Xilinx card, XDMA, PC account."
         }
       ]
     },
     "key": {
       "title": "kotl SSH key",
-      "status": "planned",
+      "status": "in_progress",
       "milestone": "M1",
-      "now": "",
+      "now": "Scripts written and dry-run tested; waiting for the admin to run them, then verify-m1.sh.",
       "code": [
         "deploy/ssh/"
       ],
       "tests": {
-        "unit": null,
+        "unit": {
+          "passed": 3,
+          "failed": 0,
+          "ran_at": "2026-11-21T14:38:04Z"
+        },
         "hardware": null
       },
       "last_commit": null,
@@ -211,19 +266,27 @@
         {
           "date": "2026-11-22",
           "text": "Design: soft and full lockdown modes."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "deploy/ssh/setup-kotl-key.sh: kotl key and SSH config per PC (BatchMode, accept-new)."
         }
       ]
     },
     "pc1": {
       "title": "VCU118 PC 1 setup",
-      "status": "planned",
+      "status": "in_progress",
       "milestone": "M1",
-      "now": "",
+      "now": "Scripts written and dry-run tested; waiting for the admin to run them, then verify-m1.sh.",
       "code": [
         "deploy/pc/"
       ],
       "tests": {
-        "unit": null,
+        "unit": {
+          "passed": 3,
+          "failed": 0,
+          "ran_at": "2026-11-21T14:38:04Z"
+        },
         "hardware": null
       },
       "last_commit": null,
@@ -244,6 +307,10 @@
         {
           "date": "2026-11-22",
           "text": "View: System files tab lists every change on the PC (kotl account, kotl-keys, one sudoers line)."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "deploy/pc/setup.sh: kotl account with key, password locked; soft lockdown leaves sshd and virtex-host alone."
         }
       ]
     },
@@ -405,7 +472,11 @@
         "deploy/health.sh"
       ],
       "tests": {
-        "unit": null,
+        "unit": {
+          "passed": 1,
+          "failed": 0,
+          "ran_at": "2026-11-21T14:38:04Z"
+        },
         "hardware": null
       },
       "last_commit": null,
@@ -414,6 +485,10 @@
         {
           "date": "2026-11-22",
           "text": "Design: in soft lockdown, unleased work only warns the admin."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "deploy/health.sh: no-op placeholder so Slurm's health hook exists in M1."
         }
       ]
     },
@@ -510,7 +585,7 @@
       "log": []
     },
     "program": {
-      "title": "Program / reset module",
+      "title": "Program / reset adapter",
       "status": "later",
       "milestone": "Later",
       "now": "",

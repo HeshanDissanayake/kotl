@@ -2,7 +2,7 @@
  "schema": 1,
  "title": "Kotl Architecture",
  "intro": "Teal is Kotl, our product. Purple is Slurm. Gray is everything else off the shelf, plus the hardware. The dot on each box is its build status; click a box for exactly what's happening.",
- "latest": "Latest: new System files tab, listing every file, account and package Kotl adds or edits on the workstation, the FPGA PC and users' side.",
+ "latest": "Latest: M1 scripts are written (deploy/). They're waiting for the admin to run them; then verify-m1.sh turns the M1 parts green.",
  "canvas": {
   "w": 1520,
   "h": 820
@@ -2117,7 +2117,56 @@
     "<b>Users:</b> nothing system-wide on their PCs, and nothing written into their Chipyard or home folder.",
     "Each script has an <code>--undo</code> that removes exactly what it added."
    ],
-   "note": "Click a step to see that machine's list; open a file card for its contents. Paths marked (sketch) are tested in M1 before use."
+   "note": "Click a step to see that machine's list; open a file card for its contents. Paths marked (sketch) are tested in M1 before use.",
+   "term": [
+    {
+     "host": "admin@comparch · M1, in this order (add --dry-run to preview each)",
+     "lines": [
+      {
+       "c": "sudo deploy/accounts.sh install --admin <you>"
+      },
+      {
+       "c": "sudo deploy/slurm/install.sh"
+      },
+      {
+       "c": "sudo deploy/ssh/setup-kotl-key.sh --pc vcu118-pc1=192.168.1.2"
+      },
+      {
+       "k": "# copy pc/setup.sh to the PC, run it there with the key printed above"
+      },
+      {
+       "c": "scp deploy/pc/setup.sh virtex-host@192.168.1.2:/tmp/kotl-pc-setup.sh"
+      },
+      {
+       "c": "ssh -t virtex-host@192.168.1.2 sudo bash /tmp/kotl-pc-setup.sh --key '<kotl public key>'"
+      },
+      {
+       "k": "# check everything, then fold the results into the view"
+      },
+      {
+       "c": "sudo deploy/verify-m1.sh"
+      },
+      {
+       "c": "python3 tools/status.py refresh --results /tmp/kotl-m1-results.json"
+      }
+     ]
+    },
+    {
+     "host": "later, any time",
+     "lines": [
+      {
+       "c": "sudo deploy/accounts.sh add-user <name> | remove-user <name> | set-admin <name> | sync"
+      },
+      {
+       "c": "sudo deploy/<script> --undo      # each script removes what it added"
+      }
+     ]
+    }
+   ],
+   "files": [
+    "kotlconf",
+    "slurmconf"
+   ]
   },
   "sys-ws": {
    "kind": "System files · workstation",
@@ -2128,27 +2177,29 @@
     "<b>Accounts:</b> system user <code>kotl</code>, group <code>kotl-users</code> (all regular users), Slurm's own <code>slurm</code> user <i>(new · M1, deploy/accounts.sh)</i>",
     "<code>/etc/slurm/slurm.conf</code>: the single-node Slurm config: license, priority, ETA, KillWait, health check, Epilog <i>(new · M1)</i>",
     "<code>/etc/slurm/slurmdbd.conf</code>: accounting daemon, using the MariaDB database <code>slurm_acct_db</code> <i>(new · M1)</i>",
+    "<code>/etc/slurm/cgroup.conf</code>: lets Slurm track every process of a job <i>(new · M1)</i>",
     "<code>/etc/munge/munge.key</code>: Slurm's local auth key (owner munge, 0400) <i>(new · M1)</i>",
     "<code>/etc/sudoers.d/kotl</code>: users may run exactly two Kotl programs as kotl <i>(new · M1)</i>",
-    "<code>/etc/profile.d/kotl.sh</code>: puts the firesim wrapper first on PATH <i>(new · M1)</i>",
-    "<code>/etc/ssh/ssh_config.d/kotl.conf</code>: <code>ssh vcu118-pc1</code> uses your job key during a lease <i>(new · M1)</i>",
+    "<code>/etc/profile.d/kotl.sh</code>: puts the firesim wrapper first on PATH <i>(new · M3)</i>",
+    "<code>/etc/ssh/ssh_config.d/kotl.conf</code>: <code>ssh vcu118-pc1</code> uses your job key during a lease <i>(new · M3)</i>",
     "<code>/etc/kotl/kotl.conf</code>: Kotl settings: lockdown mode, admin, PC account, idle time <i>(new · M1)</i>",
     "<code>/etc/systemd/system/kotl-notifier.{service,timer}</code>: runs the notifier every minute <i>(new · M4)</i>",
-    "<code>/opt/kotl/</code>: Kotl's programs: launch, attach, job.sh, epilog.sh, health.sh, bin/firesim, adapters/ <i>(new · M1–M3)</i>",
-    "<code>/var/lib/kotl/kotl.db</code>: board registry (owner kotl) <i>(new · M2)</i>",
-    "<code>/srv/kotl/</code>: jobs/ and out/&lt;user&gt;/&lt;job&gt;/, owner-only, deleted after 30 days <i>(new · M2)</i>",
+    "<code>/opt/kotl/</code>: Kotl's programs. M1 puts in <code>epilog.sh</code> and <code>health.sh</code> as no-op placeholders (Slurm needs them to exist); launch, attach, bin/firesim and adapters/ follow in M2–M3 <i>(new · M1–M3)</i>",
+    "<code>/var/lib/kotl/</code>: board registry kotl.db (owner kotl; folder M1, database M2) <i>(new · M1)</i>",
+    "<code>/srv/kotl/</code>: jobs/ and out/&lt;user&gt;/&lt;job&gt;/, owner-only, deleted after 30 days (folders M1) <i>(new · M1)</i>",
     "<code>/run/kotl/keys/</code>: job keys while a lease is held (tmpfs, gone on reboot) <i>(new · M3)</i>",
     "<code>/home/kotl/.ssh/</code>: the kotl key and its host alias <i>(new · M1)</i>",
     "<b>Services enabled:</b> <code>munge</code>, <code>mariadb</code>, <code>slurmdbd</code>, <code>slurmctld</code>, <code>slurmd</code> <i>(M1)</i>"
    ],
    "files": [
     "slurmconf",
+    "cgroupconf",
     "slurmdbd",
     "sudoers",
-    "profiled",
-    "sshclient",
     "kotlconf",
     "epilog",
+    "profiled",
+    "sshclient",
     "jobsh",
     "notifsvc",
     "notiftimer",
@@ -2161,7 +2212,7 @@
    "title": "VCU118 PC 1 (192.168.1.2)",
    "what": "Kotl's footprint on the FPGA PC is deliberately tiny. In soft lockdown (now), sshd, passwords and existing keys are untouched.",
    "bullets": [
-    "<b>Accounts:</b> system user <code>kotl</code> (key login only) <i>(new · M1, deploy/pc/setup.sh)</i>",
+    "<b>Accounts:</b> user <code>kotl</code> (key login only, password locked) <i>(new · M1, deploy/pc/setup.sh, run on the PC)</i>",
     "<code>/home/kotl/.ssh/authorized_keys</code>: the kotl public key <i>(new · M1)</i>",
     "<code>/usr/local/bin/kotl-keys</code>: adds and removes job keys; the only Kotl code on the PC <i>(new · M3)</i>",
     "<code>/etc/sudoers.d/kotl</code>: kotl may run only kotl-keys, as virtex-host <i>(new · M3)</i>",
@@ -2197,8 +2248,8 @@
    "name": "slurm.conf",
    "path": "/etc/slurm/",
    "ext": "conf",
-   "desc": "Slurm settings Kotl relies on (rough sketch)",
-   "body": "# Single node: the workstation\nSlurmctldHost=ws\nNodeName=ws CPUs=16 State=UNKNOWN\nPartitionName=fpga Nodes=ws Default=YES MaxTime=UNLIMITED State=UP\n\n# Boards are counted as licenses\nLicenses=vcu118:1\n\n# Priority (rough sketch, tune later)\nPriorityType=priority/multifactor\nPriorityWeightFairshare=10000\nPriorityWeightAge=1000\nPriorityWeightQOS=100000\n\n# Never kill for passing the ETA; give clean stops time\nOverTimeLimit=UNLIMITED\nKillWait=120\n\n# Kotl's end step after every job (backup)\nEpilog=/opt/kotl/epilog.sh\n\n# History\nAccountingStorageType=accounting_storage/slurmdbd\n\n# Kotl's health check\nHealthCheckProgram=/opt/kotl/health.sh\nHealthCheckInterval=300"
+   "desc": "Rendered by deploy/slurm/install.sh from deploy/slurm/slurm.conf.in (host and CPUs filled in)",
+   "body": "# managed by kotl (deploy/slurm/install.sh). Edit deploy/slurm/slurm.conf.in in the repo, then re-run.\n# Single node: the workstation runs the controller, the job runner and accounting.\nClusterName=kotl\nSlurmctldHost=@HOST@\nSlurmUser=slurm\nAuthType=auth/munge\nStateSaveLocation=/var/spool/slurmctld\nSlurmdSpoolDir=/var/spool/slurmd\nSlurmctldPidFile=/run/slurmctld.pid\nSlurmdPidFile=/run/slurmd.pid\nSlurmctldLogFile=/var/log/slurm/slurmctld.log\nSlurmdLogFile=/var/log/slurm/slurmd.log\nProctrackType=proctrack/cgroup\nTaskPlugin=task/none\nReturnToService=2\nSchedulerType=sched/backfill\nSelectType=select/cons_tres\nSelectTypeParameters=CR_Core\n\nNodeName=@HOST@ CPUs=@CPUS@ State=UNKNOWN\nPartitionName=fpga Nodes=@HOST@ Default=YES MaxTime=UNLIMITED State=UP\n\n# Boards are counted as licenses, one per board\nLicenses=vcu118:1\n\n# Priority (rough sketch, tune later)\nPriorityType=priority/multifactor\nPriorityWeightFairshare=10000\nPriorityWeightAge=1000\nPriorityWeightQOS=100000\nPriorityDecayHalfLife=7-0\n\n# The ETA is the job's time limit; never kill for passing it; give clean stops time\nOverTimeLimit=UNLIMITED\nKillWait=120\n\n# Kotl's end step after every job (backup); a no-op until M2\nEpilog=/opt/kotl/epilog.sh\n\n# Kotl's health check; a no-op until M4\nHealthCheckProgram=/opt/kotl/health.sh\nHealthCheckInterval=300\n\n# History and fair-share, through slurmdbd + MariaDB\nAccountingStorageType=accounting_storage/slurmdbd\nAccountingStorageHost=localhost\nAccountingStorageEnforce=associations,limits,qos\nJobAcctGatherType=jobacct_gather/linux"
   },
   "healthconf": {
    "name": "slurm.conf (excerpt)",
@@ -2337,7 +2388,7 @@
    "name": "epilog.sh",
    "path": "/opt/kotl/ (Epilog= in slurm.conf)",
    "ext": "sh",
-   "desc": "Slurm runs this after every job, even if the launcher crashed: the end step again",
+   "desc": "Slurm runs this after every job. M1: a no-op placeholder; M2: the end step again, as a backup",
    "body": "#!/bin/sh\n# Run by Slurm as root after each job. Safe to run twice.\nexec runuser -u kotl -- /opt/kotl/launch end \"$SLURM_JOB_ID\""
   },
   "authkeys": {
@@ -2359,14 +2410,14 @@
    "path": "/etc/kotl/",
    "ext": "conf",
    "desc": "Kotl's own settings. Local to the workstation; user names stay here, not in git.",
-   "body": "# soft: password logins and existing keys still work; end step kills only the job's own work\n# full: virtex-host key-only, end step kills every virtex-host process\nlockdown = soft\n\nadmin = <admin>            # change with deploy/set-admin.sh\npc_account = virtex-host\nidle = 30m"
+   "body": "# managed by kotl (deploy/accounts.sh). Change values with accounts.sh, or edit by hand.\nlockdown = soft\nadmin = <admin>           # accounts.sh set-admin USER\npc_account = virtex-host\nidle = 30m"
   },
   "slurmdbd": {
    "name": "slurmdbd.conf",
    "path": "/etc/slurm/",
    "ext": "conf",
    "desc": "Slurm accounting daemon: job history and fair-share, stored in MariaDB",
-   "body": "DbdHost=localhost\nSlurmUser=slurm\nStorageType=accounting_storage/mysql\nStorageHost=localhost\nStorageUser=slurm\nStoragePass=<set by deploy/slurm/install.sh, never in git>\nStorageLoc=slurm_acct_db\nLogFile=/var/log/slurm/slurmdbd.log"
+   "body": "# managed by kotl (deploy/slurm/install.sh). Readable only by slurm: it holds the DB password.\nDbdHost=localhost\nSlurmUser=slurm\nAuthType=auth/munge\nStorageType=accounting_storage/mysql\nStorageHost=localhost\nStorageUser=slurm\nStoragePass=<random, made by install.sh; never in git>\nStorageLoc=slurm_acct_db\nLogFile=/var/log/slurm/slurmdbd.log\nPidFile=/run/slurmdbd.pid"
   },
   "sshclient": {
    "name": "kotl.conf",
@@ -2395,6 +2446,13 @@
    "ext": "sudo",
    "desc": "Lets the kotl account run only kotl-keys as virtex-host",
    "body": "kotl ALL=(virtex-host) NOPASSWD: /usr/local/bin/kotl-keys"
+  },
+  "cgroupconf": {
+   "name": "cgroup.conf",
+   "path": "/etc/slurm/",
+   "ext": "conf",
+   "desc": "Lets Slurm track every process of a job, so cancel catches them all",
+   "body": "# managed by kotl (deploy/slurm/install.sh)\n# Slurm tracks each job's processes in a cgroup so cancel and the end step catch them all.\nCgroupPlugin=autodetect\nConstrainCores=no\nConstrainRAMSpace=no"
   }
  }
 }

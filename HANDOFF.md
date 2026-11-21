@@ -92,7 +92,7 @@ docs/architecture/
 - The `kotl` account and `kotl-users` group, the sudoers rule, and `/srv/kotl`, `/var/lib/kotl` with correct ownership.
 - The kotl SSH key, plus the PCs' `sshd_config.d/kotl.conf` and kotl's `.screenrc`. Verify the lockdown: a normal user gets `Permission denied`.
 - The PC's FireSim account and the `kotl-keys` helper for job keys; Slurm `Epilog=`; the `firesim` wrapper on PATH (`/etc/profile.d/kotl.sh`). No shared FireSim install.
-- Done when: `sbatch -L vcu118:1 --wrap 'sleep 30'` queues and runs, `scancel` by another user is refused, and `sudo -u kotl ssh vcu118-pc1 hostname` works while a normal user's ssh fails.
+- Done when `deploy/verify-m1.sh` passes: `sbatch -L vcu118:1` jobs queue and run, a second one waits for the license, `scancel` by another user is refused, history shows completed and cancelled jobs, and `sudo -u kotl ssh vcu118-pc1 hostname` works. (In soft lockdown, a normal user's password ssh still works on purpose.)
 
 **M2: Board lease end to end (no FPGA)**
 - Registry with atomic claim and release, plus state changes.

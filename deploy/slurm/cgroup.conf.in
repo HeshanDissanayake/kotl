@@ -1,0 +1,5 @@
+# managed by kotl (deploy/slurm/install.sh)
+# Slurm tracks each job's processes in a cgroup so cancel and the end step catch them all.
+CgroupPlugin=autodetect
+ConstrainCores=no
+ConstrainRAMSpace=no
