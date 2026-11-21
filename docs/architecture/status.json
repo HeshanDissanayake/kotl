@@ -180,6 +180,7 @@
       "milestone": "M1",
       "now": "Scripts written and dry-run tested; waiting for the admin to run them, then verify-m1.sh.",
       "code": [
+        "deploy/M1-SETUP.md",
         "deploy/accounts.sh",
         "deploy/lib.sh",
         "deploy/sudoers/",
@@ -204,6 +205,10 @@
         {
           "date": "2026-11-22",
           "text": "deploy/accounts.sh (kotl account, kotl-users, kotl.conf, folders, sudoers; add/remove user, set-admin), lib.sh, verify-m1.sh."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "deploy/M1-SETUP.md: the admin's step-by-step M1 run sheet."
         }
       ]
     },

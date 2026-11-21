@@ -2120,7 +2120,7 @@
    "note": "Click a step to see that machine's list; open a file card for its contents. Paths marked (sketch) are tested in M1 before use.",
    "term": [
     {
-     "host": "admin@comparch · M1, in this order (add --dry-run to preview each)",
+     "host": "admin@comparch · M1, in this order (full sheet: deploy/M1-SETUP.md)",
      "lines": [
       {
        "c": "sudo deploy/accounts.sh install --admin <you>"
