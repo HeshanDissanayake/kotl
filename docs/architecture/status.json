@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "updated": "2026-11-21T15:10:55Z",
-  "repo_commit": "3556e18cebdfde61e2bea72632158eb235869933",
+  "updated": "2026-11-21T15:23:12Z",
+  "repo_commit": "44c0f22f8c1574d1aef396895de3280dc1c15836",
   "watch": [
     "kotl/",
     "deploy/",
@@ -43,7 +43,7 @@
         "unit": {
           "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-21T15:10:55Z"
+          "ran_at": "2026-11-21T15:22:58Z"
         },
         "hardware": null
       },
@@ -77,7 +77,7 @@
         "unit": {
           "passed": 4,
           "failed": 0,
-          "ran_at": "2026-11-21T15:10:55Z"
+          "ran_at": "2026-11-21T15:22:58Z"
         },
         "hardware": null
       },
@@ -115,7 +115,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-21T15:10:55Z"
+          "ran_at": "2026-11-21T15:22:58Z"
         },
         "hardware": null
       },
@@ -156,7 +156,7 @@
         "unit": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-21T15:10:55Z"
+          "ran_at": "2026-11-21T15:22:58Z"
         },
         "hardware": null
       },
@@ -189,7 +189,7 @@
         "unit": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-21T15:10:55Z"
+          "ran_at": "2026-11-21T15:22:58Z"
         },
         "hardware": null
       },
@@ -231,7 +231,7 @@
         "unit": {
           "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-21T15:10:55Z"
+          "ran_at": "2026-11-21T15:22:58Z"
         },
         "hardware": null
       },
@@ -276,7 +276,7 @@
         "unit": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-21T15:10:55Z"
+          "ran_at": "2026-11-21T15:22:58Z"
         },
         "hardware": {
           "passed": 2,
@@ -321,7 +321,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-21T15:10:55Z"
+          "ran_at": "2026-11-21T15:22:58Z"
         },
         "hardware": {
           "passed": 1,
@@ -366,7 +366,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-21T15:10:55Z"
+          "ran_at": "2026-11-21T15:22:58Z"
         },
         "hardware": {
           "passed": 1,
@@ -444,7 +444,7 @@
         "unit": {
           "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-21T15:10:55Z"
+          "ran_at": "2026-11-21T15:22:58Z"
         },
         "hardware": null
       },
@@ -475,9 +475,9 @@
       ],
       "tests": {
         "unit": {
-          "passed": 25,
+          "passed": 26,
           "failed": 0,
-          "ran_at": "2026-11-21T15:10:55Z"
+          "ran_at": "2026-11-21T15:22:58Z"
         },
         "hardware": null
       },
@@ -486,7 +486,9 @@
         "message": "M2: board lease code (registry, launcher, kotl CLI, results) and its installer",
         "date": "2026-11-22T02:10:38+11:00"
       },
-      "issues": [],
+      "issues": [
+        "Fixes need a re-run of deploy/kotl/install.sh before the integration tests can pass."
+      ],
       "log": [
         {
           "date": "2026-11-22",
@@ -503,6 +505,10 @@
         {
           "date": "2026-11-22",
           "text": "Lease: start (ownership, license, claim), log, end step (idempotent; epilog backup), watcher guards (--max, --idle) via scancel as Slurm operator; job.sh with a FIFO log pipe; deploy/kotl/install.sh."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "Integration run found: the watcher refused itself (inherited SUDO_USER), so --max never tripped. Fixed: watcher starts without SUDO_* variables."
         }
       ]
     },
@@ -518,9 +524,9 @@
       ],
       "tests": {
         "unit": {
-          "passed": 13,
+          "passed": 15,
           "failed": 0,
-          "ran_at": "2026-11-21T15:10:55Z"
+          "ran_at": "2026-11-21T15:22:58Z"
         },
         "hardware": null
       },
@@ -546,6 +552,10 @@
         {
           "date": "2026-11-22",
           "text": "kotl run / lease / release / status / cancel / history / logs -f / fetch / board; ETA required; Slurm calls only in kotl/slurm.py."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "Integration run found: jobs shorter than the 2 s poll looked like they never started, and status printed out of order. Fixed both."
         }
       ]
     },
@@ -561,7 +571,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-21T15:10:55Z"
+          "ran_at": "2026-11-21T15:22:58Z"
         },
         "hardware": null
       },
@@ -625,7 +635,7 @@
         "unit": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-21T15:10:55Z"
+          "ran_at": "2026-11-21T15:22:58Z"
         },
         "hardware": null
       },

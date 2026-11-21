@@ -225,3 +225,20 @@ def test_durations(text, secs):
 def test_bad_duration():
     with pytest.raises(ValueError):
         parse_duration("soon")
+
+
+@pytest.mark.feature("launcher")
+def test_watcher_starts_without_sudo_vars(env, monkeypatch):
+    cfg, fs, make = env
+    seen = {}
+    monkeypatch.setenv("SUDO_USER", "alice")
+    monkeypatch.setattr("subprocess.Popen", lambda args, **kw: seen.update(args=args, env=kw["env"]))
+    Launcher(cfg, slurm=fs, who="alice").spawn_watcher(7)
+    assert seen["args"][-2:] == ["watch", "7"]
+    assert not any(k.startswith("SUDO_") for k in seen["env"])
+
+
+@pytest.mark.feature("cli")
+def test_short_durations_show_seconds():
+    from kotl.core.config import fmt_duration
+    assert fmt_duration(15) == "15s" and fmt_duration(120) == "2m" and fmt_duration(5400) == "1h30m"

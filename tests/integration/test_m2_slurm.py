@@ -12,7 +12,18 @@ import time
 import pytest
 
 KOTL = shutil.which("kotl") if os.path.exists("/opt/kotl/launch") else None
-pytestmark = pytest.mark.skipif(not KOTL, reason="Kotl is not installed here (deploy/kotl/install.sh)")
+
+
+def _can_launch():
+    r = subprocess.run(["sudo", "-n", "-u", "kotl", "/opt/kotl/launch", "boards"], capture_output=True)
+    return r.returncode == 0
+
+
+pytestmark = [
+    pytest.mark.skipif(not KOTL, reason="Kotl is not installed here (deploy/kotl/install.sh)"),
+    pytest.mark.skipif(bool(KOTL) and not _can_launch(),
+                       reason="this session can't sudo to kotl (not in kotl-users yet: log in again, or use sg kotl-users)"),
+]
 
 
 def kotl(*args, timeout=300):

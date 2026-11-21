@@ -108,9 +108,12 @@ class Launcher:
         """M3: remove the job key, end its sessions and processes."""
 
     def spawn_watcher(self, job_id):
+        # the watcher is Kotl's own process, not the user's: drop sudo's caller variables,
+        # or watch() would refuse it as a user request
+        env = {k: v for k, v in os.environ.items() if not k.startswith("SUDO_")}
         subprocess.Popen([sys.executable, "-I", os.path.abspath(sys.argv[0]), "watch", str(job_id)],
                          stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
-                         stderr=subprocess.DEVNULL, start_new_session=True)
+                         stderr=subprocess.DEVNULL, start_new_session=True, env=env)
 
     def append_log(self, job_id, stream):
         j = self.own_job(job_id)

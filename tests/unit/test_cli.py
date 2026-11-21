@@ -64,3 +64,11 @@ def test_release_without_lease(fs, capsys):
     with pytest.raises(SystemExit):
         cli.main(["release"])
     assert "no lease" in capsys.readouterr().err
+
+
+def test_fast_job_counts_as_started(fs, monkeypatch):
+    # the job came and went between two looks at the queue: the launcher's record decides
+    monkeypatch.setattr(cli, "job_status", lambda job, tries=3: {"state": "done"})
+    assert cli.wait_running(5) is True
+    monkeypatch.setattr(cli, "job_status", lambda job, tries=3: None)
+    assert cli.wait_running(5) is False

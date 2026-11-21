@@ -70,6 +70,8 @@ def parse_duration(text):
 
 def fmt_duration(seconds):
     seconds = int(seconds)
+    if seconds < 60:
+        return f"{seconds}s"
     h, rem = divmod(seconds, 3600)
     m = rem // 60
     return f"{h}h{m:02d}m" if h else f"{m}m"

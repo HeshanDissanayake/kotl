@@ -13,6 +13,10 @@ guards can cancel a hung job. It doesn't touch the FPGA PC.
 
 Re-run the same command after every repo update that changes `kotl/` or `deploy/job.sh`.
 
+**Log in again first.** Sessions that started before M1 added you to `kotl-users` don't have the group yet,
+so `sudo` to kotl asks for a password. A new login, `newgrp kotl-users`, or `sg kotl-users -c '...'` fixes it.
+The same goes for every user who was logged in during M1.
+
 Then try it as yourself:
 
 ```sh

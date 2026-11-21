@@ -36,6 +36,7 @@ def job_sh():
 
 
 def launch(*args, capture=False, stdout=None):
+    sys.stdout.flush()   # keep our own output in order with the launcher's
     cmd = launch_cmd() + [str(a) for a in args]
     if capture:
         r = subprocess.run(cmd, capture_output=True)
@@ -74,7 +75,8 @@ def wait_running(job, poll=2):
         if st == "RUNNING":
             return True
         if st in ("", "COMPLETED", "CANCELLED", "FAILED", "TIMEOUT", "NODE_FAIL"):
-            return False
+            # a short job can start and finish between two looks: did the launcher see it?
+            return job_status(job, tries=3) is not None
         if st != last:
             q = [r for r in slurm.queue() if r["job"] == str(job)]
             why = f" ({q[0]['reason']}, est. start {q[0]['start']})" if q and st == "PENDING" else ""
