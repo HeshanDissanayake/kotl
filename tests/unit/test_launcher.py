@@ -242,3 +242,51 @@ def test_watcher_starts_without_sudo_vars(env, monkeypatch):
 def test_short_durations_show_seconds():
     from kotl.core.config import fmt_duration
     assert fmt_duration(15) == "15s" and fmt_duration(120) == "2m" and fmt_duration(5400) == "1h30m"
+
+
+@pytest.mark.feature("launcher")
+def test_no_exit_plan_is_refused(env):
+    cfg, fs, make = env
+    fs.add(7, "alice", time_limit="UNLIMITED")
+    with pytest.raises(Refused, match="exit plan"):
+        make("alice").start(7, "run")
+    assert make("kotl").reg.board("vcu118-pc1")["state"] == "idle"
+
+
+@pytest.mark.feature("launcher")
+def test_lease_always_has_idle_guard(env):
+    cfg, fs, make = env
+    fs.add(7, "alice", name="kotl-lease")
+    make("alice").start(7, "lease")
+    assert make("kotl").reg.job(7)["idle"] == 1800             # kotl.conf idle (default 30m)
+
+
+@pytest.mark.feature("launcher")
+def test_lease_idle_means_nothing_running_on_the_pc(env):
+    cfg, fs, make = env
+    fs.add(7, "alice", name="kotl-lease")
+    make("alice").start(7, "lease", idle=120)
+    t0 = time.time()
+    answers = iter([True, False, False, False])                 # busy at first, then nothing runs
+    clock = iter([t0 + 10, t0 + 70, t0 + 130, t0 + 190, t0 + 250])
+    W = Launcher(cfg, slurm=fs, who="kotl", clock=lambda: next(clock),
+                 sleep=lambda _: fs.cancelled and fs.jobs[7].update(JobState="COMPLETED"))
+    W.pc_busy = lambda j: next(answers)
+    W.watch(7)
+    assert fs.cancelled == [7] and W.end(7, signal=True) == "idle"
+
+
+@pytest.mark.feature("launcher")
+@pytest.mark.parametrize("text,rc,expect", [
+    (b"boot\nKOTL RESULT: PASS\n", 0, "passed"),
+    (b"KOTL RESULT: PASS\nKOTL RESULT: FAIL\n", 0, "failed"),
+    (b"no marker\n", 0, "succeeded"),
+    (b"no marker\n", 2, "failed"),
+])
+def test_result_marker(env, text, rc, expect):
+    cfg, fs, make = env
+    fs.add(7, "alice")
+    L = make("alice")
+    L.start(7, "run")
+    L.append_log(7, io.BytesIO(text))
+    assert L.end(7, rc=rc) == expect

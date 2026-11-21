@@ -9,7 +9,7 @@ Read `HANDOFF.md` first. The design lives in `docs/architecture/architecture.jso
 - You may set `in_progress`, `built` and `blocked`. Only `tools/status.py refresh` sets `tested` or `failing`.
 - After tests: `python3 tools/status.py refresh`. Before committing: `python3 tools/status.py check` (the pre-commit hook runs it too; fix what it reports, never bypass it).
 - After changing `architecture.json`, open the view and look at it once.
-- Tag every test with `@pytest.mark.feature("<key>")`; board tests also get `@pytest.mark.hw`.
+- Tag every test with `@pytest.mark.feature("<key>")`; board tests also get `@pytest.mark.hw` and skip unless `KOTL_HW=1`. Never run them (or collect them without `--co`) unless the user says so: they touch the FPGA PC.
 - Slurm commands only in `kotl/slurm.py`. SSH, scp and rsync to the FPGA PCs only in `kotl/ssh.py`.
 
 ## Ask first

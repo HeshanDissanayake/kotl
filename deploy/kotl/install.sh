@@ -4,7 +4,6 @@
 #   kotl/install.sh --board vcu118-pc1=vcu118@vcu118-pc1
 #       copies kotl/ to /opt/kotl/lib, installs /opt/kotl/launch, /opt/kotl/job.sh,
 #       /opt/kotl/epilog.sh, the kotl command (/opt/kotl/bin/kotl, linked from /usr/local/bin),
-#       the firesim wrapper (/opt/kotl/bin/firesim; /etc/profile.d/kotl.sh puts it first on PATH),
 #       an SSH client entry per board (/etc/ssh/ssh_config.d/kotl.conf: your job key during a lease),
 #       adds each board to the registry, and makes kotl a Slurm operator (so its guards can
 #       cancel a hung job). Re-run after every update of the repo.
@@ -49,8 +48,9 @@ install_all() {
   py_wrapper kotl.core.launcher | put_file /opt/kotl/launch 755 root:root
   make_dir /opt/kotl/bin 755 root:root
   py_wrapper kotl.cli.main | put_file /opt/kotl/bin/kotl 755 root:root
-  py_wrapper kotl.adapters.firesim.wrapper | put_file /opt/kotl/bin/firesim 755 root:root
-  put_file /etc/profile.d/kotl.sh 644 root:root <"$DEPLOY_DIR/profile.d/kotl.sh"
+  # gone in the generic design: the firesim wrapper and its PATH snippet (if an earlier install left them)
+  remove_file /opt/kotl/bin/firesim
+  remove_file /etc/profile.d/kotl.sh
   put_file /opt/kotl/job.sh 755 root:root <"$DEPLOY_DIR/job.sh"
   put_file /opt/kotl/epilog.sh 755 root:root <"$DEPLOY_DIR/epilog.sh"
   run ln -sfn /opt/kotl/bin/kotl /usr/local/bin/kotl
@@ -84,8 +84,6 @@ undo_all() {
   say "removed /opt/kotl/lib"
   remove_file /opt/kotl/launch
   remove_file /opt/kotl/bin/kotl
-  remove_file /opt/kotl/bin/firesim
-  remove_file /etc/profile.d/kotl.sh
   remove_file /etc/ssh/ssh_config.d/kotl.conf
   remove_file /opt/kotl/job.sh
   run rm -f /usr/local/bin/kotl

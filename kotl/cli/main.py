@@ -122,7 +122,13 @@ def cmd_lease(a):
     if not wait_running(job):
         die(f"lease {job} ended before it started (kotl history)", 1)
     st = job_status(job) or {}
-    print(f"kotl: lease {job} on {st.get('board')} · until you run: kotl release")
+    b = st.get("board")
+    idle = f"{st['idle_s'] // 60}m" if st.get("idle_s") else "-"
+    mx = f"{st['max_s'] // 60}m" if st.get("max_s") else "-"
+    print(f"kotl: lease {job} on {b} ({st.get('pc_user')}@{st.get('pc_address')})\n"
+          f"  ssh {b}                                  # plain ssh uses your job key\n"
+          f"  ssh-add /tmp/kotl-keys-$USER/{b}         # for FireSim or other tools that use your ssh-agent\n"
+          f"  kotl release                              # when you're done (idle {idle} or max {mx} free it otherwise)")
     return 0
 
 

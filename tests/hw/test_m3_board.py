@@ -1,5 +1,5 @@
 """M3 on the real PC. These hold the board through Kotl like any job. Run them only when
-the admin says so:   pytest -m hw tests/hw
+the admin says so:   KOTL_HW=1 pytest -m hw tests/hw   (without KOTL_HW=1 they skip)
 """
 import json
 import os
@@ -13,6 +13,8 @@ import pytest
 ME = pwd.getpwuid(os.getuid()).pw_name
 KOTL = shutil.which("kotl") if os.path.exists("/opt/kotl/launch") else None
 pytestmark = [pytest.mark.hw,
+              pytest.mark.skipif(os.environ.get("KOTL_HW") != "1",
+                                 reason="board tests touch the FPGA PC: run them only with KOTL_HW=1, when the admin says so"),
               pytest.mark.skipif(not KOTL, reason="Kotl is not installed here")]
 
 
@@ -63,14 +65,18 @@ def test_job_key_works_only_during_the_lease(tmp_path):
     assert gone.returncode != 0 and "Permission denied" in gone.stderr
 
 
-@pytest.mark.feature("fsmod")
+@pytest.mark.feature("access")
 @pytest.mark.skipif(not os.environ.get("KOTL_SMOKE_JOB"), reason="set KOTL_SMOKE_JOB to the smoke test's job id")
-def test_firesim_smoke_job_passed(tmp_path):
+def test_firesim_smoke_run_passed(tmp_path):
+    """kotl run -- firesim infrasetup && runworkload (linux-poweroff), from the user's own Chipyard."""
     job = os.environ["KOTL_SMOKE_JOB"]
     s = status(job)
-    assert s and s["state"] == "done" and s["mode"] == "firesim"
-    assert s["result"] in ("passed", "done"), s
+    assert s and s["state"] == "done" and s["mode"] == "run", s
+    assert s["rc"] == 0 and s["result"] in ("passed", "succeeded"), s
+    assert s["ended"] - s["started"] < 2 * s["eta_s"]           # it ended by itself, not by --max
     r = run(KOTL, "fetch", job, "--to", str(tmp_path))
     assert r.returncode == 0, r.stderr
-    uart = (tmp_path / job / "outputs" / "uartlog").read_text(errors="replace")
-    assert "Power down" in uart or "poweroff" in uart.lower()
+    out = (tmp_path / job / "output.log").read_text(errors="replace")
+    assert "firesim" in out.lower()                             # FireSim's own output was captured
+    log = (tmp_path / job / "launcher.log").read_text()
+    assert "job key removed" in log                             # the end step cleaned the PC

@@ -4,7 +4,8 @@
 #   1) a fresh SSH key for this job is made as you (the private half never leaves your account);
 #      the launcher (as kotl) checks the job is yours, claims a board, adds the public half
 #      on the board's PC, and starts the guards
-#   2) your command runs as you; its output goes to the job's output.log
+#   2) your command runs as you, with an ssh-agent holding only the job key and
+#      KOTL_JOB, KOTL_BOARD, KOTL_PC (user@address) set; its output goes to output.log
 #   3) the end step: frees the board and writes status.json (Slurm's epilog repeats it)
 # Settings come from the kotl CLI: KOTL_MODE (run|lease), KOTL_MAX and KOTL_IDLE (seconds).
 set -u
@@ -25,9 +26,14 @@ ssh-keygen -q -t ed25519 -N '' -C "kotl-job-$JOB" -f "$KEY" || exit 1
 out=$("${LAUNCH[@]}" start "$JOB" --mode "${KOTL_MODE:-run}" \
   ${KOTL_MAX:+--max "$KOTL_MAX"} ${KOTL_IDLE:+--idle "$KOTL_IDLE"} --command "$*" \
   --pubkey "$(cut -d' ' -f1,2 "$KEY.pub")") || { rm -f "$KEY" "$KEY.pub"; exit 1; }
-echo "$out"
-board=${out##* }
+board=$(sed -n 's/^board=//p' <<<"$out")
+pc=$(sed -n 's/^pc=//p' <<<"$out")
 [ -n "$board" ] && ln -sfn "$KEY" "$KEYDIR/$board"
+export KOTL_JOB="$JOB" KOTL_BOARD="$board" KOTL_PC="$pc"
+# any tool that uses ssh (FireSim included) gets the job key through this agent
+if command -v ssh-agent >/dev/null; then
+  eval "$(ssh-agent -s)" >/dev/null && ssh-add -q "$KEY" 2>/dev/null
+fi
 
 stopping=0 pid=""
 on_stop() { stopping=1; [ -n "$pid" ] && kill -TERM "$pid" 2>/dev/null; }
@@ -55,6 +61,7 @@ if [ "$stopping" = 1 ]; then
 else
   "${LAUNCH[@]}" end "$JOB" --rc "$rc"
 fi
+[ -n "${SSH_AGENT_PID:-}" ] && ssh-agent -k >/dev/null 2>&1
 [ -n "$board" ] && [ "$(readlink "$KEYDIR/$board")" = "$KEY" ] && rm -f "$KEYDIR/$board"
 rm -f "$KEY" "$KEY.pub"
 exit "$rc"

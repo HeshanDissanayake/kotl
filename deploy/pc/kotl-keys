@@ -6,6 +6,8 @@
 #   kotl-keys remove JOB [soft|full]      take the key out and stop the simulations;
 #                                         full lockdown also ends every process of this account
 #   kotl-keys list                        jobs whose keys are in
+#   kotl-keys busy                        "busy" if any process of this account runs here
+#                                         (other than this check), else "idle": the lease idle guard
 #
 # Only lines ending in "kotl-job-<JOB>" are ever touched; every other key stays.
 set -eu
@@ -51,8 +53,13 @@ case "${1:-}" in
       exec pkill -KILL -u "$ME"   # full lockdown: nothing of this account outlives the job
     fi
     ;;
+  busy)
+    mysid=$(ps -o sid= -p $$ | tr -d ' ')
+    n=$(ps -u "$ME" -o sid=,comm= | awk -v s="$mysid" '$1 != s && $2 != "systemd" && $2 != "(sd-pam)"' | wc -l)
+    if [ "$n" -gt 0 ]; then echo busy; else echo idle; fi
+    ;;
   list)
     sed -n 's/.* kotl-job-\([0-9][0-9]*\)$/\1/p' "$AK"
     ;;
-  *) die "usage: kotl-keys add JOB KEY | remove JOB [soft|full] | list" ;;
+  *) die "usage: kotl-keys add JOB KEY | remove JOB [soft|full] | list | busy" ;;
 esac

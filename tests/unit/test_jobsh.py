@@ -19,7 +19,7 @@ def fake(tmp_path):
 echo "$*" >> {calls}
 case "$1" in
   log) cat >> {log} ;;
-  start) [ -e {tmp_path}/refuse ] && {{ echo "kotl: refused" >&2; exit 1; }}; echo "kotl: job 42 has vcu118-pc1"; exit 0 ;;
+  start) [ -e {tmp_path}/refuse ] && {{ echo "kotl: refused" >&2; exit 1; }}; echo "board=vcu118-pc1"; echo "pc=virtex-host@192.168.1.2"; exit 0 ;;
 esac
 exit 0
 """)
@@ -94,3 +94,14 @@ def test_refuses_someone_elses_key_folder(fake):
     r = subprocess.run(["bash", str(DEPLOY / "job.sh"), "true"], env=env, capture_output=True, text=True)
     assert r.returncode == 1 and "only you can use" in r.stderr
     assert not lines(calls)
+
+
+@pytest.mark.feature("access")
+def test_command_gets_agent_and_board_vars(fake):
+    tmp, calls, log, env = fake
+    r = subprocess.run(["bash", str(DEPLOY / "job.sh"), "sh", "-c",
+                        'echo "$KOTL_JOB $KOTL_BOARD $KOTL_PC"; ssh-add -l'], env=env)
+    assert r.returncode == 0
+    out = log.read_text()
+    assert "42 vcu118-pc1 virtex-host@192.168.1.2" in out
+    assert "kotl-job-42 (ED25519)" in out                     # the agent holds exactly the job key

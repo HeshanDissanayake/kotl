@@ -25,13 +25,15 @@ import time
 from kotl import slurm as slurm_mod
 from kotl import ssh as ssh_mod
 from kotl.core import results
-from kotl.core.config import Config, caller, fmt_duration
+from kotl.core.config import Config, caller, fmt_duration, parse_duration
 from kotl.core.registry import Registry, RegistryError
 
 RUNNING = {"RUNNING", "CONFIGURING", "COMPLETING", "SUSPENDED", "STOPPED"}
 PUBKEY = re.compile(r"ssh-ed25519 [A-Za-z0-9+/]+={0,3}")
 KEYS_HELPER = "/usr/local/bin/kotl-keys"
 OWNER_RESULTS = ("passed", "failed", "done")
+MARKER = re.compile(rb"KOTL RESULT: (PASS|FAIL)")
+PC_CHECK_EVERY = 60   # seconds between asks to the PC "is anything still running?" (lease idle guard)
 
 
 class Refused(Exception):
@@ -93,6 +95,10 @@ class Launcher:
             raise Refused("the job key must be one ssh-ed25519 public key, nothing else")
         eta = time_limit_seconds(info.get("TimeLimit"))
         max_ = max_ if max_ is not None else (2 * eta if eta else None)
+        if not max_:
+            raise Refused("every job needs an exit plan: give an ETA (--max defaults to 2x ETA)")
+        if mode == "lease" and not idle:
+            idle = parse_duration(self.cfg.get("idle") or "30m")   # a lease always has an idle guard
         board = self.reg.claim(job_id, btype)
         if not board:
             raise Refused(f"no idle {btype} board, although Slurm gave a license; "
@@ -117,7 +123,11 @@ class Launcher:
                        f"eta {fmt_duration(eta) if eta else '-'}, max {fmt_duration(max_) if max_ else 'off'}, "
                        f"idle {fmt_duration(idle) if idle else 'off'}")
         self.spawn_watcher(job_id)
-        print(f"kotl: job {job_id} has {board['name']}")
+        j = self.reg.job(job_id)
+        print(f"kotl: job {job_id} has {board['name']}", file=sys.stderr)
+        print(f"board={board['name']}")
+        if j.get("pc_address"):
+            print(f"pc={self.cfg.get('pc_account')}@{j['pc_address']}")
         return board
 
     def grant_access(self, job_id, board, pubkey):
@@ -172,7 +182,7 @@ class Launcher:
             if epilog and not signal and not j["reason"]:
                 result = "killed"
         else:
-            result = "succeeded" if rc == 0 else "failed"
+            result = self.marker(j) or ("succeeded" if rc == 0 else "failed")
         d = self.dir_for(j)
         self.revoke_access(job_id, j["board"])
         if self.reg.finish(job_id, result, rc):
@@ -184,6 +194,29 @@ class Launcher:
                         (" [epilog]" if epilog else "") + f"; {j['board']} freed")
         return result
 
+    def marker(self, j):
+        """A 'KOTL RESULT: PASS|FAIL' line in the job's output, if the command printed one."""
+        path = os.path.join(self.dir_for(j), "output.log")
+        try:
+            with open(path, "rb") as f:
+                found = [m.group(1) for m in MARKER.finditer(f.read())]
+        except FileNotFoundError:
+            return None
+        if not found:
+            return None
+        return "failed" if b"FAIL" in found else "passed"
+
+    def pc_busy(self, j):
+        """Lease idle guard: is anything of the PC account still running on the board's PC?
+        If the PC can't be asked, count it as busy: never free a board on a guess."""
+        b = self.reg.board(j["board"])
+        try:
+            out = self.ssh.run(b["host"], ["sudo", "-n", "-u", self.cfg.get("pc_account"), KEYS_HELPER, "busy"],
+                               timeout=30)
+            return out.strip() != "idle"
+        except ssh_mod.SSHError:
+            return True
+
     # --- guards
     def watch(self, job_id, poll=5):
         if os.environ.get("SUDO_USER"):
@@ -193,11 +226,19 @@ class Launcher:
             return
         d, tripped = self.dir_for(j), False
         out = os.path.join(d, "output.log")
+        last_busy, last_ask = j["started"], 0
         while self.slurm.state(job_id) in RUNNING:
             now = self.clock()
             reason = None
             if j["max"] and now - j["started"] > j["max"]:
                 reason = "over_max"
+            elif j["idle"] and j["mode"] == "lease":
+                if now - last_ask >= PC_CHECK_EVERY:
+                    last_ask = now
+                    if self.pc_busy(j):
+                        last_busy = now
+                if now - last_busy > j["idle"]:
+                    reason = "idle"
             elif j["idle"]:
                 last = os.path.getmtime(out) if os.path.exists(out) else j["started"]
                 if now - last > j["idle"]:

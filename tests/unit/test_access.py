@@ -150,3 +150,9 @@ def test_kotl_keys_refuses_bad_input(tmp_path, args):
     r = keys(tmp_path, *args)
     assert r.returncode == 2
     assert (tmp_path / ".ssh" / "authorized_keys").read_text() == ""
+
+
+def test_kotl_keys_busy_answers(tmp_path):
+    (tmp_path / ".ssh").mkdir()
+    r = keys(tmp_path, "busy")
+    assert r.returncode == 0 and r.stdout.strip() in ("busy", "idle")

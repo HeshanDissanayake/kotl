@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "updated": "2026-11-21T15:42:53Z",
-  "repo_commit": "ac769390459bc2ff971a3509b5fc4a1059bc2a6c",
+  "updated": "2026-11-21T16:09:03Z",
+  "repo_commit": "15abe0d46f5710df6f565dbb3331033ff44380f0",
   "watch": [
     "kotl/",
     "deploy/",
@@ -23,7 +23,7 @@
     "M0": "Repo, tooling and status checks",
     "M1": "Workstation and PC setup (Slurm, MariaDB, accounts, kotl key, PC login)",
     "M2": "Board lease end to end (no FPGA)",
-    "M3": "FireSim adapter and job keys on a real board",
+    "M3": "Job keys on the real board; FireSim runs through kotl run",
     "M4": "Health check, ETA notices, interactive sessions",
     "M5": "Kotl plugin for Claude Code",
     "Later": "After the first release"
@@ -43,7 +43,7 @@
         "unit": {
           "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-21T15:42:44Z"
+          "ran_at": "2026-11-21T16:09:03Z"
         },
         "hardware": null
       },
@@ -77,7 +77,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-21T15:42:44Z"
+          "ran_at": "2026-11-21T16:09:03Z"
         },
         "hardware": null
       },
@@ -115,7 +115,7 @@
         "unit": {
           "passed": 6,
           "failed": 0,
-          "ran_at": "2026-11-21T15:42:44Z"
+          "ran_at": "2026-11-21T16:09:03Z"
         },
         "hardware": null
       },
@@ -156,7 +156,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-21T15:42:44Z"
+          "ran_at": "2026-11-21T16:09:03Z"
         },
         "hardware": null
       },
@@ -189,7 +189,7 @@
         "unit": {
           "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-21T15:42:44Z"
+          "ran_at": "2026-11-21T16:09:03Z"
         },
         "hardware": null
       },
@@ -231,7 +231,7 @@
         "unit": {
           "passed": 14,
           "failed": 0,
-          "ran_at": "2026-11-21T15:42:44Z"
+          "ran_at": "2026-11-21T16:09:03Z"
         },
         "hardware": null
       },
@@ -276,12 +276,12 @@
         "unit": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-21T15:42:44Z"
+          "ran_at": "2026-11-21T16:09:03Z"
         },
         "hardware": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-21T15:42:44Z"
+          "ran_at": "2026-11-21T16:09:03Z"
         }
       },
       "last_commit": {
@@ -321,12 +321,12 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-21T15:42:44Z"
+          "ran_at": "2026-11-21T16:09:03Z"
         },
         "hardware": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-21T15:42:44Z"
+          "ran_at": "2026-11-21T16:09:03Z"
         }
       },
       "last_commit": {
@@ -366,18 +366,18 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-21T15:42:44Z"
+          "ran_at": "2026-11-21T16:09:03Z"
         },
         "hardware": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-21T15:42:44Z"
+          "ran_at": "2026-11-21T16:09:03Z"
         }
       },
       "last_commit": {
-        "hash": "ce7c72864fa89b4304fd198c018493fdf73088f8",
-        "message": "M1: deploy scripts for the workstation and PC (not yet run)",
-        "date": "2026-11-22T01:39:10+11:00"
+        "hash": "15abe0d46f5710df6f565dbb3331033ff44380f0",
+        "message": "M3: job keys and the firesim wrapper (not yet installed)",
+        "date": "2026-11-22T02:42:53+11:00"
       },
       "issues": [],
       "log": [
@@ -424,9 +424,9 @@
         "hardware": null
       },
       "last_commit": {
-        "hash": "ce7c72864fa89b4304fd198c018493fdf73088f8",
-        "message": "M1: deploy scripts for the workstation and PC (not yet run)",
-        "date": "2026-11-22T01:39:10+11:00"
+        "hash": "15abe0d46f5710df6f565dbb3331033ff44380f0",
+        "message": "M3: job keys and the firesim wrapper (not yet installed)",
+        "date": "2026-11-22T02:42:53+11:00"
       },
       "issues": [],
       "log": [
@@ -448,14 +448,14 @@
         "unit": {
           "passed": 6,
           "failed": 0,
-          "ran_at": "2026-11-21T15:42:44Z"
+          "ran_at": "2026-11-21T16:09:03Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "3556e18cebdfde61e2bea72632158eb235869933",
-        "message": "M2: board lease code (registry, launcher, kotl CLI, results) and its installer",
-        "date": "2026-11-22T02:10:38+11:00"
+        "hash": "15abe0d46f5710df6f565dbb3331033ff44380f0",
+        "message": "M3: job keys and the firesim wrapper (not yet installed)",
+        "date": "2026-11-22T02:42:53+11:00"
       },
       "issues": [],
       "log": [
@@ -487,16 +487,16 @@
       ],
       "tests": {
         "unit": {
-          "passed": 29,
+          "passed": 37,
           "failed": 0,
-          "ran_at": "2026-11-21T15:42:44Z"
+          "ran_at": "2026-11-21T16:09:03Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "b59808b0b87513201ec5935b7ddb974797797c9c",
-        "message": "M2 fixes from the first real Slurm run",
-        "date": "2026-11-22T02:23:12+11:00"
+        "hash": "15abe0d46f5710df6f565dbb3331033ff44380f0",
+        "message": "M3: job keys and the firesim wrapper (not yet installed)",
+        "date": "2026-11-22T02:42:53+11:00"
       },
       "issues": [],
       "log": [
@@ -527,6 +527,10 @@
         {
           "date": "2026-11-22",
           "text": "M3: start --pubkey, grant/revoke access, owner-only 'result' and 'put' subcommands."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "Exit plan enforced (no time limit = refused; lease always idle-guarded via kotl-keys busy); KOTL RESULT marker read from any command's output; start prints board= and pc= for job.sh."
         }
       ]
     },
@@ -536,22 +540,21 @@
       "milestone": "M2",
       "now": "Live on comparch; unit tests and the real-Slurm integration tests pass.",
       "code": [
-        "deploy/profile.d/",
         "kotl/cli/",
         "kotl/slurm.py"
       ],
       "tests": {
         "unit": {
-          "passed": 19,
+          "passed": 17,
           "failed": 0,
-          "ran_at": "2026-11-21T15:42:44Z"
+          "ran_at": "2026-11-21T16:09:03Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "b59808b0b87513201ec5935b7ddb974797797c9c",
-        "message": "M2 fixes from the first real Slurm run",
-        "date": "2026-11-22T02:23:12+11:00"
+        "hash": "15abe0d46f5710df6f565dbb3331033ff44380f0",
+        "message": "M3: job keys and the firesim wrapper (not yet installed)",
+        "date": "2026-11-22T02:42:53+11:00"
       },
       "issues": [],
       "log": [
@@ -582,6 +585,10 @@
         {
           "date": "2026-11-22",
           "text": "profile.d puts /opt/kotl/bin first; slurm.run_in_job (srun --overlap) for steps inside a lease."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "Generic: no firesim wrapper or PATH snippet. kotl lease prints how to use the job key."
         }
       ]
     },
@@ -597,7 +604,7 @@
         "unit": {
           "passed": 4,
           "failed": 0,
-          "ran_at": "2026-11-21T15:42:44Z"
+          "ran_at": "2026-11-21T16:09:03Z"
         },
         "hardware": null
       },
@@ -619,13 +626,11 @@
       ]
     },
     "fsmod": {
-      "title": "FireSim adapter",
-      "status": "in_progress",
-      "milestone": "M3",
-      "now": "Code and unit tests done; waiting for the admin to install (deploy/M3-SETUP.md), then the board tests.",
+      "title": "FireSim admin adapter",
+      "status": "later",
+      "milestone": "Later",
+      "now": "Admin-only board care (flash, reset, recover); users run FireSim inside kotl run/lease.",
       "code": [
-        "deploy/M3-SETUP.md",
-        "deploy/templates/",
         "kotl/adapters/firesim/"
       ],
       "tests": {
@@ -636,7 +641,11 @@
         },
         "hardware": null
       },
-      "last_commit": null,
+      "last_commit": {
+        "hash": "15abe0d46f5710df6f565dbb3331033ff44380f0",
+        "message": "M3: job keys and the firesim wrapper (not yet installed)",
+        "date": "2026-11-22T02:42:53+11:00"
+      },
       "issues": [],
       "log": [
         {
@@ -658,6 +667,10 @@
         {
           "date": "2026-11-22",
           "text": "firesim wrapper: infrasetup takes a lease (ETA required), runs your real firesim inside the job with an agent holding only the job key and a private config copy; runworkload reads KOTL RESULT, saves uartlogs, ends the lease."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "User decision: generic design. The firesim wrapper and job template are removed; FireSim stays only as a later admin adapter."
         }
       ]
     },
@@ -674,7 +687,7 @@
         "unit": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-21T15:42:44Z"
+          "ran_at": "2026-11-21T16:09:03Z"
         },
         "hardware": null
       },
@@ -859,18 +872,23 @@
       "milestone": "M3",
       "now": "Code and unit tests done; waiting for the admin to install (deploy/M3-SETUP.md), then the board tests.",
       "code": [
+        "deploy/M3-SETUP.md",
         "deploy/pc/kotl-keys",
         "kotl/ssh.py"
       ],
       "tests": {
         "unit": {
-          "passed": 19,
+          "passed": 21,
           "failed": 0,
-          "ran_at": "2026-11-21T15:42:44Z"
+          "ran_at": "2026-11-21T16:09:03Z"
         },
         "hardware": null
       },
-      "last_commit": null,
+      "last_commit": {
+        "hash": "15abe0d46f5710df6f565dbb3331033ff44380f0",
+        "message": "M3: job keys and the firesim wrapper (not yet installed)",
+        "date": "2026-11-22T02:42:53+11:00"
+      },
       "issues": [
         "Soft lockdown: password logins to virtex-host bypass the queue until full lockdown (user's choice for now)."
       ],
@@ -898,6 +916,10 @@
         {
           "date": "2026-11-22",
           "text": "Job keys: made by job.sh as the user; launcher validates (bare ssh-ed25519) and adds/removes them via kotl-keys (as virtex-host, sudo from kotl); unreachable PC refuses the start and frees the board."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "job.sh gives the command an ssh-agent with only the job key, plus KOTL_JOB/KOTL_BOARD/KOTL_PC; kotl-keys busy for the lease idle guard."
         }
       ]
     }

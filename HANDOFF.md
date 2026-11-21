@@ -22,7 +22,7 @@ Click any box for its commands and config files. The tabs show what Kotl is, whe
 
 ## 2. Architecture in one page
 
-- **Kotl (ours, teal in the view).** The `kotl` CLI, launcher, board registry, health check, ETA notifier, job results, console attach, the kotl SSH key setup, per-job PC access (job keys), a `firesim` wrapper and job template, adapters (FireSim first) on a generic board lease, and a Claude Code plugin.
+- **Kotl (ours, teal in the view).** The `kotl` CLI, launcher, board registry, health check, ETA notifier, job results, console attach, the kotl SSH key setup, per-job PC access (job keys), a generic board lease (`kotl run`, `kotl lease`), admin adapters (later), and a Claude Code plugin.
 - **Slurm (off the shelf, purple).** It runs on the workstation as a single node. Kotl meets it in exactly **four** places:
   1. The CLI uses `sbatch` / `scancel` / `squeue`.
   2. Slurm's job starter runs `deploy/job.sh`, which hands over to the launcher via `sudo -u kotl`.
@@ -38,12 +38,12 @@ Click any box for its commands and config files. The tabs show what Kotl is, whe
 - **ETA:** every job gives one (`--eta`), and it becomes Slurm's `--time`. `OverTimeLimit=UNLIMITED`, so a job is never killed for passing it. `KillWait=120` leaves time for clean stops.
 - **Who can stop a job:** only the owner or root can cancel. The owner's own `--max` (default 2× ETA) and `--idle` are hang guards enforced by the launcher.
 - **Priority (rough, user will tune):** multifactor with fair-share and age, plus admin-only QOS `urgent` and `maint`.
-- **How a batch job ends:** the simulated Linux powers off. The workload has a run script ending in `poweroff`, or an `--expect` script drives it. `kotl firesim submit` refuses a batch job that has neither.
+- **How a job ends (exit plan, decided 2026-11-22):** `kotl run -- CMD` ends the moment CMD exits (for FireSim: the simulated Linux powers off, `runworkload` returns). `kotl lease` ends on `kotl release`. Every job has a cap: the ETA is required and `--max` defaults to 2× ETA; a lease also has an idle guard (nothing of the PC account running for N minutes). A job without an exit plan is refused.
 - **Pass or fail:** the run script prints `KOTL RESULT: PASS` or `KOTL RESULT: FAIL`. The launcher reads it from the console log, and the exit code tells Slurm succeeded or failed.
 - **Clean stop:** every lease ends with the same end step: the adapter's polite `stop` (`firesim kill` for FireSim), then remove the job key, kill every process of the PC account, and only then free the board.
-- **Users' own FireSim (decided 2026-11-22):** users keep their own Chipyard and FireSim; Kotl installs none. A `firesim` wrapper first on PATH queues plain FireSim commands; the user's FireSim runs as them, inside their Slurm job.
+- **Generic, users' own tools (decided 2026-11-22):** users keep their own Chipyard and FireSim and run them unchanged inside `kotl run` or `kotl lease`. No `firesim` wrapper, no PATH tricks, configs untouched. Inside a job the command gets an ssh-agent holding only the job key, plus `KOTL_JOB`, `KOTL_BOARD`, `KOTL_PC`. FireSim stays in Kotl only as a later, admin-only adapter (flash, reset, recover).
 - **PC access follows the job:** a per-job SSH key is added at job start and removed by the end step (with Slurm's `Epilog` as backup), which also closes leftover sessions. No timer closes a job; idle and `--max` guards catch forgotten or hung ones.
-- **Job template:** `kotl new` gives `marshal.json` (FireMarshal, `run` powers off when done), `run.sh` (prints `KOTL RESULT`) and `kotl.json` (mode, ETA, guards, hwdb). `check` refuses batch jobs that can't end by themselves.
+- **Result:** the exit code, or a `KOTL RESULT: PASS`/`FAIL` line if the command prints one.
 - **Board registry:** one SQLite file at `/var/lib/kotl/kotl.db`. States: down → idle → setting_up → busy → draining → maintenance. Boards are claimed atomically.
 - **Results:** `/srv/kotl/out/<user>/<job>/` holds `status.json`, `uartlog`, `launcher.log` and `outputs/`. Only the owner can read it, and it's deleted after 30 days. Remote users get it with `kotl fetch`.
 - **Console attach:** `ssh -t <pc> screen -r fsim0` as kotl, after checking ownership. kotl's `.screenrc` on the PCs blocks new windows.
@@ -56,9 +56,9 @@ Python 3.10+. Only the standard library at runtime where practical: `sqlite3`, `
 
 ```
 kotl/
-  cli/                 # the kotl command: lease/run/release, firesim wrapper, per-adapter subcommands
+  cli/                 # the kotl command: run/lease/release, status, history, logs, fetch, board
   core/                # board lease (launcher, access, guards, end step), registry, results, health, notifier, attach
-  adapters/firesim/    # triggers / check / prepare / stop / collect
+  adapters/firesim/    # later, admin only: flash / reset / check a board
   slurm.py             # the ONLY place that runs Slurm commands
   ssh.py               # the ONLY place that runs ssh/scp/rsync to the PCs
 deploy/                # setup scripts and config templates; the admin runs these
@@ -91,7 +91,7 @@ docs/architecture/
 - Slurm single node: slurmctld, slurmd, slurmdbd with MariaDB, munge. Use the licenses, priority, QOS, `OverTimeLimit`, `KillWait` and health-check lines from the view's `slurm.conf` card.
 - The `kotl` account and `kotl-users` group, the sudoers rule, and `/srv/kotl`, `/var/lib/kotl` with correct ownership.
 - The kotl SSH key, plus the PCs' `sshd_config.d/kotl.conf` and kotl's `.screenrc`. Verify the lockdown: a normal user gets `Permission denied`.
-- The PC's FireSim account and the `kotl-keys` helper for job keys; Slurm `Epilog=`; the `firesim` wrapper on PATH (`/etc/profile.d/kotl.sh`). No shared FireSim install.
+- The PC's FireSim account and the `kotl-keys` helper for job keys; Slurm `Epilog=`. No shared FireSim install.
 - Done when `deploy/verify-m1.sh` passes: `sbatch -L vcu118:1` jobs queue and run, a second one waits for the license, `scancel` by another user is refused, history shows completed and cancelled jobs, and `sudo -u kotl ssh vcu118-pc1 hostname` works. (In soft lockdown, a normal user's password ssh still works on purpose.)
 
 **M2: Board lease end to end (no FPGA)**
@@ -101,11 +101,10 @@ docs/architecture/
 - The results folder and `status.json` per job.
 - Done when: `kotl run -- sleep 30` goes queued → running → done through real Slurm, cancel stops it cleanly, `--max` trips correctly, and two jobs never claim the same board.
 
-**M3: FireSim batch jobs on a real board**
-- The FireSim adapter: triggers (`infrasetup` starts a lease, `runworkload` returning or `firesim kill` ends it), `check` (template: powers off, or `--expect`), `prepare` (per-job `config_runtime.yaml`), `stop` (`firesim kill`), `collect` (results plus the KOTL RESULT marker). Job keys and the PC-side `kotl-keys` helper.
-- `--expect` support, with expect running against the console.
-- Record setup time.
-- Done when: a sample workload passes on VCU118 PC 1 *through Kotl*, a forced hang trips `--max` and leaves the board healthy, and the result shows correctly in Slurm's history.
+**M3: Job keys on the real board; FireSim runs through `kotl run`**
+- Job keys: `job.sh` makes one per job as the user; the launcher adds and removes it on the PC through `kotl-keys` (as virtex-host). The command gets an ssh-agent with only the job key, and `KOTL_JOB`, `KOTL_BOARD`, `KOTL_PC`.
+- The exit plan: the ETA is required, `--max` defaults to 2× ETA, and a lease always has the idle guard (`kotl-keys busy`). The end step stops simulations left on the PC.
+- Done when: the job key works during a lease and is refused after it; `kotl run -- firesim …` with `linux-poweroff` passes from a user's own Chipyard; a run that never ends trips `--max`, leaves no simulation on the PC, and the result shows in `kotl history` and Slurm's history.
 
 **M4: Health check, ETA notices, interactive sessions**
 - `health.sh` run by Slurm, with registry updates, one driver reload attempt, and alerts.
@@ -114,7 +113,7 @@ docs/architecture/
 - Done when: unplugging or breaking a board marks it down and back, and a session can attach, detach and end cleanly.
 
 **M5: Kotl plugin for Claude Code**
-- The skill (kotl commands, expect scripts with timeouts, fetch-then-read-status workflow) and hooks (check that `firesim` is Kotl's wrapper and job folders follow the template, show the queue at session start).
+- The skill (kotl commands, expect scripts with timeouts, fetch-then-read-status workflow) and hooks (suggest `kotl run` around board commands, show the queue at session start).
 - Done when: a fresh Claude Code session on a user's PC can submit, wait, fetch and report a FireSim job using only the plugin.
 
 **Later:** power monitor, usage dashboard, program/reset adapter, board-tests adapter, more boards. **Parked:** same-design board pick.
