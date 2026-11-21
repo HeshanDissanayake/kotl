@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "updated": "2026-11-21T15:23:12Z",
-  "repo_commit": "44c0f22f8c1574d1aef396895de3280dc1c15836",
+  "updated": "2026-11-21T15:26:33Z",
+  "repo_commit": "b59808b0b87513201ec5935b7ddb974797797c9c",
   "watch": [
     "kotl/",
     "deploy/",
@@ -43,7 +43,7 @@
         "unit": {
           "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-21T15:22:58Z"
+          "ran_at": "2026-11-21T15:26:25Z"
         },
         "hardware": null
       },
@@ -75,9 +75,9 @@
       ],
       "tests": {
         "unit": {
-          "passed": 4,
+          "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-21T15:22:58Z"
+          "ran_at": "2026-11-21T15:26:25Z"
         },
         "hardware": null
       },
@@ -113,9 +113,9 @@
       ],
       "tests": {
         "unit": {
-          "passed": 3,
+          "passed": 6,
           "failed": 0,
-          "ran_at": "2026-11-21T15:22:58Z"
+          "ran_at": "2026-11-21T15:26:25Z"
         },
         "hardware": null
       },
@@ -154,9 +154,9 @@
       ],
       "tests": {
         "unit": {
-          "passed": 1,
+          "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-21T15:22:58Z"
+          "ran_at": "2026-11-21T15:26:25Z"
         },
         "hardware": null
       },
@@ -187,9 +187,9 @@
       ],
       "tests": {
         "unit": {
-          "passed": 2,
+          "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-21T15:22:58Z"
+          "ran_at": "2026-11-21T15:26:25Z"
         },
         "hardware": null
       },
@@ -229,9 +229,9 @@
       ],
       "tests": {
         "unit": {
-          "passed": 9,
+          "passed": 14,
           "failed": 0,
-          "ran_at": "2026-11-21T15:22:58Z"
+          "ran_at": "2026-11-21T15:26:25Z"
         },
         "hardware": null
       },
@@ -276,12 +276,12 @@
         "unit": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-21T15:22:58Z"
+          "ran_at": "2026-11-21T15:26:25Z"
         },
         "hardware": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-21T14:59:51Z"
+          "ran_at": "2026-11-21T15:26:25Z"
         }
       },
       "last_commit": {
@@ -321,12 +321,12 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-21T15:22:58Z"
+          "ran_at": "2026-11-21T15:26:25Z"
         },
         "hardware": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-21T14:59:51Z"
+          "ran_at": "2026-11-21T15:26:25Z"
         }
       },
       "last_commit": {
@@ -366,12 +366,12 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-21T15:22:58Z"
+          "ran_at": "2026-11-21T15:26:25Z"
         },
         "hardware": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-21T14:59:51Z"
+          "ran_at": "2026-11-21T15:26:25Z"
         }
       },
       "last_commit": {
@@ -434,17 +434,17 @@
     },
     "registry": {
       "title": "Board registry",
-      "status": "in_progress",
+      "status": "tested",
       "milestone": "M2",
-      "now": "Code and unit tests done; waiting for the admin to run deploy/kotl/install.sh, then the integration tests.",
+      "now": "Live on comparch; unit tests and the real-Slurm integration tests pass.",
       "code": [
         "kotl/core/registry.py"
       ],
       "tests": {
         "unit": {
-          "passed": 5,
+          "passed": 6,
           "failed": 0,
-          "ran_at": "2026-11-21T15:22:58Z"
+          "ran_at": "2026-11-21T15:26:25Z"
         },
         "hardware": null
       },
@@ -458,14 +458,18 @@
         {
           "date": "2026-11-22",
           "text": "SQLite registry: atomic claim (BEGIN IMMEDIATE), release, drain to maintenance, job records; 12-process claim race test."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "Integration tests through real Slurm: 7/7 passed (run, exit code, cancel, --max trips, two jobs never share, lease/release, fetch/history)."
         }
       ]
     },
     "launcher": {
       "title": "Launcher · board lease",
-      "status": "in_progress",
+      "status": "tested",
       "milestone": "M2",
-      "now": "Code and unit tests done; waiting for the admin to run deploy/kotl/install.sh, then the integration tests.",
+      "now": "Live on comparch; unit tests and the real-Slurm integration tests pass.",
       "code": [
         "deploy/M2-SETUP.md",
         "deploy/job.sh",
@@ -475,20 +479,18 @@
       ],
       "tests": {
         "unit": {
-          "passed": 26,
+          "passed": 29,
           "failed": 0,
-          "ran_at": "2026-11-21T15:22:58Z"
+          "ran_at": "2026-11-21T15:26:25Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "3556e18cebdfde61e2bea72632158eb235869933",
-        "message": "M2: board lease code (registry, launcher, kotl CLI, results) and its installer",
-        "date": "2026-11-22T02:10:38+11:00"
+        "hash": "b59808b0b87513201ec5935b7ddb974797797c9c",
+        "message": "M2 fixes from the first real Slurm run",
+        "date": "2026-11-22T02:23:12+11:00"
       },
-      "issues": [
-        "Fixes need a re-run of deploy/kotl/install.sh before the integration tests can pass."
-      ],
+      "issues": [],
       "log": [
         {
           "date": "2026-11-22",
@@ -509,14 +511,18 @@
         {
           "date": "2026-11-22",
           "text": "Integration run found: the watcher refused itself (inherited SUDO_USER), so --max never tripped. Fixed: watcher starts without SUDO_* variables."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "Integration tests through real Slurm: 7/7 passed (run, exit code, cancel, --max trips, two jobs never share, lease/release, fetch/history)."
         }
       ]
     },
     "cli": {
       "title": "kotl CLI",
-      "status": "in_progress",
+      "status": "tested",
       "milestone": "M2",
-      "now": "Code and unit tests done; waiting for the admin to run deploy/kotl/install.sh, then the integration tests.",
+      "now": "Live on comparch; unit tests and the real-Slurm integration tests pass.",
       "code": [
         "deploy/profile.d/",
         "kotl/cli/",
@@ -524,16 +530,16 @@
       ],
       "tests": {
         "unit": {
-          "passed": 15,
+          "passed": 17,
           "failed": 0,
-          "ran_at": "2026-11-21T15:22:58Z"
+          "ran_at": "2026-11-21T15:26:25Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "3556e18cebdfde61e2bea72632158eb235869933",
-        "message": "M2: board lease code (registry, launcher, kotl CLI, results) and its installer",
-        "date": "2026-11-22T02:10:38+11:00"
+        "hash": "b59808b0b87513201ec5935b7ddb974797797c9c",
+        "message": "M2 fixes from the first real Slurm run",
+        "date": "2026-11-22T02:23:12+11:00"
       },
       "issues": [],
       "log": [
@@ -556,22 +562,26 @@
         {
           "date": "2026-11-22",
           "text": "Integration run found: jobs shorter than the 2 s poll looked like they never started, and status printed out of order. Fixed both."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "Integration tests through real Slurm: 7/7 passed (run, exit code, cancel, --max trips, two jobs never share, lease/release, fetch/history)."
         }
       ]
     },
     "results": {
       "title": "Job results",
-      "status": "in_progress",
+      "status": "tested",
       "milestone": "M2",
-      "now": "Code and unit tests done; waiting for the admin to run deploy/kotl/install.sh, then the integration tests.",
+      "now": "Live on comparch; unit tests and the real-Slurm integration tests pass.",
       "code": [
         "kotl/core/results.py"
       ],
       "tests": {
         "unit": {
-          "passed": 3,
+          "passed": 4,
           "failed": 0,
-          "ran_at": "2026-11-21T15:22:58Z"
+          "ran_at": "2026-11-21T15:26:25Z"
         },
         "hardware": null
       },
@@ -585,6 +595,10 @@
         {
           "date": "2026-11-22",
           "text": "/srv/kotl/out/<user>/<job>/ (0700): status.json, output.log, launcher.log, outputs/; fetch as tarball; purge after keep_days."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "Integration tests through real Slurm: 7/7 passed (run, exit code, cancel, --max trips, two jobs never share, lease/release, fetch/history)."
         }
       ]
     },
@@ -635,7 +649,7 @@
         "unit": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-21T15:22:58Z"
+          "ran_at": "2026-11-21T15:26:25Z"
         },
         "hardware": null
       },

@@ -2,7 +2,7 @@
  "schema": 1,
  "title": "Kotl Architecture",
  "intro": "Teal is Kotl, our product. Purple is Slurm. Gray is everything else off the shelf, plus the hardware. The dot on each box is its build status; click a box for exactly what's happening.",
- "latest": "Latest: M2 code is written (board lease, registry, kotl CLI, results). Waiting for deploy/kotl/install.sh, then the integration tests through real Slurm.",
+ "latest": "Latest: M2 done. The board lease works end to end through real Slurm: kotl run, lease and release, cancel, the --max guard, and one board per job. No FPGA touched yet.",
  "canvas": {
   "w": 1520,
   "h": 820
