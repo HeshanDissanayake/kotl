@@ -2,7 +2,7 @@
  "schema": 1,
  "title": "Kotl Architecture",
  "intro": "Teal is Kotl, our product. Purple is Slurm. Gray is everything else off the shelf, plus the hardware. The dot on each box is its build status; click a box for exactly what's happening.",
- "latest": "Latest: M1 done. Slurm, MariaDB, the kotl account and key, and the PC's kotl login are live on comparch and 192.168.1.2, and verify-m1.sh passed all 21 checks.",
+ "latest": "Latest: M2 code is written (board lease, registry, kotl CLI, results). Waiting for deploy/kotl/install.sh, then the integration tests through real Slurm.",
  "canvas": {
   "w": 1520,
   "h": 820
@@ -1578,6 +1578,7 @@
    "what": "The core of Kotl: a generic board lease. It knows nothing about FireSim. Slurm starts it for every job; it claims a board, gives the owner SSH access for the job's lifetime, and always cleans up.",
    "bullets": [
     "Confirms the Slurm job is real and belongs to the caller.",
+    "<b>Install:</b> <code>sudo deploy/kotl/install.sh --board vcu118-pc1=vcu118@vcu118-pc1</code> copies the package to <code>/opt/kotl/lib</code> (root-owned) and installs <code>/opt/kotl/launch</code>, the only program users may run as kotl.",
     "<b>Start:</b> claims an idle, healthy board in the registry, then adds this job's key to the board's PC.",
     "<b>During:</b> the owner (and any tool they run: FireSim, Vivado, scripts) reaches the PC with the job key. An adapter can add start/end triggers and checks.",
     "<b>The lease ends when the work ends:</b> the adapter's end trigger (e.g. FireSim's <code>runworkload</code> returns), <code>kotl release</code>, the command of <code>kotl run</code> exits, or cancel. No timer closes it.",
@@ -2184,7 +2185,9 @@
     "<code>/etc/ssh/ssh_config.d/kotl.conf</code>: <code>ssh vcu118-pc1</code> uses your job key during a lease <i>(new · M3)</i>",
     "<code>/etc/kotl/kotl.conf</code>: Kotl settings: lockdown mode, admin, PC account, idle time <i>(new · M1)</i>",
     "<code>/etc/systemd/system/kotl-notifier.{service,timer}</code>: runs the notifier every minute <i>(new · M4)</i>",
-    "<code>/opt/kotl/</code>: Kotl's programs. M1 puts in <code>epilog.sh</code> and <code>health.sh</code> as no-op placeholders (Slurm needs them to exist); launch, attach, bin/firesim and adapters/ follow in M2–M3 <i>(new · M1–M3)</i>",
+    "<code>/opt/kotl/</code>: Kotl's code. M1: no-op <code>epilog.sh</code>, <code>health.sh</code>. M2: <code>lib/kotl/</code> (the package, root-owned), <code>launch</code>, <code>job.sh</code>, real <code>epilog.sh</code>, <code>bin/kotl</code>. M3: <code>bin/firesim</code>, adapters <i>(new · M1–M3)</i>",
+    "<code>/usr/local/bin/kotl</code>: link to <code>/opt/kotl/bin/kotl</code>, so everyone has the command <i>(new · M2, deploy/kotl/install.sh)</i>",
+    "<b>Slurm:</b> the <code>kotl</code> account becomes an operator, so its guards can cancel a hung job <i>(M2)</i>",
     "<code>/var/lib/kotl/</code>: board registry kotl.db (owner kotl; folder M1, database M2) <i>(new · M1)</i>",
     "<code>/srv/kotl/</code>: jobs/ and out/&lt;user&gt;/&lt;job&gt;/, owner-only, deleted after 30 days (folders M1) <i>(new · M1)</i>",
     "<code>/run/kotl/keys/</code>: job keys while a lease is held (tmpfs, gone on reboot) <i>(new · M3)</i>",
@@ -2262,8 +2265,8 @@
    "name": "job.sh",
    "path": "/opt/kotl/",
    "ext": "sh",
-   "desc": "What Slurm runs for every Kotl job",
-   "body": "#!/bin/sh\n# Slurm runs this as the submitting user, inside their job.\n# 1) Kotl (as kotl) claims a board and adds this job's key to its PC\nsudo -u kotl /opt/kotl/launch start \"$SLURM_JOB_ID\" \"$1\" || exit 1\n# 2) the adapter's hooks, or your kotl run command; runs as you\n/opt/kotl/run-adapter \"$SLURM_JOB_ID\" \"$1\"; rc=$?\n# 3) end step: stop leftovers, remove the key, free the board\nsudo -u kotl /opt/kotl/launch end \"$SLURM_JOB_ID\"\nexit $rc"
+   "desc": "What Slurm runs for every Kotl job, as the user: start (claim), your command, end step",
+   "body": "#!/bin/bash\n# managed by kotl (deploy/kotl/install.sh)\n# What Slurm runs for every Kotl job, as the submitting user, inside their job:\n#   1) the launcher (as kotl) checks the job is yours, claims a board, starts the guards\n#   2) your command runs as you; its output goes to the job's output.log\n#   3) the end step: frees the board and writes status.json (Slurm's epilog repeats it)\n# Settings come from the kotl CLI: KOTL_MODE (run|lease), KOTL_MAX and KOTL_IDLE (seconds).\nset -u\nJOB=${SLURM_JOB_ID:?not inside a Slurm job}\nread -r -a LAUNCH <<<\"${KOTL_LAUNCH:-sudo -n -u kotl /opt/kotl/launch}\"\n\n\"${LAUNCH[@]}\" start \"$JOB\" --mode \"${KOTL_MODE:-run}\" \\\n  ${KOTL_MAX:+--max \"$KOTL_MAX\"} ${KOTL_IDLE:+--idle \"$KOTL_IDLE\"} --command \"$*\" || exit 1\n\nstopping=0 pid=\"\"\non_stop() { stopping=1; [ -n \"$pid\" ] && kill -TERM \"$pid\" 2>/dev/null; }\ntrap on_stop TERM INT HUP\n\n# your command's output goes through a pipe to the launcher, which owns the log file\nfifo=$(mktemp -u \"${TMPDIR:-/tmp}/kotl-$JOB.XXXXXX\")\nmkfifo -m 600 \"$fifo\"\n\"${LAUNCH[@]}\" log \"$JOB\" <\"$fifo\" &\nlogpid=$!\n\"$@\" >\"$fifo\" 2>&1 &\npid=$!\nrc=0\nwhile :; do\n  wait \"$pid\"; rc=$?\n  kill -0 \"$pid\" 2>/dev/null || break   # wait returns early when a signal arrives\ndone\n# let the log writer drain (at most 10 s, in case something still holds the pipe open)\nfor _ in $(seq 1 50); do kill -0 \"$logpid\" 2>/dev/null || break; sleep 0.2; done\nkill \"$logpid\" 2>/dev/null; wait \"$logpid\" 2>/dev/null\nrm -f \"$fifo\"\n\nif [ \"$stopping\" = 1 ]; then\n  \"${LAUNCH[@]}\" end \"$JOB\" --signal\nelse\n  \"${LAUNCH[@]}\" end \"$JOB\" --rc \"$rc\"\nfi\nexit \"$rc\""
   },
   "sudoers": {
    "name": "kotl",
@@ -2388,8 +2391,8 @@
    "name": "epilog.sh",
    "path": "/opt/kotl/ (Epilog= in slurm.conf)",
    "ext": "sh",
-   "desc": "Slurm runs this after every job. M1: a no-op placeholder; M2: the end step again, as a backup",
-   "body": "#!/bin/sh\n# Run by Slurm as root after each job. Safe to run twice.\nexec runuser -u kotl -- /opt/kotl/launch end \"$SLURM_JOB_ID\""
+   "desc": "Slurm runs this after every job, even if job.sh was killed: the end step again",
+   "body": "#!/bin/sh\n# managed by kotl (deploy/kotl/install.sh)\n# Slurm runs this as root after every job (Epilog= in slurm.conf): Kotl's end step again,\n# as a backup in case job.sh was killed. It does nothing for jobs that aren't Kotl's.\n# It must always exit 0, or Slurm drains the node.\n[ -x /opt/kotl/launch ] && runuser -u kotl -- /opt/kotl/launch end \"${SLURM_JOB_ID:-0}\" --epilog >/dev/null 2>&1\nexit 0"
   },
   "authkeys": {
    "name": "authorized_keys",

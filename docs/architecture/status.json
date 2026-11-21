@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "updated": "2026-11-21T15:01:00Z",
-  "repo_commit": "ec2e56a00cd3fbf08b0698be288665e710c9d993",
+  "updated": "2026-11-21T15:10:37Z",
+  "repo_commit": "f0570143516cdf3e04e290f939d0b08ff7510c62",
   "watch": [
     "kotl/",
     "deploy/",
@@ -31,7 +31,7 @@
   "features": {
     "tooling": {
       "title": "Repo tooling",
-      "status": "tested",
+      "status": "failing",
       "milestone": "M0",
       "now": "Hook enabled, package skeleton in place, tooling covered by tests/unit/test_tooling.py.",
       "code": [
@@ -41,9 +41,9 @@
       ],
       "tests": {
         "unit": {
-          "passed": 9,
-          "failed": 0,
-          "ran_at": "2026-11-21T14:59:51Z"
+          "passed": 8,
+          "failed": 1,
+          "ran_at": "2026-11-21T15:10:37Z"
         },
         "hardware": null
       },
@@ -71,9 +71,9 @@
       ],
       "tests": {
         "unit": {
-          "passed": 8,
+          "passed": 4,
           "failed": 0,
-          "ran_at": "2026-11-21T14:59:51Z"
+          "ran_at": "2026-11-21T15:10:37Z"
         },
         "hardware": null
       },
@@ -109,9 +109,9 @@
       ],
       "tests": {
         "unit": {
-          "passed": 5,
+          "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-21T14:59:51Z"
+          "ran_at": "2026-11-21T15:10:37Z"
         },
         "hardware": null
       },
@@ -133,6 +133,10 @@
         {
           "date": "2026-11-22",
           "text": "Admin ran the M1 scripts; deploy/verify-m1.sh: all checks passed."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "epilog.sh now runs the end step (runuser kotl, launch end --epilog); always exits 0."
         }
       ]
     },
@@ -146,9 +150,9 @@
       ],
       "tests": {
         "unit": {
-          "passed": 3,
+          "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-21T14:59:51Z"
+          "ran_at": "2026-11-21T15:10:37Z"
         },
         "hardware": null
       },
@@ -179,9 +183,9 @@
       ],
       "tests": {
         "unit": {
-          "passed": 5,
+          "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-21T14:59:51Z"
+          "ran_at": "2026-11-21T15:10:37Z"
         },
         "hardware": null
       },
@@ -221,16 +225,16 @@
       ],
       "tests": {
         "unit": {
-          "passed": 14,
+          "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-21T14:59:51Z"
+          "ran_at": "2026-11-21T15:10:37Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "ec2e56a00cd3fbf08b0698be288665e710c9d993",
-        "message": "M1: admin run sheet deploy/M1-SETUP.md",
-        "date": "2026-11-22T01:53:45+11:00"
+        "hash": "f0570143516cdf3e04e290f939d0b08ff7510c62",
+        "message": "M1 done: scripts run by the admin, verify-m1.sh 21/21 passed",
+        "date": "2026-11-22T02:01:39+11:00"
       },
       "issues": [],
       "log": [
@@ -268,7 +272,7 @@
         "unit": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-21T14:59:51Z"
+          "ran_at": "2026-11-21T15:10:37Z"
         },
         "hardware": {
           "passed": 2,
@@ -313,7 +317,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-21T14:59:51Z"
+          "ran_at": "2026-11-21T15:10:37Z"
         },
         "hardware": {
           "passed": 1,
@@ -358,7 +362,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-21T14:59:51Z"
+          "ran_at": "2026-11-21T15:10:37Z"
         },
         "hardware": {
           "passed": 1,
@@ -426,31 +430,47 @@
     },
     "registry": {
       "title": "Board registry",
-      "status": "planned",
+      "status": "in_progress",
       "milestone": "M2",
-      "now": "",
+      "now": "Code and unit tests done; waiting for the admin to run deploy/kotl/install.sh, then the integration tests.",
       "code": [
         "kotl/core/registry.py"
       ],
       "tests": {
-        "unit": null,
+        "unit": {
+          "passed": 5,
+          "failed": 0,
+          "ran_at": "2026-11-21T15:10:37Z"
+        },
         "hardware": null
       },
       "last_commit": null,
       "issues": [],
-      "log": []
+      "log": [
+        {
+          "date": "2026-11-22",
+          "text": "SQLite registry: atomic claim (BEGIN IMMEDIATE), release, drain to maintenance, job records; 12-process claim race test."
+        }
+      ]
     },
     "launcher": {
       "title": "Launcher · board lease",
-      "status": "planned",
+      "status": "in_progress",
       "milestone": "M2",
-      "now": "",
+      "now": "Code and unit tests done; waiting for the admin to run deploy/kotl/install.sh, then the integration tests.",
       "code": [
-        "kotl/core/launcher.py",
-        "deploy/job.sh"
+        "deploy/M2-SETUP.md",
+        "deploy/job.sh",
+        "deploy/kotl/",
+        "kotl/core/config.py",
+        "kotl/core/launcher.py"
       ],
       "tests": {
-        "unit": null,
+        "unit": {
+          "passed": 25,
+          "failed": 0,
+          "ran_at": "2026-11-21T15:10:37Z"
+        },
         "hardware": null
       },
       "last_commit": null,
@@ -467,21 +487,29 @@
         {
           "date": "2026-11-22",
           "text": "Design: in soft lockdown the end step kills only the job's sessions and simulations."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "Lease: start (ownership, license, claim), log, end step (idempotent; epilog backup), watcher guards (--max, --idle) via scancel as Slurm operator; job.sh with a FIFO log pipe; deploy/kotl/install.sh."
         }
       ]
     },
     "cli": {
       "title": "kotl CLI",
-      "status": "planned",
+      "status": "in_progress",
       "milestone": "M2",
-      "now": "",
+      "now": "Code and unit tests done; waiting for the admin to run deploy/kotl/install.sh, then the integration tests.",
       "code": [
         "deploy/profile.d/",
         "kotl/cli/",
         "kotl/slurm.py"
       ],
       "tests": {
-        "unit": null,
+        "unit": {
+          "passed": 13,
+          "failed": 0,
+          "ran_at": "2026-11-21T15:10:37Z"
+        },
         "hardware": null
       },
       "last_commit": null,
@@ -498,24 +526,37 @@
         {
           "date": "2026-11-22",
           "text": "Lab answer: ETA is required (--eta, kotl.json or KOTL_ETA)."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "kotl run / lease / release / status / cancel / history / logs -f / fetch / board; ETA required; Slurm calls only in kotl/slurm.py."
         }
       ]
     },
     "results": {
       "title": "Job results",
-      "status": "planned",
+      "status": "in_progress",
       "milestone": "M2",
-      "now": "",
+      "now": "Code and unit tests done; waiting for the admin to run deploy/kotl/install.sh, then the integration tests.",
       "code": [
         "kotl/core/results.py"
       ],
       "tests": {
-        "unit": null,
+        "unit": {
+          "passed": 3,
+          "failed": 0,
+          "ran_at": "2026-11-21T15:10:37Z"
+        },
         "hardware": null
       },
       "last_commit": null,
       "issues": [],
-      "log": []
+      "log": [
+        {
+          "date": "2026-11-22",
+          "text": "/srv/kotl/out/<user>/<job>/ (0700): status.json, output.log, launcher.log, outputs/; fetch as tarball; purge after keep_days."
+        }
+      ]
     },
     "fsmod": {
       "title": "FireSim adapter",
@@ -564,7 +605,7 @@
         "unit": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-21T14:59:51Z"
+          "ran_at": "2026-11-21T15:10:37Z"
         },
         "hardware": null
       },

@@ -15,6 +15,7 @@ SCRIPTS = {  # script -> feature it belongs to
     "lib.sh": "os", "accounts.sh": "os", "verify-m1.sh": "os",
     "slurm/install.sh": "queue", "epilog.sh": "starter", "health.sh": "health",
     "ssh/setup-kotl-key.sh": "key", "pc/setup.sh": "pc1", "firesim/check.sh": "firesim",
+    "kotl/install.sh": "launcher", "job.sh": "launcher",
 }
 
 
@@ -227,3 +228,33 @@ def test_firesim_check_is_read_only():
     body = text.split('check "kotl login"')[1]
     for word in ("rm ", "sed -i", "install ", "chmod", "tee ", "useradd", "systemctl"):
         assert word not in body
+
+
+# ---- kotl/install.sh (launcher)
+
+@pytest.mark.feature("launcher")
+def test_kotl_install_dry_run(tmp_path):
+    r = dry("kotl/install.sh", "--board", "vcu118-pc1=vcu118@vcu118-pc1", root=tmp_path)
+    assert (tmp_path / "opt/kotl/lib/kotl/core/launcher.py").exists()
+    assert not list((tmp_path / "opt/kotl/lib").rglob("__pycache__"))
+    launch = (tmp_path / "opt/kotl/launch").read_text()
+    assert launch.startswith("#!/usr/bin/python3 -I") and "kotl.core.launcher" in launch
+    assert "kotl.cli.main" in (tmp_path / "opt/kotl/bin/kotl").read_text()
+    assert (tmp_path / "opt/kotl/job.sh").read_text() == (DEPLOY / "job.sh").read_text()
+    assert "adminlevel=Operator" in r.stdout
+    assert "board-add vcu118-pc1 vcu118 vcu118-pc1" in r.stdout
+
+
+@pytest.mark.feature("launcher")
+def test_kotl_install_bad_board(tmp_path):
+    r = dry("kotl/install.sh", "--board", "vcu118-pc1", root=tmp_path, check=False)
+    assert r.returncode != 0 and "NAME=TYPE@HOST" in r.stderr
+
+
+@pytest.mark.feature("launcher")
+def test_kotl_undo_leaves_noop_epilog(tmp_path):
+    dry("kotl/install.sh", root=tmp_path)
+    dry("kotl/install.sh", "--undo", root=tmp_path)
+    ep = tmp_path / "opt/kotl/epilog.sh"
+    assert ep.exists() and subprocess.run(["sh", str(ep)]).returncode == 0
+    assert not (tmp_path / "opt/kotl/launch").exists()
