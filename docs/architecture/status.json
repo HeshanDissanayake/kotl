@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "updated": "2026-11-21T12:00:00Z",
-  "repo_commit": null,
+  "updated": "2026-11-21T12:58:20Z",
+  "repo_commit": "9eaa0aa27b6e80d37b6298c1e334fe30a08b98e6",
   "watch": [
     "kotl/",
     "deploy/",
@@ -31,21 +31,34 @@
   "features": {
     "tooling": {
       "title": "Repo tooling",
-      "status": "planned",
+      "status": "tested",
       "milestone": "M0",
-      "now": "",
+      "now": "Hook enabled, package skeleton in place, tooling covered by tests/unit/test_tooling.py.",
       "code": [
         "tools/",
         "tests/conftest.py",
         ".githooks/pre-commit"
       ],
       "tests": {
-        "unit": null,
+        "unit": {
+          "passed": 9,
+          "failed": 0,
+          "ran_at": "2026-11-21T12:58:20Z"
+        },
         "hardware": null
       },
-      "last_commit": null,
+      "last_commit": {
+        "hash": "9eaa0aa27b6e80d37b6298c1e334fe30a08b98e6",
+        "message": "Add Kotl handoff: design view, status tooling, pre-commit check",
+        "date": "2026-11-21T23:57:47+11:00"
+      },
       "issues": [],
-      "log": [],
+      "log": [
+        {
+          "date": "2026-11-21",
+          "text": "M0: enabled .githooks, added kotl/ skeleton, pytest.ini and 9 tagged tests proving the hook refuses unstatused and unowned code and refresh turns built features green."
+        }
+      ],
       "drawn": false
     },
     "queue": {
