@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "updated": "2026-11-21T15:26:33Z",
-  "repo_commit": "b59808b0b87513201ec5935b7ddb974797797c9c",
+  "updated": "2026-11-21T15:42:53Z",
+  "repo_commit": "ac769390459bc2ff971a3509b5fc4a1059bc2a6c",
   "watch": [
     "kotl/",
     "deploy/",
@@ -43,7 +43,7 @@
         "unit": {
           "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-21T15:26:25Z"
+          "ran_at": "2026-11-21T15:42:44Z"
         },
         "hardware": null
       },
@@ -77,7 +77,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-21T15:26:25Z"
+          "ran_at": "2026-11-21T15:42:44Z"
         },
         "hardware": null
       },
@@ -115,7 +115,7 @@
         "unit": {
           "passed": 6,
           "failed": 0,
-          "ran_at": "2026-11-21T15:26:25Z"
+          "ran_at": "2026-11-21T15:42:44Z"
         },
         "hardware": null
       },
@@ -156,7 +156,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-21T15:26:25Z"
+          "ran_at": "2026-11-21T15:42:44Z"
         },
         "hardware": null
       },
@@ -189,7 +189,7 @@
         "unit": {
           "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-21T15:26:25Z"
+          "ran_at": "2026-11-21T15:42:44Z"
         },
         "hardware": null
       },
@@ -231,7 +231,7 @@
         "unit": {
           "passed": 14,
           "failed": 0,
-          "ran_at": "2026-11-21T15:26:25Z"
+          "ran_at": "2026-11-21T15:42:44Z"
         },
         "hardware": null
       },
@@ -276,12 +276,12 @@
         "unit": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-21T15:26:25Z"
+          "ran_at": "2026-11-21T15:42:44Z"
         },
         "hardware": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-21T15:26:25Z"
+          "ran_at": "2026-11-21T15:42:44Z"
         }
       },
       "last_commit": {
@@ -321,12 +321,12 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-21T15:26:25Z"
+          "ran_at": "2026-11-21T15:42:44Z"
         },
         "hardware": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-21T15:26:25Z"
+          "ran_at": "2026-11-21T15:42:44Z"
         }
       },
       "last_commit": {
@@ -366,12 +366,12 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-21T15:26:25Z"
+          "ran_at": "2026-11-21T15:42:44Z"
         },
         "hardware": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-21T15:26:25Z"
+          "ran_at": "2026-11-21T15:42:44Z"
         }
       },
       "last_commit": {
@@ -404,6 +404,10 @@
         {
           "date": "2026-11-22",
           "text": "Admin ran the M1 scripts; deploy/verify-m1.sh: all checks passed."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "pc/setup.sh --keys-helper installs kotl-keys and one sudoers line (M3)."
         }
       ]
     },
@@ -444,7 +448,7 @@
         "unit": {
           "passed": 6,
           "failed": 0,
-          "ran_at": "2026-11-21T15:26:25Z"
+          "ran_at": "2026-11-21T15:42:44Z"
         },
         "hardware": null
       },
@@ -462,6 +466,10 @@
         {
           "date": "2026-11-22",
           "text": "Integration tests through real Slurm: 7/7 passed (run, exit code, cancel, --max trips, two jobs never share, lease/release, fetch/history)."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "jobs.pc_address column (migrates the M2 database in place)."
         }
       ]
     },
@@ -481,7 +489,7 @@
         "unit": {
           "passed": 29,
           "failed": 0,
-          "ran_at": "2026-11-21T15:26:25Z"
+          "ran_at": "2026-11-21T15:42:44Z"
         },
         "hardware": null
       },
@@ -515,6 +523,10 @@
         {
           "date": "2026-11-22",
           "text": "Integration tests through real Slurm: 7/7 passed (run, exit code, cancel, --max trips, two jobs never share, lease/release, fetch/history)."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "M3: start --pubkey, grant/revoke access, owner-only 'result' and 'put' subcommands."
         }
       ]
     },
@@ -530,9 +542,9 @@
       ],
       "tests": {
         "unit": {
-          "passed": 17,
+          "passed": 19,
           "failed": 0,
-          "ran_at": "2026-11-21T15:26:25Z"
+          "ran_at": "2026-11-21T15:42:44Z"
         },
         "hardware": null
       },
@@ -566,6 +578,10 @@
         {
           "date": "2026-11-22",
           "text": "Integration tests through real Slurm: 7/7 passed (run, exit code, cancel, --max trips, two jobs never share, lease/release, fetch/history)."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "profile.d puts /opt/kotl/bin first; slurm.run_in_job (srun --overlap) for steps inside a lease."
         }
       ]
     },
@@ -581,7 +597,7 @@
         "unit": {
           "passed": 4,
           "failed": 0,
-          "ran_at": "2026-11-21T15:26:25Z"
+          "ran_at": "2026-11-21T15:42:44Z"
         },
         "hardware": null
       },
@@ -604,15 +620,20 @@
     },
     "fsmod": {
       "title": "FireSim adapter",
-      "status": "planned",
+      "status": "in_progress",
       "milestone": "M3",
-      "now": "",
+      "now": "Code and unit tests done; waiting for the admin to install (deploy/M3-SETUP.md), then the board tests.",
       "code": [
+        "deploy/M3-SETUP.md",
         "deploy/templates/",
         "kotl/adapters/firesim/"
       ],
       "tests": {
-        "unit": null,
+        "unit": {
+          "passed": 11,
+          "failed": 0,
+          "ran_at": "2026-11-21T15:42:44Z"
+        },
         "hardware": null
       },
       "last_commit": null,
@@ -633,6 +654,10 @@
         {
           "date": "2026-11-22",
           "text": "Lab answer: M3 smoke test is linux-poweroff on xilinx_vcu118_firesim_rocket_singlecore_4GB_no_nic."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "firesim wrapper: infrasetup takes a lease (ETA required), runs your real firesim inside the job with an agent holding only the job key and a private config copy; runworkload reads KOTL RESULT, saves uartlogs, ends the lease."
         }
       ]
     },
@@ -649,7 +674,7 @@
         "unit": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-21T15:26:25Z"
+          "ran_at": "2026-11-21T15:42:44Z"
         },
         "hardware": null
       },
@@ -830,15 +855,19 @@
     },
     "access": {
       "title": "PC access (job keys)",
-      "status": "planned",
+      "status": "in_progress",
       "milestone": "M3",
-      "now": "",
+      "now": "Code and unit tests done; waiting for the admin to install (deploy/M3-SETUP.md), then the board tests.",
       "code": [
-        "kotl/core/access.py",
-        "deploy/pc/kotl-keys"
+        "deploy/pc/kotl-keys",
+        "kotl/ssh.py"
       ],
       "tests": {
-        "unit": null,
+        "unit": {
+          "passed": 19,
+          "failed": 0,
+          "ran_at": "2026-11-21T15:42:44Z"
+        },
         "hardware": null
       },
       "last_commit": null,
@@ -865,6 +894,10 @@
         {
           "date": "2026-11-22",
           "text": "Design: kotl-keys helper and PC sudoers rule shown as file cards."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "Job keys: made by job.sh as the user; launcher validates (bare ssh-ed25519) and adds/removes them via kotl-keys (as virtex-host, sudo from kotl); unreachable PC refuses the start and frees the board."
         }
       ]
     }

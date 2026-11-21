@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS boards (
 CREATE TABLE IF NOT EXISTS jobs (
   job_id INTEGER PRIMARY KEY, user TEXT NOT NULL, mode TEXT NOT NULL, board TEXT,
   eta INTEGER, max INTEGER, idle INTEGER, started REAL, ended REAL,
-  reason TEXT, result TEXT, rc INTEGER, command TEXT
+  reason TEXT, result TEXT, rc INTEGER, command TEXT, pc_address TEXT
 );
 """
 
@@ -33,6 +33,9 @@ class Registry:
         self.db = sqlite3.connect(path, timeout=30, isolation_level=None)
         self.db.row_factory = sqlite3.Row
         self.db.executescript(SCHEMA)
+        cols = {r["name"] for r in self.db.execute("PRAGMA table_info(jobs)")}
+        if "pc_address" not in cols:   # added in M3
+            self.db.execute("ALTER TABLE jobs ADD COLUMN pc_address TEXT")
         if new:
             os.chmod(path, 0o600)
 
@@ -103,6 +106,9 @@ class Registry:
     def job(self, job_id):
         r = self.db.execute("SELECT * FROM jobs WHERE job_id=?", (job_id,)).fetchone()
         return dict(r) if r else None
+
+    def set_address(self, job_id, address):
+        self.db.execute("UPDATE jobs SET pc_address=? WHERE job_id=?", (address, job_id))
 
     def set_reason(self, job_id, reason):
         """First reason wins: a guard that trips sets why, and a later cancel doesn't overwrite it."""

@@ -4,13 +4,16 @@
 #   sudo bash setup.sh --key 'ssh-ed25519 AAAA... kotl@comparch'
 #       adds a 'kotl' account (key login only, no password) with that public key.
 #       Nothing else changes: sshd, passwords, virtex-host and its keys stay as they are.
+#   sudo bash setup.sh --keys-helper /tmp/kotl-keys      (M3, with kotl-keys copied next to it)
+#       installs /usr/local/bin/kotl-keys and one sudoers line: kotl may run only kotl-keys,
+#       as the FireSim account (virtex-host). Can be combined with --key.
 #   sudo bash setup.sh --undo
-#       deletes the kotl account and its home folder
+#       deletes the kotl account, kotl-keys and the sudoers line
 #
 # Add --dry-run to preview without changing anything.
 set -euo pipefail
 
-DRY=0 ACTION=install KEY=""
+DRY=0 ACTION=install KEY="" HELPER="" ACCOUNT=virtex-host
 say() { printf 'kotl-pc: %s\n' "$*"; }
 die() { printf 'kotl-pc: error: %s\n' "$*" >&2; exit 1; }
 run() { if [ "$DRY" = 1 ]; then printf 'would run: %s\n' "$*"; else "$@"; fi; }
@@ -20,6 +23,8 @@ while [ $# -gt 0 ]; do
     --dry-run) DRY=1 ;;
     --undo) ACTION=undo ;;
     --key) KEY=${2:-}; shift ;;
+    --keys-helper) HELPER=${2:-}; shift ;;
+    --account) ACCOUNT=${2:-}; shift ;;
     -h|--help) sed -n '2,11p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) die "unknown option $1" ;;
   esac
@@ -28,8 +33,29 @@ done
 [ "$DRY" = 1 ] || [ "$(id -u)" = 0 ] || die "run as root (sudo bash $0 ...), or add --dry-run"
 
 if [ "$ACTION" = undo ]; then
+  run rm -f /usr/local/bin/kotl-keys /etc/sudoers.d/kotl
   if getent passwd kotl >/dev/null; then run userdel --remove kotl; else say "no kotl account here"; fi
   exit 0
+fi
+
+if [ -n "$HELPER" ]; then
+  [ -f "$HELPER" ] || die "--keys-helper: no file $HELPER"
+  head -n 3 "$HELPER" | grep -q 'managed by kotl' || die "--keys-helper: $HELPER is not Kotl's kotl-keys"
+  getent passwd "$ACCOUNT" >/dev/null || die "no account $ACCOUNT on this PC"
+  command -v flock >/dev/null || die "kotl-keys needs flock (util-linux)"
+  run install -m 755 -o root -g root "$HELPER" /usr/local/bin/kotl-keys
+  rule="kotl ALL=($ACCOUNT) NOPASSWD: /usr/local/bin/kotl-keys"
+  if [ "$DRY" = 1 ]; then
+    say "would write /etc/sudoers.d/kotl (440): $rule"
+  else
+    tmp=$(mktemp)
+    printf '# managed by kotl (deploy/pc/setup.sh)\n%s\n' "$rule" >"$tmp"
+    visudo -cf "$tmp" >/dev/null || { rm -f "$tmp"; die "sudoers line failed visudo"; }
+    install -m 440 -o root -g root "$tmp" /etc/sudoers.d/kotl
+    rm -f "$tmp"
+  fi
+  say "kotl-keys installed; kotl may run it as $ACCOUNT"
+  [ -n "$KEY" ] || exit 0
 fi
 
 case "$KEY" in

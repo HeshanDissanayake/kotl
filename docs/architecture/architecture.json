@@ -2,7 +2,7 @@
  "schema": 1,
  "title": "Kotl Architecture",
  "intro": "Teal is Kotl, our product. Purple is Slurm. Gray is everything else off the shelf, plus the hardware. The dot on each box is its build status; click a box for exactly what's happening.",
- "latest": "Latest: M2 done. The board lease works end to end through real Slurm: kotl run, lease and release, cancel, the --max guard, and one board per job. No FPGA touched yet.",
+ "latest": "Latest: M3 code is written (job keys, kotl-keys, the firesim wrapper). Waiting for the admin to install it on the PC and workstation, then the board tests.",
  "canvas": {
   "w": 1520,
   "h": 820
@@ -1764,7 +1764,7 @@
     "<b>Path:</b> you → wrapper (this adapter) → your FireSim → job key → the board's PC. The adapter never talks to the board itself.",
     "<b>Start trigger:</b> <code>firesim infrasetup</code> (through the wrapper) with no lease held starts one and waits for the board.",
     "<b>End trigger:</b> <code>firesim runworkload</code> returning, or <code>firesim kill</code>, ends the lease.",
-    "<b>Prepare:</b> copies your <code>config_runtime.yaml</code> into the job folder with the run farm pointed at the claimed board and PC account.",
+    "<b>Prepare:</b> copies your <code>config_runtime.yaml</code> to <code>/tmp/kotl-keys-&lt;you&gt;/</code> and changes only the run-farm host line to the claimed board. Your FireSim runs inside the job (<code>srun --overlap</code>) with an ssh-agent holding only the job key.",
     "<b>Check (batch):</b> the job follows the template: a FireMarshal <code>run</code>/<code>command</code> (powers off when done) or <code>--expect</code>. Interactive jobs are allowed, with the idle guard.",
     "<b>Polite stop:</b> <code>firesim kill</code> before the core's end step. <b>Collect:</b> copies results, reads the <code>KOTL RESULT</code> line from <code>uartlog</code>.",
     "<b>What users get:</b> plain <code>firesim</code> keeps working, <code>kotl new</code> (the template), a one-page guide, the Claude skill, and refusals that say exactly what to fix.",
@@ -2075,8 +2075,8 @@
    "title": "PC access (job keys)",
    "what": "Lets a job's owner, and their own FireSim, reach the board's PC for exactly as long as the job runs. No timers: access follows the job.",
    "bullets": [
-    "<b>Job start:</b> the launcher makes a key for this job and adds it to the PC's FireSim account (<code>virtex-host</code>), using the kotl key.",
-    "<b>Job end</b> (adapter end trigger, <code>kotl release</code>, cancel or a tripped guard): removes the key, closes this job's SSH sessions and stops its simulations, then the board is freed. In full lockdown it kills every process of the PC account.",
+    "<b>Job start:</b> <code>job.sh</code> makes a fresh ed25519 key <i>as the user</i> (the private half never leaves their account). The launcher checks it is one bare ed25519 key and adds it for <code>virtex-host</code> through <code>kotl-keys</code>, with <code>restrict,pty</code>.",
+    "<b>Job end</b> (end trigger, <code>kotl release</code>, cancel or a guard): <code>kotl-keys remove</code> takes the key out and stops FireSim's screen sessions and drivers; in full lockdown it also ends every virtex-host process. Soft lockdown can't tell a job's ssh shells from password shells, so those stay (they can't log in again).",
     "<b>Backup:</b> Slurm's epilog runs the same end step after every job, even if the launcher crashed. It is safe to run twice.",
     "Only the board this job claimed gets the key. Outside a job, users can't reach any PC.",
     "<b>Lockdown mode</b> (<code>lockdown</code> in <code>/etc/kotl/kotl.conf</code>): <b>soft (now):</b> password logins to virtex-host still work and other keys stay; the end step kills only this job's sessions and simulations. <b>full (later):</b> separate admin account, virtex-host key-only, end step kills every virtex-host process."
@@ -2190,7 +2190,7 @@
     "<b>Slurm:</b> the <code>kotl</code> account becomes an operator, so its guards can cancel a hung job <i>(M2)</i>",
     "<code>/var/lib/kotl/</code>: board registry kotl.db (owner kotl; folder M1, database M2) <i>(new · M1)</i>",
     "<code>/srv/kotl/</code>: jobs/ and out/&lt;user&gt;/&lt;job&gt;/, owner-only, deleted after 30 days (folders M1) <i>(new · M1)</i>",
-    "<code>/run/kotl/keys/</code>: job keys while a lease is held (tmpfs, gone on reboot) <i>(new · M3)</i>",
+    "<code>/tmp/kotl-keys-&lt;user&gt;/</code>: each user's own folder (0700, made by job.sh as the user) with the job key and the config copy, deleted when the job ends <i>(created at run time · M3)</i>",
     "<code>/home/kotl/.ssh/</code>: the kotl key and its host alias <i>(new · M1)</i>",
     "<b>Services enabled:</b> <code>munge</code>, <code>mariadb</code>, <code>slurmdbd</code>, <code>slurmctld</code>, <code>slurmd</code> <i>(M1)</i>"
    ],
@@ -2326,10 +2326,10 @@
   },
   "runtimeyaml": {
    "name": "config_runtime.yaml",
-   "path": "/srv/kotl/jobs/<job>/",
+   "path": "/tmp/kotl-keys-<you>/job-<job>-config_runtime.yaml",
    "ext": "yaml",
-   "desc": "A copy of your config_runtime.yaml, with the run farm pointed at the claimed board (check field names against your FireSim version)",
-   "body": "# copied from your deploy/config_runtime.yaml; Kotl changes only run_farm\nrun_farm:\n  base_recipe: run-farm-recipes/externally_provisioned.yaml\n  recipe_arg_overrides:\n    default_platform: XilinxVCU118InstanceDeployManager\n    default_simulation_dir: /home/virtex-host/sims/job-1240\n    run_farm_hosts_to_use:\n      - virtex-host@vcu118-pc1: one_fpga_spec   # the board Kotl claimed\n\n# target_config, workload, ... : unchanged from yours"
+   "desc": "A private copy of your config_runtime.yaml; Kotl changes only the run_farm_hosts_to_use line",
+   "body": "# your config, word for word, except this one line:\nrun_farm:\n  recipe_arg_overrides:\n    run_farm_hosts_to_use:\n        - virtex-host@192.168.1.2: one_fpgas_spec   # the board Kotl claimed"
   },
   "workloadjson": {
    "name": "marshal.json",
@@ -2406,7 +2406,7 @@
    "path": "/etc/profile.d/",
    "ext": "sh",
    "desc": "Puts Kotl's firesim wrapper first on everyone's PATH",
-   "body": "# FireSim's own setup appends deploy/ to PATH, so this wrapper is found first.\nexport PATH=/opt/kotl/bin:$PATH"
+   "body": "# managed by kotl (deploy/kotl/install.sh). Installed as /etc/profile.d/kotl.sh.\n# Puts Kotl's commands (kotl, and the firesim wrapper) first on PATH. FireSim's own\n# sourceme-manager.sh adds its deploy/ folder at the end, so the wrapper is found first.\ncase \":$PATH:\" in\n  *:/opt/kotl/bin:*) ;;\n  *) PATH=\"/opt/kotl/bin:$PATH\" ;;\nesac\nexport PATH"
   },
   "kotlconf": {
    "name": "kotl.conf",
@@ -2427,7 +2427,7 @@
    "path": "/etc/ssh/ssh_config.d/ (workstation)",
    "ext": "conf",
    "desc": "Makes plain `ssh vcu118-pc1` use your job key during a lease. No files in your home change.",
-   "body": "Host vcu118-pc1\n  HostName 192.168.1.2\n  User virtex-host\n  # present only while you hold a lease on this board\n  IdentityFile /run/kotl/keys/%u/vcu118-pc1\n  IdentitiesOnly no      # soft lockdown: your password still works too"
+   "body": "# managed by kotl (deploy/kotl/install.sh). During a lease, plain 'ssh <board>' uses your job key.\n\nHost vcu118-pc1\n  HostName 192.168.1.2\n  User virtex-host\n  IdentityFile /tmp/kotl-keys-%u/%n"
   },
   "kotlsshconfig": {
    "name": "config",
@@ -2440,8 +2440,8 @@
    "name": "kotl-keys",
    "path": "/usr/local/bin/ (on each FPGA PC)",
    "ext": "sh",
-   "desc": "The only Kotl code on a PC: adds and removes job keys for virtex-host (sketch)",
-   "body": "#!/bin/sh\n# kotl-keys add <job> '<key line>' | remove <job>     runs as virtex-host (see sudoers)\nAK=/home/virtex-host/.ssh/authorized_keys\ncase \"$1\" in\n  add)    printf '%s\\n' \"$3\" >> \"$AK\" ;;            # line ends with kotl-job-<job>\n  remove) sed -i \"/ kotl-job-$2\\$/d\" \"$AK\"         # only Kotl's own lines\n          # end this job's sessions and its FireSim screens\n          # (full lockdown: pkill -u virtex-host)\n          ;;\nesac"
+   "desc": "The only Kotl code on a PC: adds and removes job keys for virtex-host, stops the job's simulations",
+   "body": "#!/bin/sh\n# managed by kotl (deploy/pc/setup.sh). Installed on each FPGA PC as /usr/local/bin/kotl-keys.\n# Runs as the PC's FireSim account (virtex-host), started by the kotl account through sudo.\n#\n#   kotl-keys add JOB 'ssh-ed25519 KEY'   let this job's key in (no forwarding; a terminal is allowed)\n#   kotl-keys remove JOB [soft|full]      take the key out and stop the simulations;\n#                                         full lockdown also ends every process of this account\n#   kotl-keys list                        jobs whose keys are in\n#\n# Only lines ending in \"kotl-job-<JOB>\" are ever touched; every other key stays.\nset -eu\numask 077\nME=$(id -un)\nHOMEDIR=$(getent passwd \"$ME\" | cut -d: -f6)\n# tests only: sudo resets the environment, so these can't be set in real use\nHOMEDIR=${KOTL_KEYS_TEST_HOME:-$HOMEDIR}\nAK=\"$HOMEDIR/.ssh/authorized_keys\"\nmkdir -p \"$HOMEDIR/.ssh\"\n[ -e \"$AK\" ] || : >\"$AK\"\n\ndie() { echo \"kotl-keys: $*\" >&2; exit 2; }\njob_ok() { case \"${1:-}\" in ''|*[!0-9]*) die \"bad job id '${1:-}'\" ;; esac; }\nstrip() {   # drop this job's lines, keep everything else and the file itself\n  tmp=$(mktemp \"$AK.XXXXXX\")\n  grep -v \" kotl-job-$1\\$\" \"$AK\" >\"$tmp\" || true\n  cat \"$tmp\" >\"$AK\"\n  rm -f \"$tmp\"\n}\n\nexec 9>\"$HOMEDIR/.ssh/.kotl-keys.lock\"\nflock 9\n\ncase \"${1:-}\" in\n  add)\n    job_ok \"${2:-}\"\n    printf '%s\\n' \"${3:-}\" | grep -Eqx 'ssh-ed25519 [A-Za-z0-9+/]+={0,3}' || die \"the key must be one ssh-ed25519 public key\"\n    strip \"$2\"\n    printf 'restrict,pty %s kotl-job-%s\\n' \"$3\" \"$2\" >>\"$AK\"\n    chmod 600 \"$AK\"\n    ;;\n  remove)\n    job_ok \"${2:-}\"\n    strip \"$2\"\n    [ -z \"${KOTL_KEYS_TEST_HOME:-}\" ] || exit 0\n    # stop simulations: FireSim's screen sessions and its FPGA drivers\n    screen -ls 2>/dev/null | awk '/[0-9]+\\.fsim[0-9]+/ {print $1}' | while read -r s; do\n      screen -S \"$s\" -X quit 2>/dev/null || true\n    done\n    pkill -u \"$ME\" -f 'FireSim-xilinx' 2>/dev/null || true\n    if [ \"${3:-soft}\" = full ]; then\n      exec pkill -KILL -u \"$ME\"   # full lockdown: nothing of this account outlives the job\n    fi\n    ;;\n  list)\n    sed -n 's/.* kotl-job-\\([0-9][0-9]*\\)$/\\1/p' \"$AK\"\n    ;;\n  *) die \"usage: kotl-keys add JOB KEY | remove JOB [soft|full] | list\" ;;\nesac"
   },
   "pcsudoers": {
    "name": "kotl",

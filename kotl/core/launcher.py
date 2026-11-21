@@ -3,7 +3,10 @@
 Users reach it only through sudo (deploy/sudoers/kotl), from job.sh inside their own Slurm job
 or from the kotl CLI. Every subcommand checks who is asking:
 
-  start JOB --mode M [--max S] [--idle S] [--command C]   claim a board for the caller's running job
+  start JOB --mode M [--max S] [--idle S] [--command C] [--pubkey KEY]
+                             claim a board for the caller's running job; KEY gets PC access
+  result JOB passed|failed|done    the owner records how the work went (the next end uses it)
+  put JOB NAME               save stdin as outputs/NAME in the job's results
   log JOB                    append stdin to the job's output.log (the owner's command output)
   end JOB [--rc N | --signal] [--epilog]    the end step; safe to run twice
   watch JOB                  (kotl only) the guards: --max and --idle cancel the job
@@ -14,16 +17,21 @@ or from the kotl CLI. Every subcommand checks who is asking:
 import argparse
 import json
 import os
+import re
 import subprocess
 import sys
 import time
 
 from kotl import slurm as slurm_mod
+from kotl import ssh as ssh_mod
 from kotl.core import results
 from kotl.core.config import Config, caller, fmt_duration
 from kotl.core.registry import Registry, RegistryError
 
 RUNNING = {"RUNNING", "CONFIGURING", "COMPLETING", "SUSPENDED", "STOPPED"}
+PUBKEY = re.compile(r"ssh-ed25519 [A-Za-z0-9+/]+={0,3}")
+KEYS_HELPER = "/usr/local/bin/kotl-keys"
+OWNER_RESULTS = ("passed", "failed", "done")
 
 
 class Refused(Exception):
@@ -46,9 +54,10 @@ def time_limit_seconds(text):
 
 
 class Launcher:
-    def __init__(self, cfg=None, slurm=slurm_mod, who=None, clock=time.time, sleep=time.sleep):
+    def __init__(self, cfg=None, slurm=slurm_mod, who=None, clock=time.time, sleep=time.sleep, ssh=ssh_mod):
         self.cfg = cfg or Config()
         self.slurm = slurm
+        self.ssh = ssh
         self.who = who or caller()
         self.clock, self.sleep = clock, sleep
         self.reg = Registry(self.cfg.db)
@@ -69,7 +78,7 @@ class Launcher:
         return results.job_dir(self.cfg.out, j["user"], j["job_id"])
 
     # --- the lease
-    def start(self, job_id, mode, max_=None, idle=None, command=""):
+    def start(self, job_id, mode, max_=None, idle=None, command="", pubkey=None):
         info = self.slurm.job_info(job_id)
         if not info:
             raise Refused(f"Slurm has no job {job_id}")
@@ -80,6 +89,8 @@ class Launcher:
         btype = self.cfg.get("board_type")
         if f"{btype}:" not in info.get("Licenses", ""):
             raise Refused(f"job {job_id} holds no {btype} license; submit it through kotl")
+        if pubkey is not None and not PUBKEY.fullmatch(pubkey.strip()):
+            raise Refused("the job key must be one ssh-ed25519 public key, nothing else")
         eta = time_limit_seconds(info.get("TimeLimit"))
         max_ = max_ if max_ is not None else (2 * eta if eta else None)
         board = self.reg.claim(job_id, btype)
@@ -92,20 +103,45 @@ class Launcher:
             raise Refused(str(e)) from None
         d = results.job_dir(self.cfg.out, self.who, job_id, create=True)
         results.purge(self.cfg.out, int(self.cfg.get("keep_days") or 30))
+        if pubkey:
+            try:
+                self.grant_access(job_id, board, pubkey.strip())
+            except ssh_mod.SSHError as e:
+                results.log(d, f"start: could not add the job key on {board['name']}: {e}")
+                self.reg.finish(job_id, "no_access", None)
+                self.reg.release(job_id)
+                results.write_status(d, self.status_doc(self.reg.job(job_id), state="done"))
+                raise Refused(f"could not give job {job_id} access to {board['name']}: {e}") from None
         results.write_status(d, self.status_doc(self.reg.job(job_id), state="running"))
         results.log(d, f"start: {mode} job {job_id} for {self.who} on {board['name']}; "
                        f"eta {fmt_duration(eta) if eta else '-'}, max {fmt_duration(max_) if max_ else 'off'}, "
                        f"idle {fmt_duration(idle) if idle else 'off'}")
-        self.grant_access(job_id, board)
         self.spawn_watcher(job_id)
         print(f"kotl: job {job_id} has {board['name']}")
         return board
 
-    def grant_access(self, job_id, board):
-        """M3: add this job's key to the board's PC. M2 has no PC access yet."""
+    def grant_access(self, job_id, board, pubkey):
+        """Add this job's public key for the PC account on the board's PC (via kotl-keys)."""
+        account = self.cfg.get("pc_account")
+        self.ssh.run(board["host"], ["sudo", "-n", "-u", account, KEYS_HELPER, "add", str(job_id), pubkey])
+        address = self.ssh.address(board["host"])
+        self.reg.set_address(job_id, address)
+        results.log(self.dir_for(self.reg.job(job_id)), f"access: job key added for {account}@{address}")
 
     def revoke_access(self, job_id, board_name):
-        """M3: remove the job key, end its sessions and processes."""
+        """Remove the job key and stop the job's simulations. Never fails the end step."""
+        j = self.reg.job(job_id)
+        if not j or not j.get("pc_address"):
+            return   # this job never got PC access
+        b = self.reg.board(board_name)
+        account = self.cfg.get("pc_account")
+        mode = "full" if self.cfg.get("lockdown") == "full" else "soft"
+        try:
+            self.ssh.run(b["host"], ["sudo", "-n", "-u", account, KEYS_HELPER, "remove", str(job_id), mode])
+            note = f"access: job key removed ({mode} lockdown)"
+        except ssh_mod.SSHError as e:
+            note = f"access: could not remove the job key: {e} (it names the job, so the next start or admin can)"
+        results.log(self.dir_for(j), note)
 
     def spawn_watcher(self, job_id):
         # the watcher is Kotl's own process, not the user's: drop sudo's caller variables,
@@ -178,7 +214,24 @@ class Launcher:
         return {"job": j["job_id"], "user": j["user"], "mode": j["mode"], "board": j["board"],
                 "state": state, "result": j["result"], "rc": j["rc"], "reason": j["reason"],
                 "eta_s": j["eta"], "max_s": j["max"], "idle_s": j["idle"],
-                "started": j["started"], "ended": j["ended"], "command": j["command"]}
+                "started": j["started"], "ended": j["ended"], "command": j["command"],
+                "pc_address": j.get("pc_address"), "pc_user": self.cfg.get("pc_account")}
+
+    def set_result(self, job_id, result):
+        if result not in OWNER_RESULTS:
+            raise Refused(f"result must be one of {', '.join(OWNER_RESULTS)}")
+        j = self.own_job(job_id)
+        self.reg.set_reason(job_id, result)
+        results.log(self.dir_for(j), f"result: owner says {result}")
+
+    def put(self, job_id, name, stream):
+        if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,99}", name):
+            raise Refused("output names are letters, digits, '.', '_' and '-' only")
+        j = self.own_job(job_id)
+        path = os.path.join(self.dir_for(j), "outputs", name)
+        with open(path, "wb") as f:
+            for chunk in iter(lambda: stream.read(65536), b""):
+                f.write(chunk)
 
     def logs(self, job_id, follow=False, out=sys.stdout.buffer):
         j = self.own_job(job_id)
@@ -232,6 +285,9 @@ def main(argv=None):
     sub = ap.add_subparsers(dest="cmd", required=True)
     s = sub.add_parser("start"); s.add_argument("job", type=int); s.add_argument("--mode", default="run")
     s.add_argument("--max", type=int); s.add_argument("--idle", type=int); s.add_argument("--command", default="")
+    s.add_argument("--pubkey")
+    rs = sub.add_parser("result"); rs.add_argument("job", type=int); rs.add_argument("result")
+    pu = sub.add_parser("put"); pu.add_argument("job", type=int); pu.add_argument("name")
     sub.add_parser("log").add_argument("job", type=int)
     e = sub.add_parser("end"); e.add_argument("job", type=int); e.add_argument("--rc", type=int)
     e.add_argument("--signal", action="store_true"); e.add_argument("--epilog", action="store_true")
@@ -257,7 +313,11 @@ def main(argv=None):
             return 0
         L = Launcher()
         if a.cmd == "start":
-            L.start(a.job, a.mode, a.max, a.idle, a.command)
+            L.start(a.job, a.mode, a.max, a.idle, a.command, a.pubkey)
+        elif a.cmd == "result":
+            L.set_result(a.job, a.result)
+        elif a.cmd == "put":
+            L.put(a.job, a.name, sys.stdin.buffer)
         elif a.cmd == "log":
             L.append_log(a.job, sys.stdin.buffer)
         elif a.cmd == "end":
@@ -285,7 +345,7 @@ def main(argv=None):
             if b and b["job_id"]:
                 raise Refused(f"{a.name} is held by job {b['job_id']}; it returns by itself when that job ends")
             L.reg.set_state(a.name, "idle"); print(L.boards_table())
-    except (Refused, RegistryError, slurm_mod.SlurmError) as ex:
+    except (Refused, RegistryError, slurm_mod.SlurmError, ssh_mod.SSHError) as ex:
         print(f"kotl: {ex}", file=sys.stderr)
         return 1
     return 0

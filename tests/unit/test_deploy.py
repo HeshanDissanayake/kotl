@@ -15,7 +15,8 @@ SCRIPTS = {  # script -> feature it belongs to
     "lib.sh": "os", "accounts.sh": "os", "verify-m1.sh": "os",
     "slurm/install.sh": "queue", "epilog.sh": "starter", "health.sh": "health",
     "ssh/setup-kotl-key.sh": "key", "pc/setup.sh": "pc1", "firesim/check.sh": "firesim",
-    "kotl/install.sh": "launcher", "job.sh": "launcher",
+    "kotl/install.sh": "launcher", "job.sh": "launcher", "profile.d/kotl.sh": "cli",
+    "pc/kotl-keys": "access",
 }
 
 
@@ -243,6 +244,10 @@ def test_kotl_install_dry_run(tmp_path):
     assert (tmp_path / "opt/kotl/job.sh").read_text() == (DEPLOY / "job.sh").read_text()
     assert "adminlevel=Operator" in r.stdout
     assert "board-add vcu118-pc1 vcu118 vcu118-pc1" in r.stdout
+    assert "kotl.adapters.firesim.wrapper" in (tmp_path / "opt/kotl/bin/firesim").read_text()
+    assert "/opt/kotl/bin:$PATH" in (tmp_path / "etc/profile.d/kotl.sh").read_text()
+    client = (tmp_path / "etc/ssh/ssh_config.d/kotl.conf").read_text()
+    assert "Host vcu118-pc1\n" in client and "IdentityFile /tmp/kotl-keys-%u/%n" in client
 
 
 @pytest.mark.feature("launcher")
@@ -258,3 +263,19 @@ def test_kotl_undo_leaves_noop_epilog(tmp_path):
     ep = tmp_path / "opt/kotl/epilog.sh"
     assert ep.exists() and subprocess.run(["sh", str(ep)]).returncode == 0
     assert not (tmp_path / "opt/kotl/launch").exists()
+
+
+@pytest.mark.feature("cli")
+def test_profile_puts_kotl_first_once():
+    out = subprocess.run(["sh", "-c", f". {DEPLOY}/profile.d/kotl.sh; . {DEPLOY}/profile.d/kotl.sh; echo $PATH"],
+                         capture_output=True, text=True, env={"PATH": "/usr/bin:/deploy"}).stdout.strip()
+    assert out == "/opt/kotl/bin:/usr/bin:/deploy"
+
+
+@pytest.mark.feature("access")
+def test_pc_setup_installs_keys_helper(tmp_path):
+    r = dry("pc/setup.sh", "--keys-helper", str(DEPLOY / "pc/kotl-keys"), "--account", "root", root=tmp_path)
+    assert "install -m 755 -o root -g root" in r.stdout and "/usr/local/bin/kotl-keys" in r.stdout
+    assert "kotl ALL=(root) NOPASSWD: /usr/local/bin/kotl-keys" in r.stdout
+    r = dry("pc/setup.sh", "--keys-helper", str(DEPLOY / "accounts.sh"), root=tmp_path, check=False)
+    assert r.returncode != 0

@@ -53,3 +53,10 @@ def queue():
     r = _run(["squeue", "-h", "-o", fmt])
     keys = ["job", "user", "name", "state", "eta", "used", "start", "reason"]
     return [dict(zip(keys, line.split("|"))) for line in r.stdout.splitlines() if line]
+
+
+def run_in_job(job_id, argv, env=None):
+    """Run argv as a step of a running job (srun --overlap), so cancel and the end step reach it.
+    Returns its exit code; output goes straight to the caller's terminal."""
+    return subprocess.run(["srun", f"--jobid={job_id}", "--overlap", "--quiet", "--ntasks=1", *argv],
+                          env=env).returncode

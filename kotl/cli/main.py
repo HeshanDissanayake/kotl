@@ -35,13 +35,13 @@ def job_sh():
     return os.environ.get("KOTL_JOB_SH", "/opt/kotl/job.sh")
 
 
-def launch(*args, capture=False, stdout=None):
+def launch(*args, capture=False, stdout=None, stdin_bytes=None):
     sys.stdout.flush()   # keep our own output in order with the launcher's
     cmd = launch_cmd() + [str(a) for a in args]
     if capture:
-        r = subprocess.run(cmd, capture_output=True)
+        r = subprocess.run(cmd, capture_output=True, input=stdin_bytes)
         return r.returncode, r.stdout, r.stderr.decode(errors="replace")
-    return subprocess.run(cmd, stdout=stdout).returncode
+    return subprocess.run(cmd, stdout=stdout, input=stdin_bytes).returncode
 
 
 def die(msg, code=2):

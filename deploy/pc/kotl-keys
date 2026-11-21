@@ -1,0 +1,58 @@
+#!/bin/sh
+# managed by kotl (deploy/pc/setup.sh). Installed on each FPGA PC as /usr/local/bin/kotl-keys.
+# Runs as the PC's FireSim account (virtex-host), started by the kotl account through sudo.
+#
+#   kotl-keys add JOB 'ssh-ed25519 KEY'   let this job's key in (no forwarding; a terminal is allowed)
+#   kotl-keys remove JOB [soft|full]      take the key out and stop the simulations;
+#                                         full lockdown also ends every process of this account
+#   kotl-keys list                        jobs whose keys are in
+#
+# Only lines ending in "kotl-job-<JOB>" are ever touched; every other key stays.
+set -eu
+umask 077
+ME=$(id -un)
+HOMEDIR=$(getent passwd "$ME" | cut -d: -f6)
+# tests only: sudo resets the environment, so these can't be set in real use
+HOMEDIR=${KOTL_KEYS_TEST_HOME:-$HOMEDIR}
+AK="$HOMEDIR/.ssh/authorized_keys"
+mkdir -p "$HOMEDIR/.ssh"
+[ -e "$AK" ] || : >"$AK"
+
+die() { echo "kotl-keys: $*" >&2; exit 2; }
+job_ok() { case "${1:-}" in ''|*[!0-9]*) die "bad job id '${1:-}'" ;; esac; }
+strip() {   # drop this job's lines, keep everything else and the file itself
+  tmp=$(mktemp "$AK.XXXXXX")
+  grep -v " kotl-job-$1\$" "$AK" >"$tmp" || true
+  cat "$tmp" >"$AK"
+  rm -f "$tmp"
+}
+
+exec 9>"$HOMEDIR/.ssh/.kotl-keys.lock"
+flock 9
+
+case "${1:-}" in
+  add)
+    job_ok "${2:-}"
+    printf '%s\n' "${3:-}" | grep -Eqx 'ssh-ed25519 [A-Za-z0-9+/]+={0,3}' || die "the key must be one ssh-ed25519 public key"
+    strip "$2"
+    printf 'restrict,pty %s kotl-job-%s\n' "$3" "$2" >>"$AK"
+    chmod 600 "$AK"
+    ;;
+  remove)
+    job_ok "${2:-}"
+    strip "$2"
+    [ -z "${KOTL_KEYS_TEST_HOME:-}" ] || exit 0
+    # stop simulations: FireSim's screen sessions and its FPGA drivers
+    screen -ls 2>/dev/null | awk '/[0-9]+\.fsim[0-9]+/ {print $1}' | while read -r s; do
+      screen -S "$s" -X quit 2>/dev/null || true
+    done
+    pkill -u "$ME" -f 'FireSim-xilinx' 2>/dev/null || true
+    if [ "${3:-soft}" = full ]; then
+      exec pkill -KILL -u "$ME"   # full lockdown: nothing of this account outlives the job
+    fi
+    ;;
+  list)
+    sed -n 's/.* kotl-job-\([0-9][0-9]*\)$/\1/p' "$AK"
+    ;;
+  *) die "usage: kotl-keys add JOB KEY | remove JOB [soft|full] | list" ;;
+esac
