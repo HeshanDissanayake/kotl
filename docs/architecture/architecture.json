@@ -2,7 +2,7 @@
  "schema": 1,
  "title": "Kotl Architecture",
  "intro": "Teal is Kotl, our product. Purple is Slurm. Gray is everything else off the shelf, plus the hardware. The dot on each box is its build status; click a box for exactly what's happening.",
- "latest": "Latest: lab answers in. virtex-host is the PC's FireSim account, ETA is required, notices go through the Claude plugin only, Slurm accounting uses MariaDB, and Kotl replaces xlock.",
+ "latest": "Latest: soft lockdown for now. Password logins to virtex-host still work, and the end step kills only the job's own work. A single setting switches to full lockdown later.",
  "canvas": {
   "w": 1520,
   "h": 820
@@ -1520,7 +1520,7 @@
     "<b>During:</b> the owner (and any tool they run: FireSim, Vivado, scripts) reaches the PC with the job key. An adapter can add start/end triggers and checks.",
     "<b>The lease ends when the work ends:</b> the adapter's end trigger (e.g. FireSim's <code>runworkload</code> returns), <code>kotl release</code>, the command of <code>kotl run</code> exits, or cancel. No timer closes it.",
     "<b>Guards:</b> idle (no job-key SSH session and no processes on the PC for N minutes) and the owner's <code>--max</code> (default 2× ETA).",
-    "<b>End step, every time, same for every adapter:</b> the adapter's polite stop if it has one (e.g. <code>firesim kill</code>), then remove the job key, kill every process of the PC account, record why, free the board. Slurm's epilog repeats it as a backup.",
+    "<b>End step, every time, same for every adapter:</b> the adapter's polite stop if it has one (e.g. <code>firesim kill</code>), then remove the job key, end this job's sessions and processes (in full lockdown: every process of the PC account), record why, free the board. Slurm's epilog repeats it as a backup.",
     "Records setup time on every job, for the parked same-design idea."
    ],
    "files": [
@@ -1578,12 +1578,14 @@
    "bullets": [
     "Ping, SSH as kotl, <code>lspci</code> shows the Xilinx card, XDMA driver loaded.",
     "Flags leftover work on a board the registry says is idle.",
+    "<b>Lockdown mode</b> (<code>lockdown</code> in <code>/etc/kotl/kotl.conf</code>): in <b>soft</b>, work on a board with no lease (e.g. a password login) only warns the admin; in <b>full</b>, it marks the board for checking.",
     "On failure: tries reloading the driver once. Still failing: marks the board down, holds back its Slurm slot, alerts the admin.",
     "Puts the board back on its own when checks pass again."
    ],
    "files": [
     "healthsh",
-    "healthconf"
+    "healthconf",
+    "kotlconf"
    ]
   },
   "notifier": {
@@ -1790,7 +1792,7 @@
    "bullets": [
     "The kotl private key lives in <code>/home/kotl/.ssh</code>, readable only by the kotl account. Kotl uses it to grant and remove job keys, for health checks and for cleanup.",
     "A job key lets the job's owner and their FireSim into the PC's FireSim account, only while the job runs (see PC access).",
-    "FPGA PCs let in only kotl, the FireSim account (job keys only) and the admin, with keys only.",
+    "FPGA PCs: in <b>full</b> lockdown only kotl, virtex-host (job keys) and the admin, keys only. In <b>soft</b> lockdown (now) virtex-host's password and existing keys still work.",
     "A new PC joins by adding the kotl key, the key helper and a registry entry."
    ],
    "term": [
@@ -1943,7 +1945,8 @@
    "what": "Hosts the lab's VCU118, at <code>192.168.1.2</code> (<code>vcu118-pc1</code> in kotl's SSH config). Reachable only from the workstation.",
    "bullets": [
     "Runs sshd, the XDMA driver, FireSim's helper scripts and a small key helper. No other Kotl code.",
-    "Accounts: kotl, <code>virtex-host</code> (FireSim; job keys only, managed by Kotl) and the admin.",
+    "Accounts: kotl, <code>virtex-host</code> (FireSim; gets job keys) and the admin.",
+    "<b>Soft lockdown for now:</b> password logins to virtex-host still work for people who know it. Take a lease (<code>kotl lease</code>) before touching the FPGA, or you may break a running job. Later: full lockdown with a separate admin account.",
     "Reboots are harmless: the health check sees it come back."
    ],
    "files": [
@@ -2004,10 +2007,10 @@
    "what": "Lets a job's owner, and their own FireSim, reach the board's PC for exactly as long as the job runs. No timers: access follows the job.",
    "bullets": [
     "<b>Job start:</b> the launcher makes a key for this job and adds it to the PC's FireSim account (<code>virtex-host</code>), using the kotl key.",
-    "<b>Job end</b> (adapter end trigger, <code>kotl release</code>, cancel or a tripped guard): removes the key, closes SSH sessions and kills every process of the PC account, then the board is freed.",
+    "<b>Job end</b> (adapter end trigger, <code>kotl release</code>, cancel or a tripped guard): removes the key, closes this job's SSH sessions and stops its simulations, then the board is freed. In full lockdown it kills every process of the PC account.",
     "<b>Backup:</b> Slurm's epilog runs the same end step after every job, even if the launcher crashed. It is safe to run twice.",
     "Only the board this job claimed gets the key. Outside a job, users can't reach any PC.",
-    "<b>virtex-host is Kotl's while a job runs:</b> the end step kills every virtex-host process, and only Kotl-managed keys stay in its <code>authorized_keys</code> (older personal keys are removed in M1, or the lockdown has a hole)."
+    "<b>Lockdown mode</b> (<code>lockdown</code> in <code>/etc/kotl/kotl.conf</code>): <b>soft (now):</b> password logins to virtex-host still work and other keys stay; the end step kills only this job's sessions and simulations. <b>full (later):</b> separate admin account, virtex-host key-only, end step kills every virtex-host process."
    ],
    "term": [
     {
@@ -2029,6 +2032,7 @@
     }
    ],
    "files": [
+    "kotlconf",
     "authkeys",
     "epilog",
     "sshd"
@@ -2146,7 +2150,7 @@
    "name": "kotl.conf",
    "path": "/etc/ssh/sshd_config.d/ (on each FPGA PC)",
    "ext": "conf",
-   "desc": "Only kotl, the FireSim account (job keys) and the admin can log in, and only with keys",
+   "desc": "Full lockdown (later). In soft lockdown (now) this file is not installed and password logins still work.",
    "body": "# kotl: Kotl's own key (grant/remove job keys, health, cleanup)\n# virtex-host: FireSim account; job keys only, added and removed by Kotl\nAllowUsers kotl virtex-host <admin>\nPasswordAuthentication no\nKbdInteractiveAuthentication no\nPermitRootLogin no"
   },
   "screenrc": {
@@ -2189,7 +2193,7 @@
    "path": "/home/virtex-host/.ssh/ (on each FPGA PC)",
    "ext": "conf",
    "desc": "Managed by Kotl: one line per running job, removed when the job ends",
-   "body": "# managed by kotl-keys; do not edit by hand\n# no permanent keys here: they would bypass the queue\nrestrict,pty ssh-ed25519 AAAA… kotl-job-1240"
+   "body": "# kotl-keys manages only lines tagged kotl-job-*; in soft lockdown other keys are left alone\nrestrict,pty ssh-ed25519 AAAA… kotl-job-1240"
   },
   "profiled": {
    "name": "kotl.sh",
@@ -2197,6 +2201,13 @@
    "ext": "sh",
    "desc": "Puts Kotl's firesim wrapper first on everyone's PATH",
    "body": "# FireSim's own setup appends deploy/ to PATH, so this wrapper is found first.\nexport PATH=/opt/kotl/bin:$PATH"
+  },
+  "kotlconf": {
+   "name": "kotl.conf",
+   "path": "/etc/kotl/",
+   "ext": "conf",
+   "desc": "Kotl's own settings. Local to the workstation; user names stay here, not in git.",
+   "body": "# soft: password logins and existing keys still work; end step kills only the job's own work\n# full: virtex-host key-only, end step kills every virtex-host process\nlockdown = soft\n\nadmin = <admin>            # change with deploy/set-admin.sh\npc_account = virtex-host\nidle = 30m"
   }
  }
 }

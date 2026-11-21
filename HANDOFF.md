@@ -205,5 +205,6 @@ Whenever the system gains a part (an adapter, a board type, a check, a service),
 5. Rough weights from the view's `slurm.conf` card. **ETA is required**; there is no default.
 6. Notices: the Claude plugin only (plus `kotl status`).
 7. MariaDB: yes, slurmdbd on the workstation.
-- PC FireSim account: `virtex-host`, which receives job keys. Kotl owns its `authorized_keys`, and the end step kills all of its processes.
+- PC FireSim account: `virtex-host`, which receives job keys.
+- **Soft lockdown for now** (`lockdown = soft` in `/etc/kotl/kotl.conf`): password logins to `virtex-host` and existing keys keep working; the end step kills only the job's own sessions and simulations; unleased work only warns. **Full lockdown later**: a separate admin account, `virtex-host` key-only, and the end step kills every `virtex-host` process.
 - The old `fpga-vcu118` xlock is retired: Kotl replaces it.
