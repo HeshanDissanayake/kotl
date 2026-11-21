@@ -2,7 +2,7 @@
  "schema": 1,
  "title": "Kotl Architecture",
  "intro": "Teal is Kotl, our product. Purple is Slurm. Gray is everything else off the shelf, plus the hardware. The dot on each box is its build status; click a box for exactly what's happening.",
- "latest": "Latest: the core is now a generic board lease (kotl lease / run / release); FireSim, program/reset and board tests are thin adapters on it.",
+ "latest": "Latest: the FireSim adapter's arrow now reads \"calls · as you\": it runs the user's own FireSim, never one of its own.",
  "canvas": {
   "w": 1520,
   "h": 820
@@ -698,10 +698,10 @@
    "d": "M1039,685 H1090",
    "style": "solid",
    "label": {
-    "text": "runs",
-    "x": 1064,
-    "y": 677,
-    "anchor": "middle"
+    "text": "calls · as you",
+    "x": 1068,
+    "y": 640,
+    "anchor": "start"
    }
   },
   {
@@ -1689,8 +1689,9 @@
    "kind": "Kotl · adapter",
    "kindClass": "ko",
    "title": "FireSim adapter",
-   "what": "A thin layer on the lease that teaches Kotl FireSim's lifecycle. All FireSim knowledge lives here; the core has none.",
+   "what": "A thin layer on the lease that teaches Kotl FireSim's lifecycle. It has no FireSim of its own: it calls <b>your</b> FireSim, from your Chipyard, as you, inside your job. All FireSim knowledge lives here; the core has none.",
    "bullets": [
+    "<b>Path:</b> you → wrapper (this adapter) → your FireSim → job key → the board's PC. The adapter never talks to the board itself.",
     "<b>Start trigger:</b> <code>firesim infrasetup</code> (through the wrapper) with no lease held starts one and waits for the board.",
     "<b>End trigger:</b> <code>firesim runworkload</code> returning, or <code>firesim kill</code>, ends the lease.",
     "<b>Prepare:</b> copies your <code>config_runtime.yaml</code> into the job folder with the run farm pointed at the claimed board and PC account.",

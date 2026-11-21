@@ -350,6 +350,10 @@
         {
           "date": "2026-11-22",
           "text": "Design: now a thin adapter on the lease (triggers, prepare, check, polite stop, collect)."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "View: arrow to the user's FireSim relabelled \"calls · as you\"; details state the call path."
         }
       ]
     },
