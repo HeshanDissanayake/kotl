@@ -1,6 +1,6 @@
 # Kotl — handoff to the building agent
 
-Kotl manages the lab's FPGAs and servers. Version 1 queues and runs FireSim jobs on two VCU118 boards. Later versions add board programming/reset, driver tests, power monitoring and more boards.
+Kotl manages the lab's FPGAs and servers. Version 1 queues and runs FireSim jobs on the lab's VCU118 (one board today; a second later). Later versions add board programming/reset, driver tests, power monitoring and more boards.
 
 The full design is the architecture view in `docs/architecture/`. `index.html` only draws; everything it shows comes from `architecture.json` (the design) and `status.json` (build status). Serve that folder and open it in a browser:
 
@@ -22,14 +22,14 @@ Click any box for its commands and config files. The tabs show what Kotl is, whe
 
 ## 2. Architecture in one page
 
-- **Kotl (ours, teal in the view).** The `kotl` CLI, launcher, board registry, health check, ETA notifier, job results, console attach, the kotl SSH key setup, modules (FireSim first), and a Claude Code plugin.
+- **Kotl (ours, teal in the view).** The `kotl` CLI, launcher, board registry, health check, ETA notifier, job results, console attach, the kotl SSH key setup, per-job PC access (job keys), a `firesim` wrapper and job template, modules (FireSim first), and a Claude Code plugin.
 - **Slurm (off the shelf, purple).** It runs on the workstation as a single node. Kotl meets it in exactly **four** places:
   1. The CLI uses `sbatch` / `scancel` / `squeue`.
   2. Slurm's job starter runs `deploy/job.sh`, which hands over to the launcher via `sudo -u kotl`.
   3. Slurm runs `health.sh` every 5 minutes.
   4. The notifier and dashboard read `squeue` / `sacct`.
-- **Other off-the-shelf parts (gray):** FireSim, and the workstation's sudo, systemd timers and OpenSSH.
-- **FPGA PCs.** Only the workstation can reach them, and only the `kotl` account can log in, with a key. No Kotl code runs on them.
+- **Other off-the-shelf parts (gray):** each user's own FireSim (in their own Chipyard), and the workstation's sudo, systemd timers and OpenSSH.
+- **FPGA PCs.** Only the workstation can reach them, and only with keys: Kotl's `kotl` key, plus a job key that Kotl adds when a job starts and removes when it ends. No Kotl code runs on them besides a small key helper.
 - **No always-running Kotl process.** The CLI runs per command, the launcher runs per job, and timers start the notifier.
 
 ## 3. Decisions already made (don't reopen without asking)
@@ -41,6 +41,9 @@ Click any box for its commands and config files. The tabs show what Kotl is, whe
 - **How a batch job ends:** the simulated Linux powers off. The workload has a run script ending in `poweroff`, or an `--expect` script drives it. `kotl firesim submit` refuses a batch job that has neither.
 - **Pass or fail:** the run script prints `KOTL RESULT: PASS` or `KOTL RESULT: FAIL`. The launcher reads it from the console log, and the exit code tells Slurm succeeded or failed.
 - **Clean stop:** cancel or a tripped guard runs the module's `stop` step (`firesim kill` for FireSim) *before* the board is freed.
+- **Users' own FireSim (decided 2026-11-22):** users keep their own Chipyard and FireSim; Kotl installs none. A `firesim` wrapper first on PATH queues plain FireSim commands; the user's FireSim runs as them, inside their Slurm job.
+- **PC access follows the job:** a per-job SSH key is added at job start and removed by the end step (with Slurm's `Epilog` as backup), which also closes leftover sessions. No timer closes a job; idle and `--max` guards catch forgotten or hung ones.
+- **Job template:** `kotl new` gives `marshal.json` (FireMarshal, `run` powers off when done), `run.sh` (prints `KOTL RESULT`) and `kotl.json` (mode, ETA, guards, hwdb). `check` refuses batch jobs that can't end by themselves.
 - **Board registry:** one SQLite file at `/var/lib/kotl/kotl.db`. States: down → idle → setting_up → busy → draining → maintenance. Boards are claimed atomically.
 - **Results:** `/srv/kotl/out/<user>/<job>/` holds `status.json`, `uartlog`, `launcher.log` and `outputs/`. Only the owner can read it, and it's deleted after 30 days. Remote users get it with `kotl fetch`.
 - **Console attach:** `ssh -t <pc> screen -r fsim0` as kotl, after checking ownership. kotl's `.screenrc` on the PCs blocks new windows.
@@ -88,7 +91,7 @@ docs/architecture/
 - Slurm single node: slurmctld, slurmd, slurmdbd with MariaDB, munge. Use the licenses, priority, QOS, `OverTimeLimit`, `KillWait` and health-check lines from the view's `slurm.conf` card.
 - The `kotl` account and `kotl-users` group, the sudoers rule, and `/srv/kotl`, `/var/lib/kotl` with correct ownership.
 - The kotl SSH key, plus the PCs' `sshd_config.d/kotl.conf` and kotl's `.screenrc`. Verify the lockdown: a normal user gets `Permission denied`.
-- FireSim installed under kotl, with the run farm set to externally provisioned.
+- The PC's FireSim account and the `kotl-keys` helper for job keys; Slurm `Epilog=`; the `firesim` wrapper on PATH (`/etc/profile.d/kotl.sh`). No shared FireSim install.
 - Done when: `sbatch -L vcu118:1 --wrap 'sleep 30'` queues and runs, `scancel` by another user is refused, and `sudo -u kotl ssh vcu118-pc1 hostname` works while a normal user's ssh fails.
 
 **M2: Core path end to end with a dummy module (no FPGA)**
@@ -111,7 +114,7 @@ docs/architecture/
 - Done when: unplugging or breaking a board marks it down and back, and a session can attach, detach and end cleanly.
 
 **M5: Kotl plugin for Claude Code**
-- The skill (kotl commands, expect scripts with timeouts, fetch-then-read-status workflow) and hooks (block raw firesim commands, show the queue at session start).
+- The skill (kotl commands, expect scripts with timeouts, fetch-then-read-status workflow) and hooks (check that `firesim` is Kotl's wrapper and job folders follow the template, show the queue at session start).
 - Done when: a fresh Claude Code session on a user's PC can submit, wait, fetch and report a FireSim job using only the plugin.
 
 **Later:** power monitor, usage dashboard, program/reset module, driver-tests module, more boards. **Parked:** same-design board pick.

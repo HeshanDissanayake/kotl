@@ -88,6 +88,7 @@
       "milestone": "M1",
       "now": "",
       "code": [
+        "deploy/epilog.sh",
         "deploy/slurm/"
       ],
       "tests": {
@@ -96,7 +97,12 @@
       },
       "last_commit": null,
       "issues": [],
-      "log": []
+      "log": [
+        {
+          "date": "2026-11-22",
+          "text": "Design: job.sh runs as the user; Epilog= runs Kotl's end step after every job."
+        }
+      ]
     },
     "runner": {
       "title": "Slurm health runner",
@@ -149,7 +155,7 @@
       "log": []
     },
     "firesim": {
-      "title": "FireSim install",
+      "title": "Users' FireSim (check, no install)",
       "status": "planned",
       "milestone": "M1",
       "now": "",
@@ -162,7 +168,16 @@
       },
       "last_commit": null,
       "issues": [],
-      "log": []
+      "log": [
+        {
+          "date": "2026-11-22",
+          "text": "Design: each user's own FireSim in their own Chipyard, not one shared install."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "No shared install: M1 now only checks that the PC side works with a user's FireSim 1.18.0."
+        }
+      ]
     },
     "key": {
       "title": "kotl SSH key",
@@ -178,7 +193,12 @@
       },
       "last_commit": null,
       "issues": [],
-      "log": []
+      "log": [
+        {
+          "date": "2026-11-22",
+          "text": "Design: kotl key plus short-lived job keys; the PC has a FireSim account for job keys."
+        }
+      ]
     },
     "pc1": {
       "title": "VCU118 PC 1 setup",
@@ -253,7 +273,12 @@
       },
       "last_commit": null,
       "issues": [],
-      "log": []
+      "log": [
+        {
+          "date": "2026-11-22",
+          "text": "Design: grants and removes job keys; idle guard; end step runs every time, with Slurm's epilog as backup."
+        }
+      ]
     },
     "cli": {
       "title": "kotl CLI",
@@ -261,6 +286,7 @@
       "milestone": "M2",
       "now": "",
       "code": [
+        "deploy/profile.d/",
         "kotl/cli/",
         "kotl/slurm.py"
       ],
@@ -270,7 +296,12 @@
       },
       "last_commit": null,
       "issues": [],
-      "log": []
+      "log": [
+        {
+          "date": "2026-11-22",
+          "text": "Design: firesim wrapper first on PATH queues plain FireSim commands; kotl new copies the job template."
+        }
+      ]
     },
     "results": {
       "title": "Job results",
@@ -294,6 +325,7 @@
       "milestone": "M3",
       "now": "",
       "code": [
+        "deploy/templates/",
         "kotl/modules/firesim/"
       ],
       "tests": {
@@ -302,7 +334,12 @@
       },
       "last_commit": null,
       "issues": [],
-      "log": []
+      "log": [
+        {
+          "date": "2026-11-22",
+          "text": "Design: runs the user's own FireSim as the user; check enforces the job template (marshal.json, run.sh, kotl.json)."
+        }
+      ]
     },
     "health": {
       "title": "Health check",
@@ -352,7 +389,12 @@
       },
       "last_commit": null,
       "issues": [],
-      "log": []
+      "log": [
+        {
+          "date": "2026-11-22",
+          "text": "Design: console activity feeds the idle guard."
+        }
+      ]
     },
     "plugin": {
       "title": "Kotl plugin for Claude Code",
@@ -368,7 +410,12 @@
       },
       "last_commit": null,
       "issues": [],
-      "log": []
+      "log": [
+        {
+          "date": "2026-11-22",
+          "text": "Design: hooks check the firesim wrapper and the template instead of blocking raw firesim."
+        }
+      ]
     },
     "power": {
       "title": "Power monitor",
@@ -453,6 +500,30 @@
       "last_commit": null,
       "issues": [],
       "log": []
+    },
+    "access": {
+      "title": "PC access (job keys)",
+      "status": "planned",
+      "milestone": "M3",
+      "now": "",
+      "code": [
+        "kotl/core/access.py",
+        "deploy/pc/kotl-keys"
+      ],
+      "tests": {
+        "unit": null,
+        "hardware": null
+      },
+      "last_commit": null,
+      "issues": [
+        "PC FireSim account name not decided (kotl or virtex-host)."
+      ],
+      "log": [
+        {
+          "date": "2026-11-22",
+          "text": "New part: per-job SSH keys, added at job start and removed by the end step and Slurm's epilog."
+        }
+      ]
     }
   }
 }

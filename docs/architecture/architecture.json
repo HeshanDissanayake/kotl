@@ -2,7 +2,7 @@
  "schema": 1,
  "title": "Kotl Architecture",
  "intro": "Teal is Kotl, our product. Purple is Slurm. Gray is everything else off the shelf, plus the hardware. The dot on each box is its build status; click a box for exactly what's happening.",
- "latest": "Latest: one VCU118 for now (PC 1 at 192.168.1.2, license vcu118:1); PC 2 moved to later.",
+ "latest": "Latest: users keep their own Chipyard and FireSim. A firesim wrapper queues plain FireSim commands, job keys give PC access only while a job runs, and a job template makes every job end by itself.",
  "canvas": {
   "w": 1520,
   "h": 820
@@ -203,7 +203,7 @@
    "slurm": true,
    "title": "kotl CLI",
    "sub": [
-    "submit · board · fetch"
+    "firesim wrapper · fetch"
    ]
   },
   {
@@ -356,7 +356,7 @@
    "h": 70,
    "title": "FireSim module",
    "sub": [
-    "batch · session · kill"
+    "template check · kill"
    ]
   },
   {
@@ -379,9 +379,9 @@
    "y": 650,
    "w": 160,
    "h": 70,
-   "title": "FireSim",
+   "title": "Your FireSim",
    "sub": [
-    "off-the-shelf tool"
+    "your own Chipyard"
    ]
   },
   {
@@ -395,7 +395,7 @@
    "title": "",
    "labels": [
     {
-     "text": "kotl SSH key",
+     "text": "kotl key · job keys",
      "x": 1312,
      "y": 460,
      "rotate": -90
@@ -462,6 +462,18 @@
    "title": "More boards",
    "sub": [
     "later · same pattern"
+   ]
+  },
+  {
+   "id": "access",
+   "owner": "kotl",
+   "x": 869,
+   "y": 520,
+   "w": 170,
+   "h": 70,
+   "title": "PC access",
+   "sub": [
+    "job keys · end step"
    ]
   }
  ],
@@ -787,6 +799,32 @@
    "to": "pc1",
    "d": "M1292,370 H1340",
    "style": "solid"
+  },
+  {
+   "id": "e-launch-access",
+   "from": "launcher",
+   "to": "access",
+   "d": "M647,340 H660 V510 H954 V520",
+   "style": "solid",
+   "label": {
+    "text": "grant · revoke",
+    "x": 760,
+    "y": 524,
+    "anchor": "middle"
+   }
+  },
+  {
+   "id": "e-access-bus",
+   "from": "access",
+   "to": "key",
+   "d": "M1039,555 H1280",
+   "style": "solid",
+   "label": {
+    "text": "job key",
+    "x": 1165,
+    "y": 549,
+    "anchor": "middle"
+   }
   }
  ],
  "flows": {
@@ -795,7 +833,7 @@
    "steps": [
     {
      "name": "Submit",
-     "text": "Claude runs <code>kotl firesim submit --eta 3h --max 6h --wait</code> over SSH. Kotl refuses a workload that would never power off.",
+     "text": "Claude runs <code>kotl firesim submit my-job/ --wait</code> over SSH. Kotl checks the folder against the template and refuses a job that can't end on its own.",
      "nodes": [
       "remote",
       "plugin-r",
@@ -831,18 +869,24 @@
     },
     {
      "name": "Claim board",
-     "text": "The launcher claims an idle, healthy board in the registry and marks it busy.",
+     "text": "The launcher claims an idle, healthy board in the registry, marks it busy, and adds this job's key to the board's PC.",
      "nodes": [
       "launcher",
-      "registry"
+      "registry",
+      "access",
+      "key",
+      "pc1"
      ],
      "edges": [
-      "e-launch-registry"
+      "e-launch-registry",
+      "e-launch-access",
+      "e-access-bus",
+      "e-bus-pc1"
      ]
     },
     {
      "name": "Run",
-     "text": "The launcher runs the FireSim module, which drives FireSim. FireSim reflashes the board and boots Linux over the kotl SSH path.",
+     "text": "The FireSim module runs <b>your own</b> FireSim, from your Chipyard, as you. It reflashes the board and boots Linux using the job key.",
      "nodes": [
       "launcher",
       "fsmod",
@@ -875,11 +919,12 @@
     },
     {
      "name": "Hang",
-     "text": "A guard trips: the expect timeout, <code>--idle</code>, or the owner's <code>--max</code>. The module's stop step kills the simulation cleanly, the job is marked hung or over max, and the owner is told.",
+     "text": "A guard trips: idle, the expect timeout, or the owner's <code>--max</code>. The end step kills the simulation, removes the job key, marks the job hung or over max, and tells the owner.",
      "nodes": [
       "launcher",
       "fsmod",
       "firesim",
+      "access",
       "key",
       "pc1",
       "notifier",
@@ -889,6 +934,8 @@
      "edges": [
       "e-launch-fs",
       "e-fsmod-firesim",
+      "e-launch-access",
+      "e-access-bus",
       "e-firesim-bus",
       "e-bus-pc1",
       "e-notify-remote"
@@ -896,13 +943,14 @@
     },
     {
      "name": "Power off",
-     "text": "Normal end: the run script finishes with <code>poweroff</code>. FireSim sees the simulation is gone, the launcher reads PASS/FAIL, frees the board and exits. Slurm records succeeded or failed.",
+     "text": "Normal end: <code>run.sh</code> prints its KOTL RESULT line and the system powers off. FireSim returns, the launcher removes the job key, frees the board and exits. Slurm records succeeded or failed, then its epilog repeats the end step as a backup.",
      "nodes": [
       "pc1",
       "key",
       "firesim",
       "fsmod",
       "launcher",
+      "access",
       "registry",
       "starter"
      ],
@@ -911,6 +959,8 @@
       "e-firesim-bus",
       "e-fsmod-firesim",
       "e-launch-fs",
+      "e-launch-access",
+      "e-access-bus",
       "e-launch-registry",
       "e-starter-launch"
      ]
@@ -953,7 +1003,7 @@
    "steps": [
     {
      "name": "Request",
-     "text": "You run <code>kotl firesim session --eta 2h</code>. It goes into the same Slurm queue as batch jobs.",
+     "text": "From your own Chipyard you type <code>firesim infrasetup</code>, as always. Kotl's wrapper sees you hold no board and queues a job, the same queue as batch jobs.",
      "nodes": [
       "local",
       "cli",
@@ -965,15 +1015,14 @@
      ]
     },
     {
-     "name": "Boot",
-     "text": "Your turn: Slurm starts the launcher, which claims a free board (PC 1 here). The FireSim module boots your system through FireSim.",
+     "name": "Start",
+     "text": "Your turn: Slurm starts the job. The launcher claims the board and adds this job's key to its PC.",
      "nodes": [
       "queue",
       "starter",
       "launcher",
       "registry",
-      "fsmod",
-      "firesim",
+      "access",
       "key",
       "pc1"
      ],
@@ -981,6 +1030,22 @@
       "e-queue-starter",
       "e-starter-launch",
       "e-launch-registry",
+      "e-launch-access",
+      "e-access-bus",
+      "e-bus-pc1"
+     ]
+    },
+    {
+     "name": "Boot",
+     "text": "The wrapper now runs your real <code>firesim infrasetup</code>, then <code>runworkload</code>, inside the job and as you. Your FireSim reaches the PC with the job key.",
+     "nodes": [
+      "launcher",
+      "fsmod",
+      "firesim",
+      "key",
+      "pc1"
+     ],
+     "edges": [
       "e-launch-fs",
       "e-fsmod-firesim",
       "e-firesim-bus",
@@ -989,7 +1054,7 @@
     },
     {
      "name": "Attach",
-     "text": "<code>kotl firesim attach &lt;job&gt;</code> checks you own it and opens the console on PC 1.",
+     "text": "<code>kotl firesim attach &lt;job&gt;</code> checks you own it and opens the console on PC 1. Run your application.",
      "nodes": [
       "local",
       "cli",
@@ -1022,27 +1087,47 @@
     },
     {
      "name": "End",
-     "text": "The system powers off, or you run <code>kotl end</code>. The module stops the simulation, then the board is freed and Slurm closes the job.",
+     "text": "Type <code>poweroff</code> in the sim, or run <code>firesim kill</code>. <code>runworkload</code> returns and the job ends: Kotl removes the job key, closes leftover sessions and frees the board. Slurm's epilog repeats this as a backup.",
      "nodes": [
-      "local",
-      "cli",
-      "queue",
-      "starter",
-      "launcher",
-      "fsmod",
-      "firesim",
-      "key",
       "pc1",
-      "registry"
+      "key",
+      "firesim",
+      "fsmod",
+      "launcher",
+      "access",
+      "registry",
+      "starter"
      ],
      "edges": [
-      "e-local-cli",
-      "e-cli-queue",
-      "e-starter-launch",
-      "e-launch-fs",
-      "e-fsmod-firesim",
+      "e-bus-pc1",
       "e-firesim-bus",
-      "e-bus-pc1"
+      "e-fsmod-firesim",
+      "e-launch-fs",
+      "e-launch-access",
+      "e-access-bus",
+      "e-launch-registry",
+      "e-starter-launch"
+     ]
+    },
+    {
+     "name": "Forgot",
+     "text": "Walked away? After the idle time with no console activity, the launcher runs the end step, frees the board and tells you.",
+     "nodes": [
+      "launcher",
+      "fsmod",
+      "access",
+      "key",
+      "pc1",
+      "notifier",
+      "local",
+      "plugin-l"
+     ],
+     "edges": [
+      "e-launch-fs",
+      "e-launch-access",
+      "e-access-bus",
+      "e-bus-pc1",
+      "e-notify-local"
      ]
     }
    ]
@@ -1136,7 +1221,8 @@
     "<b>Teal is Kotl</b>, our product: the code we write and maintain, plus a plugin in each user's Claude.",
     "<b>Purple is Slurm</b>, off the shelf. Kotl talks to it in exactly four places, through its normal commands.",
     "<b>Gray is everything else</b> off the shelf (FireSim, the workstation's OS) and the hardware.",
-    "Everything reaching the FPGA PCs goes through the <b>kotl SSH key</b>, FireSim included.",
+    "Everything reaching the FPGA PCs goes through the <b>kotl key</b> or a <b>job key</b> that works only while that job runs.",
+    "Users keep <b>their own Chipyard and FireSim</b>. Plain <code>firesim</code> commands go through Kotl's wrapper, which queues them; a job ends when the simulated Linux powers off.",
     "FireSim is the first module. Program/reset and driver tests come later the same way."
    ],
    "hint": "Click any box for its commands and files. The tabs show what Kotl is, where it meets Slurm, and three flows step by step."
@@ -1147,11 +1233,11 @@
    "title": "What's Kotl",
    "what": "Everything highlighted in teal: the code we write, install and maintain.",
    "bullets": [
-    "<b>Entry:</b> the <code>kotl</code> CLI, console attach, and the Kotl plugin for Claude Code on each user's PC.",
-    "<b>Core:</b> launcher, board registry, health check, ETA notifier, job results, the kotl SSH key. Later: power monitor, usage dashboard. Parked: same-design pick.",
+    "<b>Entry:</b> the <code>kotl</code> CLI with its <code>firesim</code> wrapper, console attach, the job template, and the Kotl plugin for Claude Code.",
+    "<b>Core:</b> launcher, board registry, PC access (job keys), health check, ETA notifier, job results, the kotl SSH key. Later: power monitor, usage dashboard. Parked: same-design pick.",
     "<b>Modules:</b> FireSim now. Later: program/reset, driver tests."
    ],
-   "note": "Not Kotl: Slurm (scheduling), FireSim (simulation), the workstation OS (sudo, systemd timers, OpenSSH) and the FPGA PCs. Kotl only uses their normal commands and config files, so any of them can be upgraded on its own."
+   "note": "Not Kotl: Slurm (scheduling), each user's FireSim (simulation), the workstation OS (sudo, systemd timers, OpenSSH) and the FPGA PCs. Kotl only uses their normal commands and config files."
   },
   "slurmlens": {
    "kind": "Kotl ↔ Slurm",
@@ -1160,7 +1246,7 @@
    "what": "Four places, numbered like the purple badges. Everything else in Kotl never talks to Slurm.",
    "ordered": [
     "<b>Queue ↔ kotl CLI.</b> The CLI submits (<code>sbatch</code>), cancels (<code>scancel</code>) and lists (<code>squeue</code>). Slurm orders the queue by priority and counts boards as licenses.",
-    "<b>Job starter → launcher.</b> When a board is free, Slurm runs <code>job.sh</code>, which hands over to Kotl's launcher. A cancel arrives as a signal. When the launcher exits, Slurm marks the job done.",
+    "<b>Job starter → launcher.</b> When a board is free, Slurm runs <code>job.sh</code>, which asks Kotl's launcher to claim it. A cancel arrives as a signal. After the job, Slurm's epilog runs Kotl's end step again as a backup.",
     "<b>Health runner → health check.</b> Slurm runs Kotl's <code>health.sh</code> every 5 minutes.",
     "<b>Accounting → notifier and dashboard.</b> The notifier asks who is running and when queued jobs will start; the dashboard (later) reads history with <code>sacct</code>."
    ],
@@ -1171,25 +1257,32 @@
    "title": "Remote user PC",
    "what": "A user's own machine. Builds happen here; runs happen through the workstation.",
    "bullets": [
-    "Builds the design with Chipyard (bitstream + driver).",
+    "Builds the design with their own Chipyard and FireSim (bitstream + driver).",
     "Has a normal Linux account on the workstation, reached over SSH.",
-    "Never holds a key to the FPGA PCs."
+    "Never holds a lasting key to the FPGA PCs; a job key works only during their job.",
+    "<b>What they get:</b> plain <code>firesim</code> keeps working, <code>kotl new</code> gives the template, and Claude knows the rest."
    ],
    "term": [
     {
      "host": "you@laptop",
      "lines": [
       {
-       "k": "# queue a batch job (Claude usually runs this for you)"
+       "k": "# once: start a job folder from the template"
       },
       {
-       "c": "ssh ws kotl firesim submit --hwdb my_design --workload my-test.json --eta 3h --max 6h --wait"
+       "c": "ssh ws kotl new my-job"
+      },
+      {
+       "k": "# queue it (Claude usually runs this for you)"
+      },
+      {
+       "c": "ssh ws kotl firesim submit my-job/ --wait"
       },
       {
        "o": "job 1234 queued · estimated start 14:20"
       },
       {
-       "o": "job 1234 finished · result: passed"
+       "o": "job 1234 finished · result: PASS · VCU118 freed"
       },
       {
        "c": "ssh ws kotl fetch 1234"
@@ -1202,7 +1295,8 @@
    ],
    "files": [
     "workloadjson",
-    "runtestsh"
+    "runtestsh",
+    "kotljson"
    ]
   },
   "local": {
@@ -1210,8 +1304,8 @@
    "title": "Local user",
    "what": "Same flow, but the user is already logged into the workstation.",
    "bullets": [
-    "Builds with Chipyard on the workstation.",
-    "Uses the same <code>kotl</code> commands, without the SSH hop.",
+    "Builds with their own Chipyard on the workstation.",
+    "Types plain <code>firesim</code> commands as before; the wrapper queues them. Or uses <code>kotl</code> directly.",
     "Gets no more FPGA access than a remote user."
    ],
    "term": [
@@ -1273,8 +1367,8 @@
    "title": "Kotl plugin for Claude Code",
    "what": "Part of Kotl, installed in every user's Claude Code. It makes the right path the easy one.",
    "bullets": [
-    "<b>Skill:</b> teaches Claude the <code>kotl</code> commands, and to write expect scripts that always have a timeout.",
-    "<b>Hook before a tool runs:</b> blocks raw <code>firesim infrasetup</code> and <code>runworkload</code>.",
+    "<b>Skill:</b> teaches Claude the job template (<code>kotl new</code>), the <code>kotl</code> commands, and to write expect scripts that always have a timeout.",
+    "<b>Hook before a tool runs:</b> checks that <code>firesim</code> resolves to Kotl's wrapper, and warns if a job folder doesn't follow the template.",
     "<b>Hook at session start:</b> shows the queue, your jobs and their start estimates.",
     "Shows over-ETA and start-time notices; fetches results when a job ends."
    ],
@@ -1282,35 +1376,56 @@
     "skill",
     "hooks"
    ],
-   "note": "Convenience only. The SSH lockdown is the real enforcement."
+   "note": "Convenience only. The SSH lockdown and the end step are the real enforcement."
   },
   "cli": {
    "kind": "Kotl · core · Slurm ①",
    "kindClass": "ko",
    "title": "kotl CLI",
-   "what": "The one command for everything. Each module adds its own subcommands. It talks to Slurm's queue for you.",
+   "what": "The one command for everything. It also puts a thin <code>firesim</code> wrapper first on everyone's PATH, so plain FireSim commands from your own Chipyard go through the queue.",
    "bullets": [
-    "Refuses a FireSim batch job that would never power off (no run script, no <code>--expect</code>).",
+    "<b>firesim wrapper:</b> <code>firesim infrasetup</code> with no board held queues a job and waits; once the board is yours, it runs your real FireSim inside the job. <code>runworkload</code> returning or <code>firesim kill</code> ends the job.",
+    "Your FireSim's own <code>deploy/</code> stays where it is: FireSim's setup adds it to the end of PATH, so the wrapper is found first and calls it.",
+    "<b>kotl new my-job</b> copies the job template (marshal.json, run.sh, kotl.json).",
+    "Refuses a batch job that can't end on its own (no <code>run</code> script, no <code>--expect</code>), and says how to fix it.",
     "Cancel works only for the job's owner or root."
    ],
    "term": [
     {
-     "host": "you@ws",
+     "host": "you@ws · your own Chipyard",
      "lines": [
+      {
+       "k": "# plain FireSim: the wrapper queues for you"
+      },
+      {
+       "c": "firesim infrasetup"
+      },
+      {
+       "o": "kotl: waiting for a VCU118 (1 ahead, ~40 min)… got vcu118-pc1 (job 1240)"
+      },
+      {
+       "o": "kotl: type poweroff in the sim or run firesim kill to free the board"
+      },
+      {
+       "c": "firesim runworkload"
+      },
+      {
+       "o": "kotl: job 1240 done · VCU118 freed · results in /srv/kotl/out/you/1240/"
+      },
+      {
+       "k": "# or the job template, one command"
+      },
+      {
+       "c": "kotl new my-job"
+      },
+      {
+       "c": "kotl firesim submit my-job/ --wait"
+      },
       {
        "k": "# core"
       },
       {
        "c": "kotl status | history | cancel <job> | logs <job> -f | fetch <job>"
-      },
-      {
-       "k": "# FireSim module"
-      },
-      {
-       "c": "kotl firesim submit --hwdb <hw> --workload <wl> --eta 3h --max 6h [--idle 30m] [--expect test.exp]"
-      },
-      {
-       "c": "kotl firesim session --eta 2h"
       },
       {
        "c": "kotl firesim attach <job>"
@@ -1324,16 +1439,23 @@
      ]
     },
     {
-     "host": "under the hood · what submit runs",
+     "host": "under the hood · what the wrapper runs",
      "lines": [
       {
-       "c": "sbatch -L vcu118:1 --time=3:00:00 /opt/kotl/job.sh /srv/kotl/jobs/1234"
+       "c": "sbatch -L vcu118:1 --time=1:00:00 /opt/kotl/job.sh /srv/kotl/jobs/1240"
       },
       {
-       "k": "# --time is the ETA. --max and --idle are enforced by the launcher."
+       "c": "srun --jobid=1240 --overlap firesim -c /srv/kotl/jobs/1240/config_runtime.yaml runworkload"
+      },
+      {
+       "k": "# --time is the ETA (kotl.json, or the default). --max and --idle are enforced by the launcher."
       }
      ]
     }
+   ],
+   "files": [
+    "profiled",
+    "kotljson"
    ]
   },
   "attach": {
@@ -1344,7 +1466,8 @@
    "bullets": [
     "Runs as kotl through the sudo rule and checks you own the job.",
     "Opens only FireSim's console session on the job's board.",
-    "Detach and reattach any time. An expect script can drive it too."
+    "While your job runs you can also use your job key directly; it stops working when the job ends.",
+    "Console activity is what the idle guard watches. Detach and reattach any time."
    ],
    "term": [
     {
@@ -1379,17 +1502,19 @@
    "kind": "Kotl · core · Slurm ②",
    "kindClass": "ko",
    "title": "Launcher",
-   "what": "Slurm starts it for every job. It claims a board and runs the job's module, step by step.",
+   "what": "Slurm starts it for every job. It claims a board, grants this job's PC access, runs the module, and always cleans up.",
    "bullets": [
     "Confirms the Slurm job is real and belongs to the caller.",
-    "Claims an idle, healthy board in the registry.",
-    "Calls the module's steps in order: <b>check → prepare → run → stop → collect</b>.",
-    "<b>Hang guards:</b> the owner's <code>--max</code> (default 2× ETA), optional <code>--idle</code>, and the expect script's own timeout.",
-    "<b>On cancel or a tripped guard:</b> runs the module's stop step, records why, then frees the board.",
+    "Claims an idle, healthy board in the registry, then adds this job's key to the board's PC.",
+    "Calls the module's steps in order: <b>check → prepare → run → stop → collect</b>. FireSim itself runs as you, from your Chipyard.",
+    "<b>The job ends when your work ends:</b> the simulated Linux powers off, or you run <code>firesim kill</code>. No timer closes it.",
+    "<b>Guards for the rest:</b> idle (no console activity for N minutes, always on for interactive jobs), the owner's <code>--max</code> (default 2× ETA), and the expect script's own timeout.",
+    "<b>End step, every time:</b> stop leftovers (<code>firesim kill</code>), remove the job key and its sessions, record why, free the board. Slurm's epilog repeats it as a backup.",
     "Records setup time on every job, for the parked same-design idea."
    ],
    "files": [
     "jobsh",
+    "epilog",
     "sudoers",
     "modules"
    ]
@@ -1532,33 +1657,37 @@
    "kind": "Kotl · module",
    "kindClass": "ko",
    "title": "FireSim module",
-   "what": "The first module: five small programs that drive FireSim for one job on one board.",
+   "what": "The first module: drives the user's own FireSim for one job on one board, and makes sure every job can end.",
    "bullets": [
-    "<b>check:</b> the workload powers off by itself, or <code>--expect</code> was given.",
-    "<b>prepare:</b> writes this job's runtime config for the claimed board, then sets up (reflashes) the board.",
-    "<b>run:</b> batch runs until the simulated Linux powers off. Session: boots and waits for you.",
-    "<b>stop:</b> kills the simulation cleanly. <b>collect:</b> copies results and reads the PASS/FAIL marker."
+    "<b>check:</b> the job follows the template. A batch job needs a FireMarshal <code>run</code>/<code>command</code> (it powers off when the script ends) or <code>--expect</code>. Interactive jobs are allowed, with the idle guard on.",
+    "<b>prepare:</b> copies your <code>config_runtime.yaml</code> into the job folder with the run farm set to the claimed board, then runs your <code>firesim infrasetup</code>.",
+    "<b>run:</b> your <code>firesim runworkload</code>. Batch returns when the simulated Linux powers off; interactive waits for you.",
+    "<b>stop:</b> <code>firesim kill</code>, safe any time and more than once. <b>collect:</b> copies results and reads the <code>KOTL RESULT</code> line.",
+    "<b>What users get:</b> <code>kotl new</code> (the template), a one-page guide, the Claude skill, and refusals that say exactly what to fix."
    ],
    "term": [
     {
-     "host": "under the hood · as kotl",
+     "host": "under the hood · as you, inside job 1240",
      "lines": [
       {
-       "c": "firesim -c /srv/kotl/jobs/1234/config_runtime.yaml infrasetup"
+       "c": "firesim -c /srv/kotl/jobs/1240/config_runtime.yaml infrasetup"
       },
       {
-       "c": "firesim -c /srv/kotl/jobs/1234/config_runtime.yaml runworkload"
+       "c": "firesim -c /srv/kotl/jobs/1240/config_runtime.yaml runworkload"
       },
       {
-       "k": "# on cancel or a tripped guard"
+       "k": "# on kill, cancel or a tripped guard"
       },
       {
-       "c": "firesim -c /srv/kotl/jobs/1234/config_runtime.yaml kill"
+       "c": "firesim -c /srv/kotl/jobs/1240/config_runtime.yaml kill"
       }
      ]
     }
    ],
    "files": [
+    "workloadjson",
+    "runtestsh",
+    "kotljson",
     "modules",
     "runtimeyaml",
     "expectscript"
@@ -1613,13 +1742,13 @@
   "key": {
    "kind": "Kotl · core",
    "kindClass": "ko",
-   "title": "kotl SSH key",
-   "what": "Kotl's account and key: the only path from the workstation to the FPGA PCs. FireSim uses it too.",
+   "title": "kotl SSH key · job keys",
+   "what": "The only paths from the workstation to the FPGA PCs: Kotl's own key, and short-lived job keys that Kotl adds and removes.",
    "bullets": [
-    "The private key lives in <code>/home/kotl/.ssh</code>, readable only by the kotl account.",
-    "FPGA PCs let in only kotl and the admin, with keys only.",
-    "kotl is in the <code>firesim</code> group that FireSim's setup scripts expect. No users are.",
-    "A new PC joins by adding this key and a registry entry. No software to install."
+    "The kotl private key lives in <code>/home/kotl/.ssh</code>, readable only by the kotl account. Kotl uses it to grant and remove job keys, for health checks and for cleanup.",
+    "A job key lets the job's owner and their FireSim into the PC's FireSim account, only while the job runs (see PC access).",
+    "FPGA PCs let in only kotl, the FireSim account (job keys only) and the admin, with keys only.",
+    "A new PC joins by adding the kotl key, the key helper and a registry entry."
    ],
    "term": [
     {
@@ -1632,7 +1761,7 @@
        "o": "vcu118-pc1"
       },
       {
-       "c": "ssh vcu118-pc1 hostname        # as a normal user"
+       "c": "ssh vcu118-pc1 hostname        # as a normal user, no job running"
       },
       {
        "o": "Permission denied (publickey)."
@@ -1641,7 +1770,8 @@
     }
    ],
    "files": [
-    "sshd"
+    "sshd",
+    "authkeys"
    ]
   },
   "queue": {
@@ -1692,12 +1822,14 @@
    "title": "Job starter",
    "what": "The part of Slurm that runs each job and signals it. Here it runs only on the workstation.",
    "bullets": [
-    "When a board license is free, runs <code>job.sh</code>, which hands over to Kotl's launcher.",
+    "When a board license is free, runs <code>job.sh</code> as the user; it asks Kotl's launcher (as kotl) to claim the board and grant access.",
     "On cancel: sends a stop signal, waits up to 2 minutes (<code>KillWait</code>), then force-stops.",
-    "Records the job as succeeded or failed from the launcher's exit code."
+    "After every job, runs Kotl's epilog: the end step again, as a backup.",
+    "Records the job as succeeded or failed from the exit code."
    ],
    "files": [
-    "jobsh"
+    "jobsh",
+    "epilog"
    ]
   },
   "runner": {
@@ -1749,12 +1881,12 @@
   "firesim": {
    "kind": "Off the shelf",
    "title": "FireSim",
-   "what": "The simulation tool itself. Kotl's FireSim module drives it; Kotl doesn't change it.",
+   "what": "Each user's own FireSim, in their own Chipyard. Kotl doesn't install or change it; it runs it inside the user's job.",
    "bullets": [
-    "One install on the workstation, owned by kotl.",
-    "Its manager reaches the FPGA PCs over SSH with the kotl key.",
-    "Keeps each simulation's console in a <code>screen</code> session on the board's PC, and notices when it disappears.",
-    "Workloads come from FireMarshal: the run script does the test and powers off."
+    "Users keep building bitstreams and drivers in their own Chipyard. The driver is built from the user's tree, so custom target configs just work.",
+    "Runs as the user, inside their Slurm job. It reaches the board's PC with the job key, which works only while the job runs.",
+    "Keeps each simulation's console in a <code>screen</code> session on the PC, and notices when it disappears.",
+    "Workloads come from FireMarshal: the run script does the work, then the system powers off."
    ],
    "files": [
     "workloadjson",
@@ -1767,12 +1899,13 @@
    "title": "VCU118 PC 1",
    "what": "Hosts the lab's VCU118, at <code>192.168.1.2</code> (<code>vcu118-pc1</code> in kotl's SSH config). Reachable only from the workstation.",
    "bullets": [
-    "Runs sshd, the XDMA driver and FireSim's helper scripts. No Kotl code.",
-    "No user accounts besides kotl and the admin.",
+    "Runs sshd, the XDMA driver, FireSim's helper scripts and a small key helper. No other Kotl code.",
+    "Accounts: kotl, the FireSim account (job keys only) and the admin.",
     "Reboots are harmless: the health check sees it come back."
    ],
    "files": [
     "sshd",
+    "authkeys",
     "screenrc"
    ]
   },
@@ -1820,6 +1953,43 @@
     "Different board types get their own license name (for example <code>u250:2</code>).",
     "Servers without FPGAs can join for health and power monitoring only."
    ]
+  },
+  "access": {
+   "kind": "Kotl · core",
+   "kindClass": "ko",
+   "title": "PC access (job keys)",
+   "what": "Lets a job's owner, and their own FireSim, reach the board's PC for exactly as long as the job runs. No timers: access follows the job.",
+   "bullets": [
+    "<b>Job start:</b> the launcher makes a key for this job and adds it to the PC's FireSim account (<code>&lt;pc-user&gt;</code>, name to be confirmed), using the kotl key.",
+    "<b>Job end</b> (poweroff, <code>firesim kill</code>, cancel or a tripped guard): removes the key, closes any SSH sessions still open with it, then the board is freed.",
+    "<b>Backup:</b> Slurm's epilog runs the same end step after every job, even if the launcher crashed. It is safe to run twice.",
+    "Only the board this job claimed gets the key. Outside a job, users can't reach any PC."
+   ],
+   "term": [
+    {
+     "host": "under the hood · as kotl",
+     "lines": [
+      {
+       "k": "# job 1240 starts on vcu118-pc1"
+      },
+      {
+       "c": "ssh vcu118-pc1 kotl-keys add 1240 'restrict,pty ssh-ed25519 AAAA… kotl-job-1240'"
+      },
+      {
+       "k": "# job 1240 ends, for any reason"
+      },
+      {
+       "c": "ssh vcu118-pc1 kotl-keys remove 1240   # removes the key, ends its sessions"
+      }
+     ]
+    }
+   ],
+   "files": [
+    "authkeys",
+    "epilog",
+    "sshd"
+   ],
+   "note": "The PC-side helper is a small script installed by the admin in M1. No other Kotl code runs on the PCs."
   }
  },
  "files": {
@@ -1828,7 +1998,7 @@
    "path": "/etc/slurm/",
    "ext": "conf",
    "desc": "Slurm settings Kotl relies on (rough sketch)",
-   "body": "# Single node: the workstation\nSlurmctldHost=ws\nNodeName=ws CPUs=16 State=UNKNOWN\nPartitionName=fpga Nodes=ws Default=YES MaxTime=UNLIMITED State=UP\n\n# Boards are counted as licenses\nLicenses=vcu118:1\n\n# Priority (rough sketch, tune later)\nPriorityType=priority/multifactor\nPriorityWeightFairshare=10000\nPriorityWeightAge=1000\nPriorityWeightQOS=100000\n\n# Never kill for passing the ETA; give clean stops time\nOverTimeLimit=UNLIMITED\nKillWait=120\n\n# History\nAccountingStorageType=accounting_storage/slurmdbd\n\n# Kotl's health check\nHealthCheckProgram=/opt/kotl/health.sh\nHealthCheckInterval=300"
+   "body": "# Single node: the workstation\nSlurmctldHost=ws\nNodeName=ws CPUs=16 State=UNKNOWN\nPartitionName=fpga Nodes=ws Default=YES MaxTime=UNLIMITED State=UP\n\n# Boards are counted as licenses\nLicenses=vcu118:1\n\n# Priority (rough sketch, tune later)\nPriorityType=priority/multifactor\nPriorityWeightFairshare=10000\nPriorityWeightAge=1000\nPriorityWeightQOS=100000\n\n# Never kill for passing the ETA; give clean stops time\nOverTimeLimit=UNLIMITED\nKillWait=120\n\n# Kotl's end step after every job (backup)\nEpilog=/opt/kotl/epilog.sh\n\n# History\nAccountingStorageType=accounting_storage/slurmdbd\n\n# Kotl's health check\nHealthCheckProgram=/opt/kotl/health.sh\nHealthCheckInterval=300"
   },
   "healthconf": {
    "name": "slurm.conf (excerpt)",
@@ -1842,7 +2012,7 @@
    "path": "/opt/kotl/",
    "ext": "sh",
    "desc": "What Slurm runs for every Kotl job",
-   "body": "#!/bin/sh\n# Slurm runs this as the submitting user.\n# It hands over to the launcher as kotl; sudo checks the rule below.\nexec sudo -u kotl /opt/kotl/launch \"$SLURM_JOB_ID\" \"$1\""
+   "body": "#!/bin/sh\n# Slurm runs this as the submitting user, inside their job.\n# 1) Kotl (as kotl) claims a board and adds this job's key to its PC\nsudo -u kotl /opt/kotl/launch start \"$SLURM_JOB_ID\" \"$1\" || exit 1\n# 2) the module's steps; your own FireSim runs as you\n/opt/kotl/run-module \"$SLURM_JOB_ID\" \"$1\"; rc=$?\n# 3) end step: stop leftovers, remove the key, free the board\nsudo -u kotl /opt/kotl/launch end \"$SLURM_JOB_ID\"\nexit $rc"
   },
   "sudoers": {
    "name": "kotl",
@@ -1856,7 +2026,7 @@
    "path": "/opt/kotl/",
    "ext": "dir",
    "desc": "A module = five small programs the launcher calls in order",
-   "body": "/opt/kotl/modules/firesim/\n  check     # can this job run? (workload powers off, or --expect given)\n  prepare   # write config_runtime.yaml, then firesim infrasetup\n  run       # batch: firesim runworkload · session: boot and wait\n  stop      # firesim kill\n  collect   # copy results, read the PASS/FAIL marker"
+   "body": "/opt/kotl/modules/firesim/\n  check     # does the job follow the template? (run script, or --expect, or interactive)\n  prepare   # copy config_runtime.yaml for the claimed board, then your firesim infrasetup\n  run       # your firesim runworkload (as you, inside the job)\n  stop      # firesim kill · safe any time, more than once\n  collect   # copy results, read the KOTL RESULT line"
   },
   "registry": {
    "name": "kotl.db",
@@ -1904,22 +2074,22 @@
    "name": "config_runtime.yaml",
    "path": "/srv/kotl/jobs/<job>/",
    "ext": "yaml",
-   "desc": "Written by the FireSim module for one job and one board (check field names against your FireSim version)",
-   "body": "run_farm:\n  base_recipe: run-farm-recipes/externally_provisioned.yaml\n  recipe_arg_overrides:\n    default_simulation_dir: /home/kotl/sims\n    run_farm_hosts_to_use:\n      - vcu118-pc1: one_fpga_spec      # the board Kotl claimed\n\ntarget_config:\n  topology: no_net_config\n  no_net_num_nodes: 1\n  default_hw_config: my_design         # from --hwdb\n\nworkload:\n  workload_name: my-test.json          # from --workload"
+   "desc": "A copy of your config_runtime.yaml, with the run farm pointed at the claimed board (check field names against your FireSim version)",
+   "body": "# copied from your deploy/config_runtime.yaml; Kotl changes only run_farm\nrun_farm:\n  base_recipe: run-farm-recipes/externally_provisioned.yaml\n  recipe_arg_overrides:\n    default_platform: XilinxVCU118InstanceDeployManager\n    default_simulation_dir: /home/<pc-user>/sims/job-1240\n    run_farm_hosts_to_use:\n      - <pc-user>@vcu118-pc1: one_fpga_spec   # the board Kotl claimed\n\n# target_config, workload, ... : unchanged from yours"
   },
   "workloadjson": {
-   "name": "my-test.json",
-   "path": "your workload folder",
+   "name": "marshal.json",
+   "path": "my-job/ (from kotl new)",
    "ext": "json",
-   "desc": "FireMarshal workload: runs the test, then powers off",
-   "body": "{\n  \"name\": \"my-test\",\n  \"base\": \"br-base.json\",\n  \"overlay\": \"overlay\",\n  \"run\": \"run-test.sh\",\n  \"outputs\": [\"/root/results\"]\n}"
+   "desc": "Template · FireMarshal workload: what boots. With \"run\", the system powers off when the script ends.",
+   "body": "{\n  \"name\": \"my-job\",\n  \"base\": \"br-base.json\",\n  \"files\": [[\"my_app\", \"/root/\"]],\n  \"run\": \"run.sh\",\n  \"outputs\": [\"/root/results\"]\n}"
   },
   "runtestsh": {
-   "name": "run-test.sh",
-   "path": "your workload folder",
+   "name": "run.sh",
+   "path": "my-job/ (from kotl new)",
    "ext": "sh",
-   "desc": "Runs inside the simulated Linux; prints the marker Kotl looks for",
-   "body": "#!/bin/sh\nif /root/my_test; then\n  echo \"KOTL RESULT: PASS\"\nelse\n  echo \"KOTL RESULT: FAIL\"\nfi\npoweroff"
+   "desc": "Template · runs inside the simulated Linux. Put your commands in main(); keep the last lines.",
+   "body": "#!/bin/sh\n# Kotl job template. Put your commands in main().\nmain() {\n  /root/my_app\n}\n\n# --- keep below: Kotl reads this line, then the system powers off ---\nmain; rc=$?\nif [ $rc -eq 0 ]; then echo \"KOTL RESULT: PASS\"; else echo \"KOTL RESULT: FAIL ($rc)\"; fi"
   },
   "expectscript": {
    "name": "test.exp",
@@ -1932,8 +2102,8 @@
    "name": "kotl.conf",
    "path": "/etc/ssh/sshd_config.d/ (on each FPGA PC)",
    "ext": "conf",
-   "desc": "Only kotl and the admin can log in, and only with keys",
-   "body": "AllowUsers kotl admin\nPasswordAuthentication no\nKbdInteractiveAuthentication no\nPermitRootLogin no"
+   "desc": "Only kotl, the FireSim account (job keys) and the admin can log in, and only with keys",
+   "body": "# kotl: Kotl's own key (grant/remove job keys, health, cleanup)\n# <pc-user>: FireSim account; job keys only, added and removed by Kotl\nAllowUsers kotl <pc-user> <admin>\nPasswordAuthentication no\nKbdInteractiveAuthentication no\nPermitRootLogin no"
   },
   "screenrc": {
    "name": ".screenrc",
@@ -1955,6 +2125,34 @@
    "ext": "md",
    "desc": "Teaches Claude how to use Kotl",
    "body": "---\nname: kotl\ndescription: Run FireSim jobs on the lab's FPGAs through Kotl: submit, check, cancel, fetch results.\n---\n# Kotl\n- Never run firesim directly. Use kotl.\n- Submit in the background; you'll be told when it ends:\n  ssh ws kotl firesim submit --hwdb <hw> --workload <wl> --eta <est> --max <limit> --wait\n- The workload must power off by itself, or pass --expect <script>.\n- Expect scripts always set a timeout and exit 2 on timeout.\n- When a job ends: ssh ws kotl fetch <job>, then read status.json first."
+  },
+  "kotljson": {
+   "name": "kotl.json",
+   "path": "my-job/ (from kotl new)",
+   "ext": "json",
+   "desc": "Template · Kotl settings for this job. The wrapper also reads it from your FireSim deploy folder.",
+   "body": "{\n  \"mode\": \"batch\",          // or \"interactive\" (idle guard always on)\n  \"eta\": \"1h\",              // queue estimate; never kills the job\n  \"max\": \"2h\",              // optional hang guard (default 2x eta)\n  \"idle\": \"30m\",            // free the board after this long with no console activity\n  \"hwdb\": \"xilinx_vcu118_firesim_rocket_singlecore_4GB_no_nic\"\n}"
+  },
+  "epilog": {
+   "name": "epilog.sh",
+   "path": "/opt/kotl/ (Epilog= in slurm.conf)",
+   "ext": "sh",
+   "desc": "Slurm runs this after every job, even if the launcher crashed: the end step again",
+   "body": "#!/bin/sh\n# Run by Slurm as root after each job. Safe to run twice.\nexec runuser -u kotl -- /opt/kotl/launch end \"$SLURM_JOB_ID\""
+  },
+  "authkeys": {
+   "name": "authorized_keys",
+   "path": "/home/<pc-user>/.ssh/ (on each FPGA PC)",
+   "ext": "conf",
+   "desc": "Managed by Kotl: one line per running job, removed when the job ends",
+   "body": "# managed by kotl-keys; do not edit by hand\nrestrict,pty ssh-ed25519 AAAA… kotl-job-1240"
+  },
+  "profiled": {
+   "name": "kotl.sh",
+   "path": "/etc/profile.d/",
+   "ext": "sh",
+   "desc": "Puts Kotl's firesim wrapper first on everyone's PATH",
+   "body": "# FireSim's own setup appends deploy/ to PATH, so this wrapper is found first.\nexport PATH=/opt/kotl/bin:$PATH"
   }
  }
 }
