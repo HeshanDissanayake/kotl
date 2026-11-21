@@ -22,7 +22,7 @@ Click any box for its commands and config files. The tabs show what Kotl is, whe
 
 ## 2. Architecture in one page
 
-- **Kotl (ours, teal in the view).** The `kotl` CLI, launcher, board registry, health check, ETA notifier, job results, console attach, the kotl SSH key setup, per-job PC access (job keys), a `firesim` wrapper and job template, modules (FireSim first), and a Claude Code plugin.
+- **Kotl (ours, teal in the view).** The `kotl` CLI, launcher, board registry, health check, ETA notifier, job results, console attach, the kotl SSH key setup, per-job PC access (job keys), a `firesim` wrapper and job template, adapters (FireSim first) on a generic board lease, and a Claude Code plugin.
 - **Slurm (off the shelf, purple).** It runs on the workstation as a single node. Kotl meets it in exactly **four** places:
   1. The CLI uses `sbatch` / `scancel` / `squeue`.
   2. Slurm's job starter runs `deploy/job.sh`, which hands over to the launcher via `sudo -u kotl`.
@@ -40,7 +40,7 @@ Click any box for its commands and config files. The tabs show what Kotl is, whe
 - **Priority (rough, user will tune):** multifactor with fair-share and age, plus admin-only QOS `urgent` and `maint`.
 - **How a batch job ends:** the simulated Linux powers off. The workload has a run script ending in `poweroff`, or an `--expect` script drives it. `kotl firesim submit` refuses a batch job that has neither.
 - **Pass or fail:** the run script prints `KOTL RESULT: PASS` or `KOTL RESULT: FAIL`. The launcher reads it from the console log, and the exit code tells Slurm succeeded or failed.
-- **Clean stop:** cancel or a tripped guard runs the module's `stop` step (`firesim kill` for FireSim) *before* the board is freed.
+- **Clean stop:** every lease ends with the same end step: the adapter's polite `stop` (`firesim kill` for FireSim), then remove the job key, kill every process of the PC account, and only then free the board.
 - **Users' own FireSim (decided 2026-11-22):** users keep their own Chipyard and FireSim; Kotl installs none. A `firesim` wrapper first on PATH queues plain FireSim commands; the user's FireSim runs as them, inside their Slurm job.
 - **PC access follows the job:** a per-job SSH key is added at job start and removed by the end step (with Slurm's `Epilog` as backup), which also closes leftover sessions. No timer closes a job; idle and `--max` guards catch forgotten or hung ones.
 - **Job template:** `kotl new` gives `marshal.json` (FireMarshal, `run` powers off when done), `run.sh` (prints `KOTL RESULT`) and `kotl.json` (mode, ETA, guards, hwdb). `check` refuses batch jobs that can't end by themselves.
@@ -56,9 +56,9 @@ Python 3.10+. Only the standard library at runtime where practical: `sqlite3`, `
 
 ```
 kotl/
-  cli/                 # the kotl command; subcommands per module
-  core/                # registry, launcher, guards, results, health, notifier, attach
-  modules/firesim/     # check / prepare / run / stop / collect
+  cli/                 # the kotl command: lease/run/release, firesim wrapper, per-adapter subcommands
+  core/                # board lease (launcher, access, guards, end step), registry, results, health, notifier, attach
+  adapters/firesim/    # triggers / check / prepare / stop / collect
   slurm.py             # the ONLY place that runs Slurm commands
   ssh.py               # the ONLY place that runs ssh/scp/rsync to the PCs
 deploy/                # setup scripts and config templates; the admin runs these
@@ -69,7 +69,7 @@ tools/status.py        # check + refresh (shipped; section 6)
 tests/
   conftest.py          # records which feature each test covers (shipped)
   unit/                # fakes for Slurm and SSH; run anywhere
-  integration/         # real Slurm on the workstation, dummy module, no FPGA
+  integration/         # real Slurm on the workstation, `kotl run` with a dummy command, no FPGA
   hw/                  # real VCU118; marked hw; only submitted through Kotl
 docs/architecture/
   index.html           # renderer only; don't put content here
@@ -77,13 +77,13 @@ docs/architecture/
   status.json          # build status per part
 ```
 
-**The module contract:** every module is a folder with five executables (or one Python class with five methods): `check`, `prepare`, `run`, `stop`, `collect`. The launcher calls them in order with the job directory. `stop` must be safe to call at any point, and more than once.
+**The lease and adapters (decided 2026-11-22):** the core is a generic board lease: claim a board, add a job key, run the user's work, then the end step. It has no task knowledge. `kotl lease`/`release` and `kotl run -- <cmd>` use it directly. An **adapter** is a folder of optional hooks (or one Python class): `triggers` (what starts and ends a lease, e.g. FireSim commands), `check`, `prepare`, `stop` (polite stop, safe any time and more than once) and `collect`. FireSim is the first adapter; program/reset and board tests come later the same way.
 
 ## 5. Milestones (each ends with its parts green in the view)
 
 **M0: Repo, tooling, status checks** (the tooling is already shipped; adopt and verify it)
 - Run `git config core.hooksPath .githooks` and add `.kotl/` and `__pycache__/` to `.gitignore`.
-- Create the package skeleton (`kotl/`, `kotl/core/`, `kotl/modules/`) and a first tagged test.
+- Create the package skeleton (`kotl/`, `kotl/core/`, `kotl/adapters/`) and a first tagged test.
 - Run `python3 tools/status.py check`. It must pass.
 - Done when: a commit that changes code without its status is refused, a file no feature owns is refused, and `pytest` followed by `tools/status.py refresh` turns a `built` feature with a passing tagged test green in the view.
 
@@ -94,15 +94,15 @@ docs/architecture/
 - The PC's FireSim account and the `kotl-keys` helper for job keys; Slurm `Epilog=`; the `firesim` wrapper on PATH (`/etc/profile.d/kotl.sh`). No shared FireSim install.
 - Done when: `sbatch -L vcu118:1 --wrap 'sleep 30'` queues and runs, `scancel` by another user is refused, and `sudo -u kotl ssh vcu118-pc1 hostname` works while a normal user's ssh fails.
 
-**M2: Core path end to end with a dummy module (no FPGA)**
+**M2: Board lease end to end (no FPGA)**
 - Registry with atomic claim and release, plus state changes.
-- `deploy/job.sh` and the launcher, with ownership check, module steps, `--max`/`--idle` guards, and clean stop on SIGTERM within `KillWait`.
-- CLI: `submit`, `status`, `cancel`, `history`, `logs -f`, `fetch`.
+- `deploy/job.sh`, the epilog and the launcher (the lease): ownership check, adapter hooks, `--max`/`--idle` guards, and the end step on exit or SIGTERM within `KillWait`.
+- CLI: `lease`, `release`, `run -- <cmd>`, `status`, `cancel`, `history`, `logs -f`, `fetch`.
 - The results folder and `status.json` per job.
-- Done when: a `sleep` module job goes queued → running → done through real Slurm, cancel stops it cleanly, `--max` trips correctly, and two jobs never claim the same board.
+- Done when: `kotl run -- sleep 30` goes queued → running → done through real Slurm, cancel stops it cleanly, `--max` trips correctly, and two jobs never claim the same board.
 
 **M3: FireSim batch jobs on a real board**
-- The FireSim module: `check` (powers off, or `--expect`), `prepare` (per-job `config_runtime.yaml` plus `infrasetup`), `run` (`runworkload`), `stop` (`firesim kill`), `collect` (results plus the PASS/FAIL marker).
+- The FireSim adapter: triggers (`infrasetup` starts a lease, `runworkload` returning or `firesim kill` ends it), `check` (template: powers off, or `--expect`), `prepare` (per-job `config_runtime.yaml`), `stop` (`firesim kill`), `collect` (results plus the KOTL RESULT marker). Job keys and the PC-side `kotl-keys` helper.
 - `--expect` support, with expect running against the console.
 - Record setup time.
 - Done when: a sample workload passes on VCU118 PC 1 *through Kotl*, a forced hang trips `--max` and leaves the board healthy, and the result shows correctly in Slurm's history.
@@ -117,7 +117,7 @@ docs/architecture/
 - The skill (kotl commands, expect scripts with timeouts, fetch-then-read-status workflow) and hooks (check that `firesim` is Kotl's wrapper and job folders follow the template, show the queue at session start).
 - Done when: a fresh Claude Code session on a user's PC can submit, wait, fetch and report a FireSim job using only the plugin.
 
-**Later:** power monitor, usage dashboard, program/reset module, driver-tests module, more boards. **Parked:** same-design board pick.
+**Later:** power monitor, usage dashboard, program/reset adapter, board-tests adapter, more boards. **Parked:** same-design board pick.
 
 ## 6. Keeping the view in sync
 
@@ -155,7 +155,7 @@ The user watches a published copy of this view on claude.ai, republished from th
 
 ## 6a. How to add a part (recipe)
 
-Whenever the system gains a part (a module, a board type, a check, a service), the view changes in the **same commit** as the code. **Never move existing boxes.** Use free space; if there is none, grow the zone and `canvas` downward or rightward.
+Whenever the system gains a part (an adapter, a board type, a check, a service), the view changes in the **same commit** as the code. **Never move existing boxes.** Use free space; if there is none, grow the zone and `canvas` downward or rightward.
 
 1. **Box:** add a node to `architecture.json` → `nodes`:
    ```json
@@ -165,7 +165,7 @@ Whenever the system gains a part (a module, a board type, a check, a service), t
    ```
    - `owner` sets the color and lens: `kotl` (ours, teal), `slurm`, `outside` (other off-the-shelf), `hardware`, or `user`.
    - Other optional fields: `later: true` (dashed outline), `style: "chip"` (a small teal chip, with `inside: "<parent id>"`), `slurm: true` (a Kotl box that talks to Slurm), and `detail` (share another box's details and status).
-   - Box sizes follow the grid: core and module boxes are 170×70 in the four Kotl columns (x = 281, 477, 673, 869; rows y = 280, 400, 520, 650). PCs are 150 wide at x = 1340.
+   - Box sizes follow the grid: core and adapter boxes are 170×70 in the four Kotl columns (x = 281, 477, 673, 869; rows y = 280, 400, 520, 650). PCs are 150 wide at x = 1340.
 2. **Arrows:** add edges with `from`, `to`, an orthogonal path `d` (`M x,y H x V y`) that ends exactly on a box edge, `style` (`solid`, `bg` for background checks, `fut` for later), `slurm: true` if it is a Kotl ↔ Slurm link, and a short `label` (`{text, x, y, anchor}`, or `rotate: -90` for a vertical label).
 3. **Details:** add `details["<id>"]` with `kind`, `title`, `what`, `bullets`, `term` (commands as `{host, lines:[{c}|{o}|{k}]}`) and `files` (keys into `files`). Add any new config file to `files` with `name`, `path`, `ext`, `desc` and `body`.
 4. **Status:** add `features["<id>"]` to `status.json` with `title`, `status`, `milestone` and `code` paths.
@@ -177,14 +177,14 @@ Whenever the system gains a part (a module, a board type, a check, a service), t
 - **Hardware:** a `u250-pc1` box under the FPGA PCs, as above. Grow the `net` zone and `canvas.h` to make room, an arrow from the `key` bar, and status `planned` at milestone `Later` (or the user's choice) with `code: ["deploy/pc/"]`.
 - **Slurm:** change the `slurmconf` file card to `Licenses=vcu118:2,u250:1`, and the `queue` details to say board types are separate licenses.
 - **Registry:** no new box. Its `type` column already exists, so mention `u250` in its details.
-- **FireSim module:** if U250 needs a different FireSim platform, say in `fsmod` details that `prepare` picks the platform from the board's `type`. Add a file card for any new config, and a `log` line in its status.
+- **FireSim adapter:** if U250 needs a different FireSim platform, say in `fsmod` details that `prepare` picks the platform from the board's `type`. Add a file card for any new config, and a `log` line in its status.
 - **Health check:** if the check differs per type (another PCI device ID), update `health` details and the `healthsh` card.
 - Run `check`, look at the view, and commit code, `architecture.json` and `status.json` together.
 
 ## 7. Testing
 
 - **Unit:** fake `slurm.py` and `ssh.py`. Every feature gets tests tagged `@pytest.mark.feature("<key>")`. `tests/conftest.py` records the results to `.kotl/test-results.json` for `refresh`.
-- **Integration:** real Slurm on the workstation, a dummy module, no boards. Tag them the same way.
+- **Integration:** real Slurm on the workstation, `kotl run` with a dummy command, no boards. Tag them the same way.
 - **Hardware:** `@pytest.mark.hw`. Submit through Kotl, never directly. Copy the job's `.kotl/test-results.json` back and run `tools/status.py refresh --results <file>`. Results land in `tests.hardware`.
 
 ## 8. Open questions for the user (ask, don't guess)

@@ -259,7 +259,7 @@
       "log": []
     },
     "launcher": {
-      "title": "Launcher",
+      "title": "Launcher · board lease",
       "status": "planned",
       "milestone": "M2",
       "now": "",
@@ -277,6 +277,10 @@
         {
           "date": "2026-11-22",
           "text": "Design: grants and removes job keys; idle guard; end step runs every time, with Slurm's epilog as backup."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "Design: generic board lease (kotl lease/run/release); end step kills every PC-account process; no FireSim knowledge in the core."
         }
       ]
     },
@@ -300,6 +304,10 @@
         {
           "date": "2026-11-22",
           "text": "Design: firesim wrapper first on PATH queues plain FireSim commands; kotl new copies the job template."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "Design: kotl lease / release / run for any tool."
         }
       ]
     },
@@ -320,13 +328,13 @@
       "log": []
     },
     "fsmod": {
-      "title": "FireSim module",
+      "title": "FireSim adapter",
       "status": "planned",
       "milestone": "M3",
       "now": "",
       "code": [
         "deploy/templates/",
-        "kotl/modules/firesim/"
+        "kotl/adapters/firesim/"
       ],
       "tests": {
         "unit": null,
@@ -338,6 +346,10 @@
         {
           "date": "2026-11-22",
           "text": "Design: runs the user's own FireSim as the user; check enforces the job template (marshal.json, run.sh, kotl.json)."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "Design: now a thin adapter on the lease (triggers, prepare, check, polite stop, collect)."
         }
       ]
     },
@@ -457,10 +469,15 @@
       },
       "last_commit": null,
       "issues": [],
-      "log": []
+      "log": [
+        {
+          "date": "2026-11-22",
+          "text": "Design: an adapter on the lease, at maintenance level."
+        }
+      ]
     },
     "drvtest": {
-      "title": "Driver tests module",
+      "title": "Board tests",
       "status": "later",
       "milestone": "Later",
       "now": "",
@@ -471,7 +488,12 @@
       },
       "last_commit": null,
       "issues": [],
-      "log": []
+      "log": [
+        {
+          "date": "2026-11-22",
+          "text": "Design: renamed Board tests; deep board check as an adapter on the lease."
+        }
+      ]
     },
     "more": {
       "title": "More boards",
@@ -522,6 +544,10 @@
         {
           "date": "2026-11-22",
           "text": "New part: per-job SSH keys, added at job start and removed by the end step and Slurm's epilog."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "Design: end step kills every process of the PC account."
         }
       ]
     }

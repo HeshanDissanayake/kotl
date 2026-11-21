@@ -5,7 +5,7 @@ Read `HANDOFF.md` first. The design lives in `docs/architecture/architecture.jso
 ## Always
 - Keep the view true, in the **same commit** as the code:
   - Touched a feature: update its `status`, `now`, `issues` and a `log` line in `status.json`.
-  - Added a part or a link (module, board type, check, service): follow HANDOFF section 6a. That means a box and arrows in `architecture.json`, its details, commands and file cards, its status entry, and any flows it joins. Never move existing boxes.
+  - Added a part or a link (adapter, board type, check, service): follow HANDOFF section 6a. That means a box and arrows in `architecture.json`, its details, commands and file cards, its status entry, and any flows it joins. Never move existing boxes.
 - You may set `in_progress`, `built` and `blocked`. Only `tools/status.py refresh` sets `tested` or `failing`.
 - After tests: `python3 tools/status.py refresh`. Before committing: `python3 tools/status.py check` (the pre-commit hook runs it too; fix what it reports, never bypass it).
 - After changing `architecture.json`, open the view and look at it once.
