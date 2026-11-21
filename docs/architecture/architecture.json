@@ -2,7 +2,7 @@
  "schema": 1,
  "title": "Kotl Architecture",
  "intro": "Teal is Kotl, our product. Purple is Slurm. Gray is everything else off the shelf, plus the hardware. The dot on each box is its build status; click a box for exactly what's happening.",
- "latest": "Latest: M1 scripts are written (deploy/). They're waiting for the admin to run them; then verify-m1.sh turns the M1 parts green.",
+ "latest": "Latest: M1 done. Slurm, MariaDB, the kotl account and key, and the PC's kotl login are live on comparch and 192.168.1.2, and verify-m1.sh passed all 21 checks.",
  "canvas": {
   "w": 1520,
   "h": 820

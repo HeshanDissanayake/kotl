@@ -53,8 +53,8 @@ result runner false node_not_drained "$(ok sh -c '! sinfo -h -o %t | grep -Eq "d
 result acct false accounting_answers "$(ok sacctmgr -n show cluster kotl)"
 
 # --- jobs through Slurm (starter, queue, acct)
-A=$(as "$OWNER" sbatch --parsable -L vcu118:1 --time=2 -J kotl-m1-a --wrap 'sleep 90' 2>&1)
-B=$(as "$OWNER" sbatch --parsable -L vcu118:1 --time=2 -J kotl-m1-b --wrap 'sleep 3' 2>&1)
+A=$(as "$OWNER" sbatch --parsable -o /dev/null -L vcu118:1 --time=2 -J kotl-m1-a --wrap 'sleep 90' 2>&1)
+B=$(as "$OWNER" sbatch --parsable -o /dev/null -L vcu118:1 --time=2 -J kotl-m1-b --wrap 'sleep 3' 2>&1)
 result starter false job_starts "$(ok wait_state "$A" RUNNING 30)" "job $A"
 sleep 3
 result queue false second_job_waits_for_board "$( [ "$(state "$B")" = PENDING ] && squeue -h -j "$B" -o %r | grep -q Licenses && echo 1 || echo 0)" "job $B: $(squeue -h -j "$B" -o '%T %r')"

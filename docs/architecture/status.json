@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "updated": "2026-11-21T14:38:04Z",
-  "repo_commit": "844ef4ff5b69c6e5958c430509c4b1ff59bff7a3",
+  "updated": "2026-11-21T15:01:00Z",
+  "repo_commit": "ec2e56a00cd3fbf08b0698be288665e710c9d993",
   "watch": [
     "kotl/",
     "deploy/",
@@ -21,9 +21,9 @@
   },
   "milestones": {
     "M0": "Repo, tooling and status checks",
-    "M1": "Workstation and PC setup (Slurm, accounts, SSH lockdown, FireSim)",
-    "M2": "Core path end to end with a dummy module (no FPGA)",
-    "M3": "FireSim batch jobs on a real board",
+    "M1": "Workstation and PC setup (Slurm, MariaDB, accounts, kotl key, PC login)",
+    "M2": "Board lease end to end (no FPGA)",
+    "M3": "FireSim adapter and job keys on a real board",
     "M4": "Health check, ETA notices, interactive sessions",
     "M5": "Kotl plugin for Claude Code",
     "Later": "After the first release"
@@ -43,7 +43,7 @@
         "unit": {
           "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-21T14:38:04Z"
+          "ran_at": "2026-11-21T14:59:51Z"
         },
         "hardware": null
       },
@@ -63,21 +63,25 @@
     },
     "queue": {
       "title": "Slurm queue + priority",
-      "status": "in_progress",
+      "status": "tested",
       "milestone": "M1",
-      "now": "Scripts written and dry-run tested; waiting for the admin to run them, then verify-m1.sh.",
+      "now": "Installed on comparch and the PC; verify-m1.sh passed.",
       "code": [
         "deploy/slurm/"
       ],
       "tests": {
         "unit": {
-          "passed": 4,
+          "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-21T14:38:04Z"
+          "ran_at": "2026-11-21T14:59:51Z"
         },
         "hardware": null
       },
-      "last_commit": null,
+      "last_commit": {
+        "hash": "ce7c72864fa89b4304fd198c018493fdf73088f8",
+        "message": "M1: deploy scripts for the workstation and PC (not yet run)",
+        "date": "2026-11-22T01:39:10+11:00"
+      },
       "issues": [],
       "log": [
         {
@@ -87,27 +91,35 @@
         {
           "date": "2026-11-22",
           "text": "deploy/slurm/install.sh + slurm.conf.in: license vcu118:1, multifactor priority, QOS urgent/maint, users added to the kotl account."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "Admin ran the M1 scripts; deploy/verify-m1.sh: all checks passed."
         }
       ]
     },
     "starter": {
       "title": "Slurm job starter",
-      "status": "in_progress",
+      "status": "tested",
       "milestone": "M1",
-      "now": "Scripts written and dry-run tested; waiting for the admin to run them, then verify-m1.sh.",
+      "now": "Installed on comparch and the PC; verify-m1.sh passed.",
       "code": [
         "deploy/epilog.sh",
         "deploy/slurm/"
       ],
       "tests": {
         "unit": {
-          "passed": 2,
+          "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-21T14:38:04Z"
+          "ran_at": "2026-11-21T14:59:51Z"
         },
         "hardware": null
       },
-      "last_commit": null,
+      "last_commit": {
+        "hash": "ce7c72864fa89b4304fd198c018493fdf73088f8",
+        "message": "M1: deploy scripts for the workstation and PC (not yet run)",
+        "date": "2026-11-22T01:39:10+11:00"
+      },
       "issues": [],
       "log": [
         {
@@ -117,51 +129,67 @@
         {
           "date": "2026-11-22",
           "text": "slurm.conf: OverTimeLimit=UNLIMITED, KillWait=120, Epilog=/opt/kotl/epilog.sh (no-op placeholder until M2)."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "Admin ran the M1 scripts; deploy/verify-m1.sh: all checks passed."
         }
       ]
     },
     "runner": {
       "title": "Slurm health runner",
-      "status": "in_progress",
+      "status": "tested",
       "milestone": "M1",
-      "now": "Scripts written and dry-run tested; waiting for the admin to run them, then verify-m1.sh.",
+      "now": "Installed on comparch and the PC; verify-m1.sh passed.",
       "code": [
         "deploy/slurm/"
       ],
       "tests": {
         "unit": {
-          "passed": 1,
+          "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-21T14:38:04Z"
+          "ran_at": "2026-11-21T14:59:51Z"
         },
         "hardware": null
       },
-      "last_commit": null,
+      "last_commit": {
+        "hash": "ce7c72864fa89b4304fd198c018493fdf73088f8",
+        "message": "M1: deploy scripts for the workstation and PC (not yet run)",
+        "date": "2026-11-22T01:39:10+11:00"
+      },
       "issues": [],
       "log": [
         {
           "date": "2026-11-22",
           "text": "slurm.conf: HealthCheckProgram=/opt/kotl/health.sh every 300 s (no-op placeholder until M4)."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "Admin ran the M1 scripts; deploy/verify-m1.sh: all checks passed."
         }
       ]
     },
     "acct": {
       "title": "Slurm accounting",
-      "status": "in_progress",
+      "status": "tested",
       "milestone": "M1",
-      "now": "Scripts written and dry-run tested; waiting for the admin to run them, then verify-m1.sh.",
+      "now": "Installed on comparch and the PC; verify-m1.sh passed.",
       "code": [
         "deploy/slurm/"
       ],
       "tests": {
         "unit": {
-          "passed": 2,
+          "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-21T14:38:04Z"
+          "ran_at": "2026-11-21T14:59:51Z"
         },
         "hardware": null
       },
-      "last_commit": null,
+      "last_commit": {
+        "hash": "ce7c72864fa89b4304fd198c018493fdf73088f8",
+        "message": "M1: deploy scripts for the workstation and PC (not yet run)",
+        "date": "2026-11-22T01:39:10+11:00"
+      },
       "issues": [],
       "log": [
         {
@@ -171,14 +199,18 @@
         {
           "date": "2026-11-22",
           "text": "slurmdbd.conf.in + MariaDB database; password generated on the machine, kept on re-runs."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "Admin ran the M1 scripts; deploy/verify-m1.sh: all checks passed."
         }
       ]
     },
     "os": {
       "title": "Workstation OS setup",
-      "status": "in_progress",
+      "status": "tested",
       "milestone": "M1",
-      "now": "Scripts written and dry-run tested; waiting for the admin to run them, then verify-m1.sh.",
+      "now": "Installed on comparch and the PC; verify-m1.sh passed.",
       "code": [
         "deploy/M1-SETUP.md",
         "deploy/accounts.sh",
@@ -189,13 +221,17 @@
       ],
       "tests": {
         "unit": {
-          "passed": 9,
+          "passed": 14,
           "failed": 0,
-          "ran_at": "2026-11-21T14:38:04Z"
+          "ran_at": "2026-11-21T14:59:51Z"
         },
         "hardware": null
       },
-      "last_commit": null,
+      "last_commit": {
+        "hash": "ec2e56a00cd3fbf08b0698be288665e710c9d993",
+        "message": "M1: admin run sheet deploy/M1-SETUP.md",
+        "date": "2026-11-22T01:53:45+11:00"
+      },
       "issues": [],
       "log": [
         {
@@ -209,14 +245,22 @@
         {
           "date": "2026-11-22",
           "text": "deploy/M1-SETUP.md: the admin's step-by-step M1 run sheet."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "Admin ran the M1 scripts; deploy/verify-m1.sh: all checks passed."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "Fixed: user name removed from M1-SETUP.md; verify-m1.sh test jobs no longer write slurm-*.out."
         }
       ]
     },
     "firesim": {
       "title": "Users' FireSim (check, no install)",
-      "status": "in_progress",
+      "status": "tested",
       "milestone": "M1",
-      "now": "Scripts written and dry-run tested; waiting for the admin to run them, then verify-m1.sh.",
+      "now": "Installed on comparch and the PC; verify-m1.sh passed.",
       "code": [
         "deploy/firesim/"
       ],
@@ -224,11 +268,19 @@
         "unit": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-21T14:38:04Z"
+          "ran_at": "2026-11-21T14:59:51Z"
         },
-        "hardware": null
+        "hardware": {
+          "passed": 2,
+          "failed": 0,
+          "ran_at": "2026-11-21T14:59:51Z"
+        }
       },
-      "last_commit": null,
+      "last_commit": {
+        "hash": "ce7c72864fa89b4304fd198c018493fdf73088f8",
+        "message": "M1: deploy scripts for the workstation and PC (not yet run)",
+        "date": "2026-11-22T01:39:10+11:00"
+      },
       "issues": [],
       "log": [
         {
@@ -242,14 +294,18 @@
         {
           "date": "2026-11-22",
           "text": "deploy/firesim/check.sh: read-only check of kotl login, Xilinx card, XDMA, PC account."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "Admin ran the M1 scripts; deploy/verify-m1.sh: all checks passed."
         }
       ]
     },
     "key": {
       "title": "kotl SSH key",
-      "status": "in_progress",
+      "status": "tested",
       "milestone": "M1",
-      "now": "Scripts written and dry-run tested; waiting for the admin to run them, then verify-m1.sh.",
+      "now": "Installed on comparch and the PC; verify-m1.sh passed.",
       "code": [
         "deploy/ssh/"
       ],
@@ -257,11 +313,19 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-21T14:38:04Z"
+          "ran_at": "2026-11-21T14:59:51Z"
         },
-        "hardware": null
+        "hardware": {
+          "passed": 1,
+          "failed": 0,
+          "ran_at": "2026-11-21T14:59:51Z"
+        }
       },
-      "last_commit": null,
+      "last_commit": {
+        "hash": "ce7c72864fa89b4304fd198c018493fdf73088f8",
+        "message": "M1: deploy scripts for the workstation and PC (not yet run)",
+        "date": "2026-11-22T01:39:10+11:00"
+      },
       "issues": [],
       "log": [
         {
@@ -275,14 +339,18 @@
         {
           "date": "2026-11-22",
           "text": "deploy/ssh/setup-kotl-key.sh: kotl key and SSH config per PC (BatchMode, accept-new)."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "Admin ran the M1 scripts; deploy/verify-m1.sh: all checks passed."
         }
       ]
     },
     "pc1": {
       "title": "VCU118 PC 1 setup",
-      "status": "in_progress",
+      "status": "tested",
       "milestone": "M1",
-      "now": "Scripts written and dry-run tested; waiting for the admin to run them, then verify-m1.sh.",
+      "now": "Installed on comparch and the PC; verify-m1.sh passed.",
       "code": [
         "deploy/pc/"
       ],
@@ -290,11 +358,19 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-21T14:38:04Z"
+          "ran_at": "2026-11-21T14:59:51Z"
         },
-        "hardware": null
+        "hardware": {
+          "passed": 1,
+          "failed": 0,
+          "ran_at": "2026-11-21T14:59:51Z"
+        }
       },
-      "last_commit": null,
+      "last_commit": {
+        "hash": "ce7c72864fa89b4304fd198c018493fdf73088f8",
+        "message": "M1: deploy scripts for the workstation and PC (not yet run)",
+        "date": "2026-11-22T01:39:10+11:00"
+      },
       "issues": [],
       "log": [
         {
@@ -316,6 +392,10 @@
         {
           "date": "2026-11-22",
           "text": "deploy/pc/setup.sh: kotl account with key, password locked; soft lockdown leaves sshd and virtex-host alone."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "Admin ran the M1 scripts; deploy/verify-m1.sh: all checks passed."
         }
       ]
     },
@@ -331,7 +411,11 @@
         "unit": null,
         "hardware": null
       },
-      "last_commit": null,
+      "last_commit": {
+        "hash": "ce7c72864fa89b4304fd198c018493fdf73088f8",
+        "message": "M1: deploy scripts for the workstation and PC (not yet run)",
+        "date": "2026-11-22T01:39:10+11:00"
+      },
       "issues": [],
       "log": [
         {
@@ -480,11 +564,15 @@
         "unit": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-21T14:38:04Z"
+          "ran_at": "2026-11-21T14:59:51Z"
         },
         "hardware": null
       },
-      "last_commit": null,
+      "last_commit": {
+        "hash": "ce7c72864fa89b4304fd198c018493fdf73088f8",
+        "message": "M1: deploy scripts for the workstation and PC (not yet run)",
+        "date": "2026-11-22T01:39:10+11:00"
+      },
       "issues": [],
       "log": [
         {

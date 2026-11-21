@@ -8,7 +8,7 @@ Each step can be reversed with `--undo` (see the end).
 ## 1. Accounts, folders, sudoers
 
 ```sh
-sudo deploy/accounts.sh install --admin heshds
+sudo deploy/accounts.sh install --admin <your-user>
 ```
 
 Creates the `kotl` account and the `kotl-users` group (every regular user), and writes
