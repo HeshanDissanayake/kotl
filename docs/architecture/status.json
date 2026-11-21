@@ -75,7 +75,12 @@
       },
       "last_commit": null,
       "issues": [],
-      "log": []
+      "log": [
+        {
+          "date": "2026-11-22",
+          "text": "slurm.conf card: Licenses=vcu118:1 (one board)."
+        }
+      ]
     },
     "starter": {
       "title": "Slurm job starter",
@@ -189,13 +194,18 @@
       },
       "last_commit": null,
       "issues": [],
-      "log": []
+      "log": [
+        {
+          "date": "2026-11-22",
+          "text": "Lab fact: the only VCU118 PC is at 192.168.1.2."
+        }
+      ]
     },
     "pc2": {
       "title": "VCU118 PC 2 setup",
-      "status": "planned",
-      "milestone": "M1",
-      "now": "",
+      "status": "later",
+      "milestone": "Later",
+      "now": "Only one VCU118 for now.",
       "code": [
         "deploy/pc/"
       ],
@@ -205,7 +215,12 @@
       },
       "last_commit": null,
       "issues": [],
-      "log": []
+      "log": [
+        {
+          "date": "2026-11-22",
+          "text": "Moved to later: the lab has one VCU118 for now (user decision)."
+        }
+      ]
     },
     "registry": {
       "title": "Board registry",
