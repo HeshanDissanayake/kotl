@@ -1,0 +1,1964 @@
+{
+ "schema": 1,
+ "title": "Kotl Architecture",
+ "intro": "Teal is Kotl, our product. Purple is Slurm. Gray is everything else off the shelf, plus the hardware. The dot on each box is its build status; click a box for exactly what's happening.",
+ "latest": "Latest: the diagram is now drawn from architecture.json, and a check keeps code, status and diagram in agreement.",
+ "canvas": {
+  "w": 1520,
+  "h": 820
+ },
+ "zones": [
+  {
+   "id": "slurm",
+   "kind": "slurm",
+   "x": 240,
+   "y": 20,
+   "w": 820,
+   "h": 160,
+   "label": "SLURM · off-the-shelf scheduler",
+   "sub": "not part of Kotl · runs on the workstation · Kotl uses only its normal commands"
+  },
+  {
+   "id": "kotl",
+   "kind": "kotl",
+   "x": 240,
+   "y": 220,
+   "w": 820,
+   "h": 540,
+   "label": "KOTL · ours"
+  },
+  {
+   "id": "net",
+   "kind": "net",
+   "x": 1325,
+   "y": 250,
+   "w": 180,
+   "h": 550,
+   "label": "FPGA PCs",
+   "sub": "workstation only"
+  }
+ ],
+ "texts": [
+  {
+   "text": "USERS",
+   "x": 40,
+   "y": 232,
+   "class": "zone-label"
+  },
+  {
+   "text": "OFF-THE-SHELF",
+   "x": 1090,
+   "y": 78,
+   "class": "zone-label"
+  },
+  {
+   "text": "CORE",
+   "x": 256,
+   "y": 272,
+   "class": "band-label"
+  },
+  {
+   "text": "MODULES · the actual work",
+   "x": 256,
+   "y": 626,
+   "class": "band-label"
+  }
+ ],
+ "dividers": [
+  {
+   "x1": 252,
+   "y1": 605,
+   "x2": 1048,
+   "y2": 605
+  }
+ ],
+ "nodes": [
+  {
+   "id": "remote",
+   "owner": "user",
+   "x": 40,
+   "y": 250,
+   "w": 180,
+   "h": 160,
+   "align": "top",
+   "title": "Remote user PC",
+   "sub": [
+    "builds with Chipyard"
+   ]
+  },
+  {
+   "id": "plugin-r",
+   "detail": "plugin",
+   "owner": "kotl",
+   "x": 52,
+   "y": 330,
+   "w": 156,
+   "h": 56,
+   "style": "chip",
+   "inside": "remote",
+   "title": "Kotl plugin",
+   "sub": [
+    "in Claude Code"
+   ]
+  },
+  {
+   "id": "local",
+   "owner": "user",
+   "x": 40,
+   "y": 450,
+   "w": 180,
+   "h": 160,
+   "align": "top",
+   "title": "Local user",
+   "sub": [
+    "on the workstation"
+   ]
+  },
+  {
+   "id": "plugin-l",
+   "detail": "plugin",
+   "owner": "kotl",
+   "x": 52,
+   "y": 530,
+   "w": 156,
+   "h": 56,
+   "style": "chip",
+   "inside": "local",
+   "title": "Kotl plugin",
+   "sub": [
+    "in Claude Code"
+   ]
+  },
+  {
+   "id": "admin",
+   "owner": "user",
+   "x": 40,
+   "y": 650,
+   "w": 180,
+   "h": 90,
+   "title": "Admin (you)",
+   "sub": [
+    "root · maintenance"
+   ]
+  },
+  {
+   "id": "queue",
+   "owner": "slurm",
+   "x": 281,
+   "y": 90,
+   "w": 170,
+   "h": 70,
+   "title": "Queue + priority",
+   "sub": [
+    "licenses · QOS · ETA"
+   ],
+   "badge": 1
+  },
+  {
+   "id": "starter",
+   "owner": "slurm",
+   "x": 477,
+   "y": 90,
+   "w": 170,
+   "h": 70,
+   "title": "Job starter",
+   "sub": [
+    "runs + signals jobs"
+   ],
+   "badge": 2
+  },
+  {
+   "id": "runner",
+   "owner": "slurm",
+   "x": 673,
+   "y": 90,
+   "w": 170,
+   "h": 70,
+   "title": "Health runner",
+   "sub": [
+    "every 5 minutes"
+   ],
+   "badge": 3
+  },
+  {
+   "id": "acct",
+   "owner": "slurm",
+   "x": 869,
+   "y": 90,
+   "w": 170,
+   "h": 70,
+   "title": "Accounting",
+   "sub": [
+    "start times · history"
+   ],
+   "badge": 4
+  },
+  {
+   "id": "cli",
+   "owner": "kotl",
+   "x": 281,
+   "y": 280,
+   "w": 170,
+   "h": 70,
+   "slurm": true,
+   "title": "kotl CLI",
+   "sub": [
+    "submit · board · fetch"
+   ]
+  },
+  {
+   "id": "launcher",
+   "owner": "kotl",
+   "x": 477,
+   "y": 280,
+   "w": 170,
+   "h": 70,
+   "slurm": true,
+   "title": "Launcher",
+   "sub": [
+    "runs a module's steps"
+   ]
+  },
+  {
+   "id": "health",
+   "owner": "kotl",
+   "x": 673,
+   "y": 280,
+   "w": 170,
+   "h": 70,
+   "slurm": true,
+   "title": "Health check",
+   "sub": [
+    "probes every board"
+   ]
+  },
+  {
+   "id": "notifier",
+   "owner": "kotl",
+   "x": 869,
+   "y": 280,
+   "w": 170,
+   "h": 70,
+   "slurm": true,
+   "title": "ETA notifier",
+   "sub": [
+    "ETA + start notices"
+   ]
+  },
+  {
+   "id": "attach",
+   "owner": "kotl",
+   "x": 281,
+   "y": 400,
+   "w": 170,
+   "h": 70,
+   "title": "Console attach",
+   "sub": [
+    "console, owner only"
+   ]
+  },
+  {
+   "id": "registry",
+   "owner": "kotl",
+   "x": 477,
+   "y": 400,
+   "w": 170,
+   "h": 70,
+   "title": "Board registry",
+   "sub": [
+    "state of every board"
+   ]
+  },
+  {
+   "id": "power",
+   "owner": "kotl",
+   "x": 673,
+   "y": 400,
+   "w": 170,
+   "h": 70,
+   "later": true,
+   "title": "Power monitor",
+   "sub": [
+    "later · every minute"
+   ]
+  },
+  {
+   "id": "dashboard",
+   "owner": "kotl",
+   "x": 869,
+   "y": 400,
+   "w": 170,
+   "h": 70,
+   "later": true,
+   "slurm": true,
+   "title": "Usage dashboard",
+   "sub": [
+    "later · usage + power"
+   ]
+  },
+  {
+   "id": "results",
+   "owner": "kotl",
+   "x": 281,
+   "y": 520,
+   "w": 170,
+   "h": 70,
+   "title": "Job results",
+   "sub": [
+    "one folder per job"
+   ]
+  },
+  {
+   "id": "affinity",
+   "owner": "kotl",
+   "x": 477,
+   "y": 520,
+   "w": 170,
+   "h": 70,
+   "later": true,
+   "title": "Same-design pick",
+   "sub": [
+    "parked · needs data"
+   ]
+  },
+  {
+   "id": "program",
+   "owner": "kotl",
+   "x": 477,
+   "y": 650,
+   "w": 170,
+   "h": 70,
+   "later": true,
+   "title": "Program / reset",
+   "sub": [
+    "later · admin module"
+   ]
+  },
+  {
+   "id": "drvtest",
+   "owner": "kotl",
+   "x": 673,
+   "y": 650,
+   "w": 170,
+   "h": 70,
+   "later": true,
+   "title": "Driver tests",
+   "sub": [
+    "later · XDMA check"
+   ]
+  },
+  {
+   "id": "fsmod",
+   "owner": "kotl",
+   "x": 869,
+   "y": 650,
+   "w": 170,
+   "h": 70,
+   "title": "FireSim module",
+   "sub": [
+    "batch · session · kill"
+   ]
+  },
+  {
+   "id": "os",
+   "owner": "outside",
+   "x": 1090,
+   "y": 90,
+   "w": 160,
+   "h": 110,
+   "title": "Workstation OS",
+   "sub": [
+    "sudo · OpenSSH",
+    "systemd timers"
+   ]
+  },
+  {
+   "id": "firesim",
+   "owner": "outside",
+   "x": 1090,
+   "y": 650,
+   "w": 160,
+   "h": 70,
+   "title": "FireSim",
+   "sub": [
+    "off-the-shelf tool"
+   ]
+  },
+  {
+   "id": "key",
+   "owner": "kotl",
+   "x": 1280,
+   "y": 280,
+   "w": 12,
+   "h": 480,
+   "style": "bus",
+   "title": "",
+   "labels": [
+    {
+     "text": "kotl SSH key",
+     "x": 1312,
+     "y": 460,
+     "rotate": -90
+    },
+    {
+     "text": "only path to PCs",
+     "x": 1312,
+     "y": 630,
+     "rotate": -90
+    }
+   ]
+  },
+  {
+   "id": "pc1",
+   "owner": "hardware",
+   "x": 1340,
+   "y": 310,
+   "w": 150,
+   "h": 130,
+   "align": "top",
+   "title": "VCU118 PC 1",
+   "sub": [
+    "sshd + XDMA driver",
+    "no Kotl code"
+   ],
+   "inner": {
+    "x": 1360,
+    "y": 384,
+    "w": 110,
+    "h": 40,
+    "text": "VCU118 board"
+   }
+  },
+  {
+   "id": "pc2",
+   "owner": "hardware",
+   "x": 1340,
+   "y": 490,
+   "w": 150,
+   "h": 130,
+   "align": "top",
+   "title": "VCU118 PC 2",
+   "sub": [
+    "sshd + XDMA driver",
+    "no Kotl code"
+   ],
+   "inner": {
+    "x": 1360,
+    "y": 564,
+    "w": 110,
+    "h": 40,
+    "text": "VCU118 board"
+   }
+  },
+  {
+   "id": "more",
+   "owner": "hardware",
+   "x": 1340,
+   "y": 660,
+   "w": 150,
+   "h": 100,
+   "later": true,
+   "title": "More boards",
+   "sub": [
+    "later · same pattern"
+   ]
+  }
+ ],
+ "edges": [
+  {
+   "id": "e-remote-cli",
+   "from": "remote",
+   "to": "cli",
+   "d": "M220,305 H281",
+   "style": "solid",
+   "label": {
+    "text": "SSH",
+    "x": 250,
+    "y": 297,
+    "anchor": "middle"
+   }
+  },
+  {
+   "id": "e-admin-cli",
+   "from": "admin",
+   "to": "cli",
+   "d": "M220,690 H258 V335 H281",
+   "style": "solid"
+  },
+  {
+   "id": "e-local-cli",
+   "from": "local",
+   "to": "cli",
+   "d": "M220,500 H258 V335 H281",
+   "style": "solid"
+  },
+  {
+   "id": "e-cli-queue",
+   "from": "cli",
+   "to": "queue",
+   "d": "M366,280 V160",
+   "style": "solid",
+   "slurm": true,
+   "label": {
+    "text": "sbatch · scancel · squeue",
+    "x": 374,
+    "y": 205,
+    "anchor": "start"
+   }
+  },
+  {
+   "id": "e-queue-starter",
+   "from": "queue",
+   "to": "starter",
+   "d": "M451,125 H477",
+   "style": "solid",
+   "slurm": true
+  },
+  {
+   "id": "e-starter-launch",
+   "from": "starter",
+   "to": "launcher",
+   "d": "M562,160 V280",
+   "style": "solid",
+   "slurm": true,
+   "label": {
+    "text": "starts · signals",
+    "x": 570,
+    "y": 205,
+    "anchor": "start"
+   }
+  },
+  {
+   "id": "e-runner-health",
+   "from": "runner",
+   "to": "health",
+   "d": "M758,160 V280",
+   "style": "solid",
+   "slurm": true,
+   "label": {
+    "text": "every 5 min",
+    "x": 766,
+    "y": 205,
+    "anchor": "start"
+   }
+  },
+  {
+   "id": "e-acct-notify",
+   "from": "acct",
+   "to": "notifier",
+   "d": "M954,160 V280",
+   "style": "solid",
+   "slurm": true,
+   "label": {
+    "text": "squeue",
+    "x": 962,
+    "y": 205,
+    "anchor": "start"
+   }
+  },
+  {
+   "id": "e-acct-dash",
+   "from": "acct",
+   "to": "dashboard",
+   "d": "M869,140 H856 V435 H869",
+   "style": "fut",
+   "slurm": true
+  },
+  {
+   "id": "e-cli-attach",
+   "from": "cli",
+   "to": "attach",
+   "d": "M366,350 V400",
+   "style": "solid",
+   "label": {
+    "text": "attach",
+    "x": 374,
+    "y": 380,
+    "anchor": "start"
+   }
+  },
+  {
+   "id": "e-launch-registry",
+   "from": "launcher",
+   "to": "registry",
+   "d": "M562,350 V400",
+   "style": "solid",
+   "label": {
+    "text": "claim",
+    "x": 570,
+    "y": 380,
+    "anchor": "start"
+   }
+  },
+  {
+   "id": "e-health-registry",
+   "from": "health",
+   "to": "registry",
+   "d": "M700,350 V380 H620 V400",
+   "style": "bg",
+   "label": {
+    "text": "mark down",
+    "x": 628,
+    "y": 374,
+    "anchor": "start"
+   }
+  },
+  {
+   "id": "e-health-bus",
+   "from": "health",
+   "to": "key",
+   "d": "M800,350 V375 H1280",
+   "style": "bg",
+   "label": {
+    "text": "probe every 5 min",
+    "x": 1165,
+    "y": 369,
+    "anchor": "middle"
+   }
+  },
+  {
+   "id": "e-power-registry",
+   "from": "power",
+   "to": "registry",
+   "d": "M673,435 H647",
+   "style": "fut"
+  },
+  {
+   "id": "e-power-bus",
+   "from": "power",
+   "to": "key",
+   "d": "M758,470 V495 H1280",
+   "style": "fut"
+  },
+  {
+   "id": "e-attach-bus",
+   "from": "attach",
+   "to": "key",
+   "d": "M366,470 V495 H1280",
+   "style": "solid",
+   "label": {
+    "text": "console",
+    "x": 1165,
+    "y": 489,
+    "anchor": "middle"
+   }
+  },
+  {
+   "id": "e-launch-program",
+   "from": "launcher",
+   "to": "program",
+   "d": "M477,330 H464 V630 H562 V650",
+   "style": "fut"
+  },
+  {
+   "id": "e-launch-drv",
+   "from": "launcher",
+   "to": "drvtest",
+   "d": "M477,330 H464 V630 H758 V650",
+   "style": "fut"
+  },
+  {
+   "id": "e-launch-results",
+   "from": "launcher",
+   "to": "results",
+   "d": "M477,330 H464 V555 H451",
+   "style": "solid"
+  },
+  {
+   "id": "e-launch-fs",
+   "from": "launcher",
+   "to": "fsmod",
+   "d": "M477,330 H464 V630 H954 V650",
+   "style": "solid",
+   "label": {
+    "text": "runs module steps",
+    "x": 461,
+    "y": 430,
+    "rotate": -90,
+    "anchor": "middle"
+   }
+  },
+  {
+   "id": "e-fsmod-firesim",
+   "from": "fsmod",
+   "to": "firesim",
+   "d": "M1039,685 H1090",
+   "style": "solid",
+   "label": {
+    "text": "runs",
+    "x": 1064,
+    "y": 677,
+    "anchor": "middle"
+   }
+  },
+  {
+   "id": "e-firesim-bus",
+   "from": "firesim",
+   "to": "key",
+   "d": "M1250,685 H1280",
+   "style": "solid"
+  },
+  {
+   "id": "e-program-bus",
+   "from": "program",
+   "to": "key",
+   "d": "M562,720 V745 H1280",
+   "style": "fut"
+  },
+  {
+   "id": "e-drv-bus",
+   "from": "drvtest",
+   "to": "key",
+   "d": "M758,720 V745 H1280",
+   "style": "fut"
+  },
+  {
+   "id": "e-os-notify",
+   "from": "os",
+   "to": "notifier",
+   "d": "M1170,200 V315 H1039",
+   "style": "bg",
+   "label": {
+    "text": "every minute",
+    "x": 1178,
+    "y": 262,
+    "anchor": "start"
+   }
+  },
+  {
+   "id": "e-notify-admin",
+   "from": "notifier",
+   "to": "admin",
+   "d": "M1039,330 H1052 V775 H130 V740",
+   "style": "solid"
+  },
+  {
+   "id": "e-notify-local",
+   "from": "notifier",
+   "to": "local",
+   "d": "M1039,330 H1052 V775 H14 V580 H40",
+   "style": "solid"
+  },
+  {
+   "id": "e-notify-remote",
+   "from": "notifier",
+   "to": "remote",
+   "d": "M1039,330 H1052 V775 H14 V380 H40",
+   "style": "solid",
+   "label": {
+    "text": "notices",
+    "x": 640,
+    "y": 770,
+    "anchor": "middle"
+   }
+  },
+  {
+   "id": "e-results-remote",
+   "from": "results",
+   "to": "remote",
+   "d": "M281,565 H236 V390 H220",
+   "style": "solid",
+   "label": {
+    "text": "kotl fetch",
+    "x": 230,
+    "y": 440,
+    "rotate": -90,
+    "anchor": "middle"
+   }
+  },
+  {
+   "id": "e-bus-more",
+   "from": "key",
+   "to": "more",
+   "d": "M1292,710 H1340",
+   "style": "fut"
+  },
+  {
+   "id": "e-bus-pc2",
+   "from": "key",
+   "to": "pc2",
+   "d": "M1292,550 H1340",
+   "style": "solid"
+  },
+  {
+   "id": "e-bus-pc1",
+   "from": "key",
+   "to": "pc1",
+   "d": "M1292,370 H1340",
+   "style": "solid"
+  }
+ ],
+ "flows": {
+  "batch": {
+   "tab": "FireSim batch job",
+   "steps": [
+    {
+     "name": "Submit",
+     "text": "Claude runs <code>kotl firesim submit --eta 3h --max 6h --wait</code> over SSH. Kotl refuses a workload that would never power off.",
+     "nodes": [
+      "remote",
+      "plugin-r",
+      "cli"
+     ],
+     "edges": [
+      "e-remote-cli"
+     ]
+    },
+    {
+     "name": "Queue",
+     "text": "The CLI hands the job to Slurm with <code>sbatch</code>. Slurm orders it by priority and estimates its start from the ETAs ahead of it.",
+     "nodes": [
+      "cli",
+      "queue"
+     ],
+     "edges": [
+      "e-cli-queue"
+     ]
+    },
+    {
+     "name": "Start",
+     "text": "A board license frees up. Slurm's job starter runs <code>job.sh</code>, which hands over to Kotl's launcher.",
+     "nodes": [
+      "queue",
+      "starter",
+      "launcher"
+     ],
+     "edges": [
+      "e-queue-starter",
+      "e-starter-launch"
+     ]
+    },
+    {
+     "name": "Claim board",
+     "text": "The launcher claims an idle, healthy board in the registry and marks it busy.",
+     "nodes": [
+      "launcher",
+      "registry"
+     ],
+     "edges": [
+      "e-launch-registry"
+     ]
+    },
+    {
+     "name": "Run",
+     "text": "The launcher runs the FireSim module, which drives FireSim. FireSim reflashes the board and boots Linux over the kotl SSH path.",
+     "nodes": [
+      "launcher",
+      "fsmod",
+      "firesim",
+      "key",
+      "pc1"
+     ],
+     "edges": [
+      "e-launch-fs",
+      "e-fsmod-firesim",
+      "e-firesim-bus",
+      "e-bus-pc1"
+     ]
+    },
+    {
+     "name": "Over ETA",
+     "text": "Still running past its ETA? Nothing is killed. The notifier (started every minute by a systemd timer) asks Slurm, then tells the owner and their Claude.",
+     "nodes": [
+      "acct",
+      "os",
+      "notifier",
+      "remote",
+      "plugin-r"
+     ],
+     "edges": [
+      "e-acct-notify",
+      "e-os-notify",
+      "e-notify-remote"
+     ]
+    },
+    {
+     "name": "Hang",
+     "text": "A guard trips: the expect timeout, <code>--idle</code>, or the owner's <code>--max</code>. The module's stop step kills the simulation cleanly, the job is marked hung or over max, and the owner is told.",
+     "nodes": [
+      "launcher",
+      "fsmod",
+      "firesim",
+      "key",
+      "pc1",
+      "notifier",
+      "remote",
+      "plugin-r"
+     ],
+     "edges": [
+      "e-launch-fs",
+      "e-fsmod-firesim",
+      "e-firesim-bus",
+      "e-bus-pc1",
+      "e-notify-remote"
+     ]
+    },
+    {
+     "name": "Power off",
+     "text": "Normal end: the run script finishes with <code>poweroff</code>. FireSim sees the simulation is gone, the launcher reads PASS/FAIL, frees the board and exits. Slurm records succeeded or failed.",
+     "nodes": [
+      "pc1",
+      "key",
+      "firesim",
+      "fsmod",
+      "launcher",
+      "registry",
+      "starter"
+     ],
+     "edges": [
+      "e-bus-pc1",
+      "e-firesim-bus",
+      "e-fsmod-firesim",
+      "e-launch-fs",
+      "e-launch-registry",
+      "e-starter-launch"
+     ]
+    },
+    {
+     "name": "Results",
+     "text": "The collect step fills the job folder. Claude runs <code>kotl fetch</code> to pull it to the user's PC.",
+     "nodes": [
+      "launcher",
+      "results",
+      "remote",
+      "plugin-r"
+     ],
+     "edges": [
+      "e-launch-results",
+      "e-results-remote"
+     ]
+    },
+    {
+     "name": "Meanwhile",
+     "text": "Every 5 minutes Slurm runs Kotl's health check, which probes both boards over the SSH path and marks a bad one down.",
+     "nodes": [
+      "runner",
+      "health",
+      "registry",
+      "key",
+      "pc1",
+      "pc2"
+     ],
+     "edges": [
+      "e-runner-health",
+      "e-health-registry",
+      "e-health-bus",
+      "e-bus-pc1",
+      "e-bus-pc2"
+     ]
+    }
+   ]
+  },
+  "session": {
+   "tab": "FireSim session",
+   "steps": [
+    {
+     "name": "Request",
+     "text": "You run <code>kotl firesim session --eta 2h</code>. It goes into the same Slurm queue as batch jobs.",
+     "nodes": [
+      "local",
+      "cli",
+      "queue"
+     ],
+     "edges": [
+      "e-local-cli",
+      "e-cli-queue"
+     ]
+    },
+    {
+     "name": "Boot",
+     "text": "Your turn: Slurm starts the launcher, which claims a free board (PC 2 here). The FireSim module boots your system through FireSim.",
+     "nodes": [
+      "queue",
+      "starter",
+      "launcher",
+      "registry",
+      "fsmod",
+      "firesim",
+      "key",
+      "pc2"
+     ],
+     "edges": [
+      "e-queue-starter",
+      "e-starter-launch",
+      "e-launch-registry",
+      "e-launch-fs",
+      "e-fsmod-firesim",
+      "e-firesim-bus",
+      "e-bus-pc2"
+     ]
+    },
+    {
+     "name": "Attach",
+     "text": "<code>kotl firesim attach &lt;job&gt;</code> checks you own it and opens the console on PC 2.",
+     "nodes": [
+      "local",
+      "cli",
+      "attach",
+      "key",
+      "pc2"
+     ],
+     "edges": [
+      "e-local-cli",
+      "e-cli-attach",
+      "e-attach-bus",
+      "e-bus-pc2"
+     ]
+    },
+    {
+     "name": "Over ETA",
+     "text": "Still working past your ETA? You get a notice, and the queue gets new estimates. Nothing is killed.",
+     "nodes": [
+      "acct",
+      "os",
+      "notifier",
+      "local",
+      "plugin-l"
+     ],
+     "edges": [
+      "e-acct-notify",
+      "e-os-notify",
+      "e-notify-local"
+     ]
+    },
+    {
+     "name": "End",
+     "text": "The system powers off, or you run <code>kotl end</code>. The module stops the simulation, then the board is freed and Slurm closes the job.",
+     "nodes": [
+      "local",
+      "cli",
+      "queue",
+      "starter",
+      "launcher",
+      "fsmod",
+      "firesim",
+      "key",
+      "pc2",
+      "registry"
+     ],
+     "edges": [
+      "e-local-cli",
+      "e-cli-queue",
+      "e-starter-launch",
+      "e-launch-fs",
+      "e-fsmod-firesim",
+      "e-firesim-bus",
+      "e-bus-pc2"
+     ]
+    }
+   ]
+  },
+  "maint": {
+   "tab": "Maintenance (later)",
+   "steps": [
+    {
+     "name": "Request",
+     "text": "You run <code>kotl board program vcu118-pc1 --bitstream new.bit</code>. It becomes a Slurm job at the admin-only maintenance level.",
+     "nodes": [
+      "admin",
+      "cli",
+      "queue"
+     ],
+     "edges": [
+      "e-admin-cli",
+      "e-cli-queue"
+     ]
+    },
+    {
+     "name": "Drain",
+     "text": "Slurm starts it when it's first in line; the launcher marks PC 1 draining in the registry. A running job there finishes normally, or you cancel it.",
+     "nodes": [
+      "queue",
+      "starter",
+      "launcher",
+      "registry"
+     ],
+     "edges": [
+      "e-queue-starter",
+      "e-starter-launch",
+      "e-launch-registry"
+     ]
+    },
+    {
+     "name": "Program",
+     "text": "The launcher runs the Program / reset module, which loads the bitstream over the kotl SSH path.",
+     "nodes": [
+      "launcher",
+      "program",
+      "key",
+      "pc1"
+     ],
+     "edges": [
+      "e-launch-program",
+      "e-program-bus",
+      "e-bus-pc1"
+     ]
+    },
+    {
+     "name": "Verify",
+     "text": "The driver-test module checks XDMA with a quick DMA read/write, and the health check confirms the board.",
+     "nodes": [
+      "launcher",
+      "drvtest",
+      "health",
+      "key",
+      "pc1"
+     ],
+     "edges": [
+      "e-launch-drv",
+      "e-drv-bus",
+      "e-health-bus",
+      "e-bus-pc1"
+     ]
+    },
+    {
+     "name": "Return",
+     "text": "The registry records the new bitstream and marks PC 1 idle. Users' jobs flow back in, and you get a done notice.",
+     "nodes": [
+      "registry",
+      "health",
+      "pc1",
+      "notifier",
+      "admin"
+     ],
+     "edges": [
+      "e-health-registry",
+      "e-notify-admin"
+     ]
+    }
+   ]
+  }
+ },
+ "details": {
+  "overview": {
+   "kind": "Overview",
+   "title": "Whole picture",
+   "bullets": [
+    "<b>Teal is Kotl</b>, our product: the code we write and maintain, plus a plugin in each user's Claude.",
+    "<b>Purple is Slurm</b>, off the shelf. Kotl talks to it in exactly four places, through its normal commands.",
+    "<b>Gray is everything else</b> off the shelf (FireSim, the workstation's OS) and the hardware.",
+    "Everything reaching the FPGA PCs goes through the <b>kotl SSH key</b>, FireSim included.",
+    "FireSim is the first module. Program/reset and driver tests come later the same way."
+   ],
+   "hint": "Click any box for its commands and files. The tabs show what Kotl is, where it meets Slurm, and three flows step by step."
+  },
+  "kotllens": {
+   "kind": "Kotl · our product",
+   "kindClass": "ko",
+   "title": "What's Kotl",
+   "what": "Everything highlighted in teal: the code we write, install and maintain.",
+   "bullets": [
+    "<b>Entry:</b> the <code>kotl</code> CLI, console attach, and the Kotl plugin for Claude Code on each user's PC.",
+    "<b>Core:</b> launcher, board registry, health check, ETA notifier, job results, the kotl SSH key. Later: power monitor, usage dashboard. Parked: same-design pick.",
+    "<b>Modules:</b> FireSim now. Later: program/reset, driver tests."
+   ],
+   "note": "Not Kotl: Slurm (scheduling), FireSim (simulation), the workstation OS (sudo, systemd timers, OpenSSH) and the FPGA PCs. Kotl only uses their normal commands and config files, so any of them can be upgraded on its own."
+  },
+  "slurmlens": {
+   "kind": "Kotl ↔ Slurm",
+   "kindClass": "sl",
+   "title": "Where Kotl meets Slurm",
+   "what": "Four places, numbered like the purple badges. Everything else in Kotl never talks to Slurm.",
+   "ordered": [
+    "<b>Queue ↔ kotl CLI.</b> The CLI submits (<code>sbatch</code>), cancels (<code>scancel</code>) and lists (<code>squeue</code>). Slurm orders the queue by priority and counts boards as licenses.",
+    "<b>Job starter → launcher.</b> When a board is free, Slurm runs <code>job.sh</code>, which hands over to Kotl's launcher. A cancel arrives as a signal. When the launcher exits, Slurm marks the job done.",
+    "<b>Health runner → health check.</b> Slurm runs Kotl's <code>health.sh</code> every 5 minutes.",
+    "<b>Accounting → notifier and dashboard.</b> The notifier asks who is running and when queued jobs will start; the dashboard (later) reads history with <code>sacct</code>."
+   ],
+   "note": "Kotl never changes Slurm's code. It only uses Slurm's commands and a few lines of slurm.conf."
+  },
+  "remote": {
+   "kind": "Users",
+   "title": "Remote user PC",
+   "what": "A user's own machine. Builds happen here; runs happen through the workstation.",
+   "bullets": [
+    "Builds the design with Chipyard (bitstream + driver).",
+    "Has a normal Linux account on the workstation, reached over SSH.",
+    "Never holds a key to the FPGA PCs."
+   ],
+   "term": [
+    {
+     "host": "you@laptop",
+     "lines": [
+      {
+       "k": "# queue a batch job (Claude usually runs this for you)"
+      },
+      {
+       "c": "ssh ws kotl firesim submit --hwdb my_design --workload my-test.json --eta 3h --max 6h --wait"
+      },
+      {
+       "o": "job 1234 queued · estimated start 14:20"
+      },
+      {
+       "o": "job 1234 finished · result: passed"
+      },
+      {
+       "c": "ssh ws kotl fetch 1234"
+      },
+      {
+       "o": "results/1234/  status.json  uartlog  launcher.log"
+      }
+     ]
+    }
+   ],
+   "files": [
+    "workloadjson",
+    "runtestsh"
+   ]
+  },
+  "local": {
+   "kind": "Users",
+   "title": "Local user",
+   "what": "Same flow, but the user is already logged into the workstation.",
+   "bullets": [
+    "Builds with Chipyard on the workstation.",
+    "Uses the same <code>kotl</code> commands, without the SSH hop.",
+    "Gets no more FPGA access than a remote user."
+   ],
+   "term": [
+    {
+     "host": "you@ws",
+     "lines": [
+      {
+       "c": "kotl status"
+      },
+      {
+       "o": "JOB   USER   KIND     STATE    BOARD       ETA  START"
+      },
+      {
+       "o": "1234  alice  batch    running  vcu118-pc1  3h   10:40"
+      },
+      {
+       "o": "1235  you    session  queued   -           2h   ~14:20"
+      }
+     ]
+    }
+   ]
+  },
+  "admin": {
+   "kind": "Users",
+   "title": "Admin (you)",
+   "what": "Root on the workstation. Runs maintenance and hears about stuck jobs and sick boards.",
+   "bullets": [
+    "Can cancel any job.",
+    "Gets the 2× ETA alerts and board-down alerts.",
+    "Runs maintenance through Kotl, so it never collides with a user's job.",
+    "Grants the \"urgent\" priority level."
+   ],
+   "term": [
+    {
+     "host": "admin@ws",
+     "lines": [
+      {
+       "c": "kotl board list"
+      },
+      {
+       "o": "BOARD       STATE  JOB   BITSTREAM  HEALTH"
+      },
+      {
+       "o": "vcu118-pc1  busy   1234  my_design  ok 13:10"
+      },
+      {
+       "o": "vcu118-pc2  idle   -     -          ok 13:10"
+      },
+      {
+       "c": "kotl board drain vcu118-pc2"
+      },
+      {
+       "c": "kotl cancel 1234            # root can cancel any job"
+      }
+     ]
+    }
+   ]
+  },
+  "plugin": {
+   "kind": "Kotl · on each user's PC",
+   "kindClass": "ko",
+   "title": "Kotl plugin for Claude Code",
+   "what": "Part of Kotl, installed in every user's Claude Code. It makes the right path the easy one.",
+   "bullets": [
+    "<b>Skill:</b> teaches Claude the <code>kotl</code> commands, and to write expect scripts that always have a timeout.",
+    "<b>Hook before a tool runs:</b> blocks raw <code>firesim infrasetup</code> and <code>runworkload</code>.",
+    "<b>Hook at session start:</b> shows the queue, your jobs and their start estimates.",
+    "Shows over-ETA and start-time notices; fetches results when a job ends."
+   ],
+   "files": [
+    "skill",
+    "hooks"
+   ],
+   "note": "Convenience only. The SSH lockdown is the real enforcement."
+  },
+  "cli": {
+   "kind": "Kotl · core · Slurm ①",
+   "kindClass": "ko",
+   "title": "kotl CLI",
+   "what": "The one command for everything. Each module adds its own subcommands. It talks to Slurm's queue for you.",
+   "bullets": [
+    "Refuses a FireSim batch job that would never power off (no run script, no <code>--expect</code>).",
+    "Cancel works only for the job's owner or root."
+   ],
+   "term": [
+    {
+     "host": "you@ws",
+     "lines": [
+      {
+       "k": "# core"
+      },
+      {
+       "c": "kotl status | history | cancel <job> | logs <job> -f | fetch <job>"
+      },
+      {
+       "k": "# FireSim module"
+      },
+      {
+       "c": "kotl firesim submit --hwdb <hw> --workload <wl> --eta 3h --max 6h [--idle 30m] [--expect test.exp]"
+      },
+      {
+       "c": "kotl firesim session --eta 2h"
+      },
+      {
+       "c": "kotl firesim attach <job>"
+      },
+      {
+       "k": "# boards (drain/program/reset: admin only)"
+      },
+      {
+       "c": "kotl board list | drain | program | reset <board>"
+      }
+     ]
+    },
+    {
+     "host": "under the hood · what submit runs",
+     "lines": [
+      {
+       "c": "sbatch -L vcu118:1 --time=3:00:00 /opt/kotl/job.sh /srv/kotl/jobs/1234"
+      },
+      {
+       "k": "# --time is the ETA. --max and --idle are enforced by the launcher."
+      }
+     ]
+    }
+   ]
+  },
+  "attach": {
+   "kind": "Kotl · core",
+   "kindClass": "ko",
+   "title": "Console attach",
+   "what": "How a user reaches the simulated system's console without getting a shell on the FPGA PC.",
+   "bullets": [
+    "Runs as kotl through the sudo rule and checks you own the job.",
+    "Opens only FireSim's console session on the job's board.",
+    "Detach and reattach any time. An expect script can drive it too."
+   ],
+   "term": [
+    {
+     "host": "you@laptop",
+     "lines": [
+      {
+       "c": "ssh -t ws kotl firesim attach 1235"
+      },
+      {
+       "o": "attached to job 1235 on vcu118-pc2 · detach: Ctrl-a d"
+      },
+      {
+       "o": "buildroot login:"
+      }
+     ]
+    },
+    {
+     "host": "under the hood · as kotl",
+     "lines": [
+      {
+       "c": "ssh -t vcu118-pc2 screen -r fsim0"
+      }
+     ]
+    }
+   ],
+   "files": [
+    "screenrc",
+    "sudoers"
+   ]
+  },
+  "launcher": {
+   "kind": "Kotl · core · Slurm ②",
+   "kindClass": "ko",
+   "title": "Launcher",
+   "what": "Slurm starts it for every job. It claims a board and runs the job's module, step by step.",
+   "bullets": [
+    "Confirms the Slurm job is real and belongs to the caller.",
+    "Claims an idle, healthy board in the registry.",
+    "Calls the module's steps in order: <b>check → prepare → run → stop → collect</b>.",
+    "<b>Hang guards:</b> the owner's <code>--max</code> (default 2× ETA), optional <code>--idle</code>, and the expect script's own timeout.",
+    "<b>On cancel or a tripped guard:</b> runs the module's stop step, records why, then frees the board.",
+    "Records setup time on every job, for the parked same-design idea."
+   ],
+   "files": [
+    "jobsh",
+    "sudoers",
+    "modules"
+   ]
+  },
+  "registry": {
+   "kind": "Kotl · core",
+   "kindClass": "ko",
+   "title": "Board registry",
+   "what": "One record per board: its state, what's loaded on it, its health and power.",
+   "bullets": [
+    "States: down → idle → setting up → busy → draining → maintenance → idle.",
+    "The launcher claims a board here in one step, so two jobs never share a board.",
+    "The health check and power monitor write to it; <code>kotl board list</code> reads it.",
+    "A single SQLite file. No service to keep running."
+   ],
+   "files": [
+    "registry"
+   ]
+  },
+  "health": {
+   "kind": "Kotl · core · Slurm ③",
+   "kindClass": "ko",
+   "title": "Health check",
+   "what": "A Kotl script that Slurm runs every 5 minutes. It checks each board over the kotl SSH path.",
+   "bullets": [
+    "Ping, SSH as kotl, <code>lspci</code> shows the Xilinx card, XDMA driver loaded.",
+    "Flags leftover work on a board the registry says is idle.",
+    "On failure: tries reloading the driver once. Still failing: marks the board down, holds back its Slurm slot, alerts the admin.",
+    "Puts the board back on its own when checks pass again."
+   ],
+   "files": [
+    "healthsh",
+    "healthconf"
+   ]
+  },
+  "notifier": {
+   "kind": "Kotl · core · Slurm ④",
+   "kindClass": "ko",
+   "title": "ETA notifier",
+   "what": "A short Kotl program that a systemd timer starts every minute. It asks Slurm who is running and for how long, then sends notices. It never kills anything.",
+   "bullets": [
+    "Job passes its ETA: tells the owner and their Claude session.",
+    "Job passes 2× its ETA: also tells the admin.",
+    "Queued jobs whose start estimate slipped: tells those users.",
+    "Board down or back: tells the admin."
+   ],
+   "term": [
+    {
+     "host": "under the hood · each pass, as kotl",
+     "lines": [
+      {
+       "c": "squeue -h -t RUNNING,PENDING -o '%i %u %M %l %S'"
+      },
+      {
+       "k": "# job id, user, time used, ETA (time limit), start estimate"
+      }
+     ]
+    }
+   ],
+   "files": [
+    "notifsvc",
+    "notiftimer"
+   ]
+  },
+  "results": {
+   "kind": "Kotl · core",
+   "kindClass": "ko",
+   "title": "Job results",
+   "what": "One folder per job, filled by the module's collect step.",
+   "bullets": [
+    "Local users read it through <code>~/kotl-results</code>. Remote users run <code>kotl fetch</code>; the Claude plugin does it for them.",
+    "kotl writes, the owner reads. Other users can't see it.",
+    "Deleted automatically after 30 days."
+   ],
+   "term": [
+    {
+     "host": "you@laptop",
+     "lines": [
+      {
+       "c": "ssh ws kotl fetch 1234"
+      },
+      {
+       "o": "rsync into ./results/1234/ … done"
+      },
+      {
+       "c": "ssh ws kotl logs 1235 -f     # follow a running job's console"
+      }
+     ]
+    }
+   ],
+   "files": [
+    "resultsdir",
+    "statusjson"
+   ]
+  },
+  "power": {
+   "kind": "Kotl · core · later",
+   "kindClass": "ko",
+   "title": "Power monitor",
+   "what": "Reads each board's power on a timer. Never queued, never blocks a job.",
+   "bullets": [
+    "A systemd timer starts it every minute; it reads over the kotl SSH path. No agent on the PCs.",
+    "Source to decide later: the board's on-board power sensors, or a smart PDU per PC.",
+    "Stores readings in the registry. Alerts if a board draws power while idle, or goes over a limit."
+   ]
+  },
+  "dashboard": {
+   "kind": "Kotl · core · later",
+   "kindClass": "ko",
+   "title": "Usage dashboard",
+   "what": "A small web page on the workstation. Build it once the queue is running.",
+   "bullets": [
+    "Board-hours per user per week, from Slurm's history.",
+    "Queue wait times, and how often jobs overrun their ETA.",
+    "Board state history and power per board, from the registry."
+   ],
+   "term": [
+    {
+     "host": "under the hood",
+     "lines": [
+      {
+       "c": "sacct -X -S 2026-11-01 -o User,JobID,State,Elapsed,ExitCode"
+      }
+     ]
+    }
+   ]
+  },
+  "affinity": {
+   "kind": "Kotl · core · parked",
+   "kindClass": "ko",
+   "title": "Same-design pick",
+   "what": "On hold: prefer a board that already has the job's bitstream loaded, to save setup time.",
+   "bullets": [
+    "FireSim says to re-run setup before every simulation, so setup can't simply be skipped.",
+    "The registry already knows what's loaded, so this would only be a board-pick rule.",
+    "Revisit once recorded setup times show it's worth it. No priority boost either way."
+   ]
+  },
+  "fsmod": {
+   "kind": "Kotl · module",
+   "kindClass": "ko",
+   "title": "FireSim module",
+   "what": "The first module: five small programs that drive FireSim for one job on one board.",
+   "bullets": [
+    "<b>check:</b> the workload powers off by itself, or <code>--expect</code> was given.",
+    "<b>prepare:</b> writes this job's runtime config for the claimed board, then sets up (reflashes) the board.",
+    "<b>run:</b> batch runs until the simulated Linux powers off. Session: boots and waits for you.",
+    "<b>stop:</b> kills the simulation cleanly. <b>collect:</b> copies results and reads the PASS/FAIL marker."
+   ],
+   "term": [
+    {
+     "host": "under the hood · as kotl",
+     "lines": [
+      {
+       "c": "firesim -c /srv/kotl/jobs/1234/config_runtime.yaml infrasetup"
+      },
+      {
+       "c": "firesim -c /srv/kotl/jobs/1234/config_runtime.yaml runworkload"
+      },
+      {
+       "k": "# on cancel or a tripped guard"
+      },
+      {
+       "c": "firesim -c /srv/kotl/jobs/1234/config_runtime.yaml kill"
+      }
+     ]
+    }
+   ],
+   "files": [
+    "modules",
+    "runtimeyaml",
+    "expectscript"
+   ]
+  },
+  "program": {
+   "kind": "Kotl · module · later",
+   "kindClass": "ko",
+   "title": "Program / reset",
+   "what": "Admin module: load a bitstream or reset a board outside FireSim.",
+   "bullets": [
+    "Runs as a maintenance job: the board is drained first, so it never interrupts a user.",
+    "Records the new bitstream in the registry."
+   ],
+   "term": [
+    {
+     "host": "admin@ws",
+     "lines": [
+      {
+       "c": "kotl board program vcu118-pc1 --bitstream new.bit"
+      },
+      {
+       "c": "kotl board reset vcu118-pc1"
+      }
+     ]
+    }
+   ]
+  },
+  "drvtest": {
+   "kind": "Kotl · module · later",
+   "kindClass": "ko",
+   "title": "Driver tests",
+   "what": "Checks a board's host driver before it goes back in the pool.",
+   "bullets": [
+    "Loads the XDMA driver, runs a quick DMA read/write test, records the driver version.",
+    "Runs after maintenance or a PC reboot, and optionally on a schedule."
+   ],
+   "term": [
+    {
+     "host": "admin@ws",
+     "lines": [
+      {
+       "c": "kotl board test vcu118-pc1"
+      },
+      {
+       "o": "xdma loaded · DMA read/write ok · driver 2024.1"
+      }
+     ]
+    }
+   ]
+  },
+  "key": {
+   "kind": "Kotl · core",
+   "kindClass": "ko",
+   "title": "kotl SSH key",
+   "what": "Kotl's account and key: the only path from the workstation to the FPGA PCs. FireSim uses it too.",
+   "bullets": [
+    "The private key lives in <code>/home/kotl/.ssh</code>, readable only by the kotl account.",
+    "FPGA PCs let in only kotl and the admin, with keys only.",
+    "kotl is in the <code>firesim</code> group that FireSim's setup scripts expect. No users are.",
+    "A new PC joins by adding this key and a registry entry. No software to install."
+   ],
+   "term": [
+    {
+     "host": "admin@ws · check the lockdown",
+     "lines": [
+      {
+       "c": "sudo -u kotl ssh vcu118-pc1 hostname"
+      },
+      {
+       "o": "vcu118-pc1"
+      },
+      {
+       "c": "ssh vcu118-pc1 hostname        # as a normal user"
+      },
+      {
+       "o": "Permission denied (publickey)."
+      }
+     ]
+    }
+   ],
+   "files": [
+    "sshd"
+   ]
+  },
+  "queue": {
+   "kind": "Slurm · ①",
+   "kindClass": "sl",
+   "title": "Queue + priority",
+   "what": "Slurm's queue holds waiting jobs and orders them. Kotl's CLI uses it through normal Slurm commands.",
+   "bullets": [
+    "Each board type is a license (<code>vcu118:2</code>). A job needs one to start.",
+    "<b>Priority (rough sketch, tune later):</b> fair-share + waiting time + an \"urgent\" level only the admin grants. Maintenance has its own admin-only level.",
+    "The ETA is the job's time limit; Slurm uses it to estimate start times.",
+    "Never kills a job for passing its ETA. Only the owner or root can cancel."
+   ],
+   "term": [
+    {
+     "host": "you@ws",
+     "lines": [
+      {
+       "c": "squeue --start -u you"
+      },
+      {
+       "o": "JOBID  ST  START_TIME           REASON"
+      },
+      {
+       "o": "1235   PD  2026-11-21T14:20:00  Licenses"
+      }
+     ]
+    },
+    {
+     "host": "admin@ws · one-time setup",
+     "lines": [
+      {
+       "c": "sacctmgr add qos urgent Priority=100"
+      },
+      {
+       "c": "sacctmgr add qos maint Priority=1000"
+      }
+     ]
+    }
+   ],
+   "files": [
+    "slurmconf"
+   ]
+  },
+  "starter": {
+   "kind": "Slurm · ②",
+   "kindClass": "sl",
+   "title": "Job starter",
+   "what": "The part of Slurm that runs each job and signals it. Here it runs only on the workstation.",
+   "bullets": [
+    "When a board license is free, runs <code>job.sh</code>, which hands over to Kotl's launcher.",
+    "On cancel: sends a stop signal, waits up to 2 minutes (<code>KillWait</code>), then force-stops.",
+    "Records the job as succeeded or failed from the launcher's exit code."
+   ],
+   "files": [
+    "jobsh"
+   ]
+  },
+  "runner": {
+   "kind": "Slurm · ③",
+   "kindClass": "sl",
+   "title": "Health runner",
+   "what": "Slurm runs Kotl's health check every 5 minutes. Two lines of slurm.conf.",
+   "files": [
+    "healthconf"
+   ]
+  },
+  "acct": {
+   "kind": "Slurm · ④",
+   "kindClass": "sl",
+   "title": "Accounting",
+   "what": "Slurm's accounting database. Answers who is running, for how long and when queued jobs start, and keeps the history.",
+   "term": [
+    {
+     "host": "you@ws",
+     "lines": [
+      {
+       "c": "sacct -u alice -X -o JobID,State,Elapsed,ExitCode"
+      },
+      {
+       "o": "1234   COMPLETED  02:41:10  0:0"
+      },
+      {
+       "o": "1240   FAILED     06:00:02  2:0"
+      }
+     ]
+    }
+   ]
+  },
+  "os": {
+   "kind": "Off the shelf",
+   "title": "Workstation OS",
+   "what": "The workstation's own Linux pieces that Kotl relies on.",
+   "bullets": [
+    "<b>sudo:</b> one rule lets users run exactly two Kotl programs as kotl.",
+    "<b>systemd timers:</b> start the notifier (and later the power monitor) every minute.",
+    "<b>OpenSSH:</b> carries the kotl key to the FPGA PCs.",
+    "<b>Accounts:</b> users in <code>kotl-users</code>; the <code>kotl</code> service account."
+   ],
+   "files": [
+    "sudoers",
+    "notiftimer"
+   ]
+  },
+  "firesim": {
+   "kind": "Off the shelf",
+   "title": "FireSim",
+   "what": "The simulation tool itself. Kotl's FireSim module drives it; Kotl doesn't change it.",
+   "bullets": [
+    "One install on the workstation, owned by kotl.",
+    "Its manager reaches the FPGA PCs over SSH with the kotl key.",
+    "Keeps each simulation's console in a <code>screen</code> session on the board's PC, and notices when it disappears.",
+    "Workloads come from FireMarshal: the run script does the test and powers off."
+   ],
+   "files": [
+    "workloadjson",
+    "runtestsh",
+    "runtimeyaml"
+   ]
+  },
+  "pc1": {
+   "kind": "Hardware",
+   "title": "VCU118 PC 1",
+   "what": "Hosts one VCU118. Reachable only from the workstation.",
+   "bullets": [
+    "Runs sshd, the XDMA driver and FireSim's helper scripts. No Kotl code.",
+    "No user accounts besides kotl and the admin.",
+    "Reboots are harmless: the health check sees it come back."
+   ],
+   "files": [
+    "sshd",
+    "screenrc"
+   ]
+  },
+  "pc2": {
+   "kind": "Hardware",
+   "title": "VCU118 PC 2",
+   "what": "Same as PC 1.",
+   "files": [
+    "sshd",
+    "screenrc"
+   ]
+  },
+  "tooling": {
+   "kind": "Repo · not drawn",
+   "title": "Repo tooling",
+   "what": "What keeps this view honest: the status file, test tags and a commit check. Not drawn on the diagram.",
+   "bullets": [
+    "<code>status.json</code> next to this page holds every part's build status.",
+    "Every test is tagged with the part it covers; <code>tools/status.py</code> turns test results into tested or failing.",
+    "A pre-commit check refuses a commit that changes a part's code without updating its status."
+   ],
+   "term": [
+    {
+     "host": "you@ws",
+     "lines": [
+      {
+       "c": "pytest -m 'not hw'          # code tests, anywhere"
+      },
+      {
+       "c": "python3 tools/status.py refresh"
+      },
+      {
+       "c": "cd docs/architecture && python3 -m http.server 8000"
+      }
+     ]
+    }
+   ]
+  },
+  "more": {
+   "kind": "Hardware · later",
+   "title": "More boards",
+   "what": "Everything joins the same way.",
+   "bullets": [
+    "Add a PC: sshd + driver, the kotl key, a registry entry, and one more Slurm license.",
+    "Different board types get their own license name (for example <code>u250:2</code>).",
+    "Servers without FPGAs can join for health and power monitoring only."
+   ]
+  }
+ },
+ "files": {
+  "slurmconf": {
+   "name": "slurm.conf",
+   "path": "/etc/slurm/",
+   "ext": "conf",
+   "desc": "Slurm settings Kotl relies on (rough sketch)",
+   "body": "# Single node: the workstation\nSlurmctldHost=ws\nNodeName=ws CPUs=16 State=UNKNOWN\nPartitionName=fpga Nodes=ws Default=YES MaxTime=UNLIMITED State=UP\n\n# Boards are counted as licenses\nLicenses=vcu118:2\n\n# Priority (rough sketch, tune later)\nPriorityType=priority/multifactor\nPriorityWeightFairshare=10000\nPriorityWeightAge=1000\nPriorityWeightQOS=100000\n\n# Never kill for passing the ETA; give clean stops time\nOverTimeLimit=UNLIMITED\nKillWait=120\n\n# History\nAccountingStorageType=accounting_storage/slurmdbd\n\n# Kotl's health check\nHealthCheckProgram=/opt/kotl/health.sh\nHealthCheckInterval=300"
+  },
+  "healthconf": {
+   "name": "slurm.conf (excerpt)",
+   "path": "/etc/slurm/",
+   "ext": "conf",
+   "desc": "The two lines that make Slurm run Kotl's health check",
+   "body": "HealthCheckProgram=/opt/kotl/health.sh\nHealthCheckInterval=300"
+  },
+  "jobsh": {
+   "name": "job.sh",
+   "path": "/opt/kotl/",
+   "ext": "sh",
+   "desc": "What Slurm runs for every Kotl job",
+   "body": "#!/bin/sh\n# Slurm runs this as the submitting user.\n# It hands over to the launcher as kotl; sudo checks the rule below.\nexec sudo -u kotl /opt/kotl/launch \"$SLURM_JOB_ID\" \"$1\""
+  },
+  "sudoers": {
+   "name": "kotl",
+   "path": "/etc/sudoers.d/",
+   "ext": "sudo",
+   "desc": "The only things users may run as kotl",
+   "body": "# Users in kotl-users may run exactly two programs as kotl\n%kotl-users ALL=(kotl) NOPASSWD: /opt/kotl/launch, /opt/kotl/attach"
+  },
+  "modules": {
+   "name": "modules/firesim/",
+   "path": "/opt/kotl/",
+   "ext": "dir",
+   "desc": "A module = five small programs the launcher calls in order",
+   "body": "/opt/kotl/modules/firesim/\n  check     # can this job run? (workload powers off, or --expect given)\n  prepare   # write config_runtime.yaml, then firesim infrasetup\n  run       # batch: firesim runworkload · session: boot and wait\n  stop      # firesim kill\n  collect   # copy results, read the PASS/FAIL marker"
+  },
+  "registry": {
+   "name": "kotl.db",
+   "path": "/var/lib/kotl/",
+   "ext": "sql",
+   "desc": "Board registry: one SQLite file, one row per board",
+   "body": "CREATE TABLE boards (\n  name           TEXT PRIMARY KEY,  -- vcu118-pc1\n  host           TEXT NOT NULL,     -- SSH host name\n  type           TEXT NOT NULL,     -- vcu118 (matches the Slurm license)\n  state          TEXT NOT NULL,     -- down | idle | setting_up | busy | draining | maintenance\n  job_id         INTEGER,           -- Slurm job holding it\n  bitstream      TEXT,              -- design currently loaded\n  driver_version TEXT,\n  last_healthy   TEXT,              -- time of last good check\n  power_watts    REAL               -- later\n);"
+  },
+  "healthsh": {
+   "name": "health.sh",
+   "path": "/opt/kotl/",
+   "ext": "sh",
+   "desc": "Kotl's health check; Slurm runs it every 5 minutes (sketch)",
+   "body": "#!/bin/sh\n# Runs as root under Slurm. Checks each board over the kotl SSH path.\nfor board in $(kotl-registry boards); do\n  host=$(kotl-registry host \"$board\")\n  if sudo -u kotl ssh -o ConnectTimeout=5 \"$host\" 'lspci -d 10ee: | grep -q . && lsmod | grep -q xdma'; then\n    kotl-registry mark \"$board\" healthy\n  else\n    kotl-registry mark \"$board\" down   # also holds back its Slurm slot and alerts the admin\n  fi\ndone"
+  },
+  "notifsvc": {
+   "name": "kotl-notifier.service",
+   "path": "/etc/systemd/system/",
+   "ext": "unit",
+   "desc": "One pass of the notifier, run as kotl",
+   "body": "[Unit]\nDescription=Kotl ETA notifier (one pass)\n\n[Service]\nType=oneshot\nUser=kotl\nExecStart=/opt/kotl/notifier"
+  },
+  "notiftimer": {
+   "name": "kotl-notifier.timer",
+   "path": "/etc/systemd/system/",
+   "ext": "unit",
+   "desc": "Starts the notifier every minute",
+   "body": "[Unit]\nDescription=Run the Kotl ETA notifier every minute\n\n[Timer]\nOnCalendar=minutely\n\n[Install]\nWantedBy=timers.target"
+  },
+  "resultsdir": {
+   "name": "<user>/<job>/",
+   "path": "/srv/kotl/out/",
+   "ext": "dir",
+   "desc": "One folder per job; kept 30 days",
+   "body": "/srv/kotl/out/alice/1234/\n  status.json      # result, times, board\n  uartlog          # console log from FireSim\n  launcher.log     # what Kotl did, step by step\n  expect.log       # only if --expect was used\n  outputs/         # files listed in the workload"
+  },
+  "statusjson": {
+   "name": "status.json",
+   "path": "/srv/kotl/out/<user>/<job>/",
+   "ext": "json",
+   "desc": "Written by the launcher when the job ends",
+   "body": "{\n  \"job\": 1234,\n  \"user\": \"alice\",\n  \"module\": \"firesim\",\n  \"board\": \"vcu118-pc1\",\n  \"result\": \"passed\",          // passed | failed | hung | over_max | cancelled\n  \"eta\": \"3h\",\n  \"max\": \"6h\",\n  \"submitted\": \"2026-11-21T10:02:11\",\n  \"started\":   \"2026-11-21T10:40:03\",\n  \"ended\":     \"2026-11-21T13:21:13\",\n  \"setup_seconds\": 412\n}"
+  },
+  "runtimeyaml": {
+   "name": "config_runtime.yaml",
+   "path": "/srv/kotl/jobs/<job>/",
+   "ext": "yaml",
+   "desc": "Written by the FireSim module for one job and one board (check field names against your FireSim version)",
+   "body": "run_farm:\n  base_recipe: run-farm-recipes/externally_provisioned.yaml\n  recipe_arg_overrides:\n    default_simulation_dir: /home/kotl/sims\n    run_farm_hosts_to_use:\n      - vcu118-pc1: one_fpga_spec      # the board Kotl claimed\n\ntarget_config:\n  topology: no_net_config\n  no_net_num_nodes: 1\n  default_hw_config: my_design         # from --hwdb\n\nworkload:\n  workload_name: my-test.json          # from --workload"
+  },
+  "workloadjson": {
+   "name": "my-test.json",
+   "path": "your workload folder",
+   "ext": "json",
+   "desc": "FireMarshal workload: runs the test, then powers off",
+   "body": "{\n  \"name\": \"my-test\",\n  \"base\": \"br-base.json\",\n  \"overlay\": \"overlay\",\n  \"run\": \"run-test.sh\",\n  \"outputs\": [\"/root/results\"]\n}"
+  },
+  "runtestsh": {
+   "name": "run-test.sh",
+   "path": "your workload folder",
+   "ext": "sh",
+   "desc": "Runs inside the simulated Linux; prints the marker Kotl looks for",
+   "body": "#!/bin/sh\nif /root/my_test; then\n  echo \"KOTL RESULT: PASS\"\nelse\n  echo \"KOTL RESULT: FAIL\"\nfi\npoweroff"
+  },
+  "expectscript": {
+   "name": "test.exp",
+   "path": "your folder",
+   "ext": "exp",
+   "desc": "Optional: drive the console with a script. Always keep a timeout.",
+   "body": "#!/usr/bin/expect -f\n# Kotl runs this with the job's console attached.\nset timeout 600\nexpect {\n  \"login:\" { send \"root\\r\" }\n  timeout  { exit 2 }\n}\nexpect \"# \"\nsend \"/root/my_test\\r\"\nexpect {\n  \"PASS\"  { set rc 0 }\n  \"FAIL\"  { set rc 1 }\n  timeout { exit 2 }\n}\nsend \"poweroff\\r\"\nexit $rc"
+  },
+  "sshd": {
+   "name": "kotl.conf",
+   "path": "/etc/ssh/sshd_config.d/ (on each FPGA PC)",
+   "ext": "conf",
+   "desc": "Only kotl and the admin can log in, and only with keys",
+   "body": "AllowUsers kotl admin\nPasswordAuthentication no\nKbdInteractiveAuthentication no\nPermitRootLogin no"
+  },
+  "screenrc": {
+   "name": ".screenrc",
+   "path": "/home/kotl/ (on each FPGA PC)",
+   "ext": "conf",
+   "desc": "Stops console users from opening a shell (sketch, test before relying on it)",
+   "body": "# New screen windows get no shell\nshell /usr/sbin/nologin\n# Remove keys that open new windows or the command prompt\nbind c\nbind ^c\nbind :\nbind S\nbind |"
+  },
+  "hooks": {
+   "name": "hooks.json",
+   "path": "kotl-plugin/hooks/",
+   "ext": "json",
+   "desc": "Blocks raw FireSim commands; shows the queue when a session starts (sketch)",
+   "body": "{\n  \"hooks\": {\n    \"PreToolUse\": [\n      { \"matcher\": \"Bash\",\n        \"hooks\": [ { \"type\": \"command\",\n                     \"command\": \"${CLAUDE_PLUGIN_ROOT}/hooks/block-raw-firesim.sh\" } ] }\n    ],\n    \"SessionStart\": [\n      { \"hooks\": [ { \"type\": \"command\",\n                     \"command\": \"${CLAUDE_PLUGIN_ROOT}/hooks/queue-status.sh\" } ] }\n    ]\n  }\n}"
+  },
+  "skill": {
+   "name": "SKILL.md",
+   "path": "kotl-plugin/skills/kotl/",
+   "ext": "md",
+   "desc": "Teaches Claude how to use Kotl",
+   "body": "---\nname: kotl\ndescription: Run FireSim jobs on the lab's FPGAs through Kotl: submit, check, cancel, fetch results.\n---\n# Kotl\n- Never run firesim directly. Use kotl.\n- Submit in the background; you'll be told when it ends:\n  ssh ws kotl firesim submit --hwdb <hw> --workload <wl> --eta <est> --max <limit> --wait\n- The workload must power off by itself, or pass --expect <script>.\n- Expect scripts always set a timeout and exit 2 on timeout.\n- When a job ends: ssh ws kotl fetch <job>, then read status.json first."
+  }
+ }
+}

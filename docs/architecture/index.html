@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kotl Architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: product map. Slurm band on top, Kotl (teal, ours) in the middle, other off-the-shelf parts and the FPGA PCs on the right, users on the left. Warm "hot" traces a flow. */
+:root {
+  --bg: #f3f5f7;
+  --surface: #ffffff;
+  --zone: #e8edf3;
+  --chip: #eef2f7;
+  --ink: #14202c;
+  --muted: #5a6878;
+  --line: #c3ccd6;
+  --edge: #7d8a99;
+  --accent: #1f5ccc;
+  --hot: #c4410c;
+  --on-hot: #ffffff;
+  --slurm: #6b46c1;
+  --slurm-tint: #f2eefb;
+  --on-slurm: #ffffff;
+  --kotl: #0f766e;
+  --kotl-tint: #e7f3f1;
+  --on-kotl: #ffffff;
+  --code-bg: #eef1f5;
+  --st-planned: #98a3af;
+  --st-progress: #d99a00;
+  --st-built: #2f6fd6;
+  --st-tested: #1e9b57;
+  --st-failing: #d93025;
+  --font-display: "IBM Plex Sans Condensed", "Arial Narrow", sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1318; --surface: #161d25; --zone: #121920; --chip: #1c2530;
+    --ink: #e2e8ee; --muted: #93a0ae; --line: #2d3946; --edge: #6c7a89;
+    --accent: #7eaaff; --hot: #ff9b55; --on-hot: #1a0f05;
+    --slurm: #b79cff; --slurm-tint: #1b1728; --on-slurm: #170d2b;
+    --kotl: #5fd4c4; --kotl-tint: #10211f; --on-kotl: #06201d;
+    --code-bg: #1b232c;
+    --st-planned: #7d8896; --st-progress: #f0b429; --st-built: #6ea0ff; --st-tested: #4cc98a; --st-failing: #ff6b5f;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1318; --surface: #161d25; --zone: #121920; --chip: #1c2530;
+  --ink: #e2e8ee; --muted: #93a0ae; --line: #2d3946; --edge: #6c7a89;
+  --accent: #7eaaff; --hot: #ff9b55; --on-hot: #1a0f05;
+  --slurm: #b79cff; --slurm-tint: #1b1728; --on-slurm: #170d2b;
+  --kotl: #5fd4c4; --kotl-tint: #10211f; --on-kotl: #06201d;
+  --code-bg: #1b232c;
+  --st-planned: #7d8896; --st-progress: #f0b429; --st-built: #6ea0ff; --st-tested: #4cc98a; --st-failing: #ff6b5f;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-body); }
+/* Fill the whole window: header on top, diagram + panel take the rest. */
+.wrap { height: 100%; min-height: 760px; padding: 16px clamp(16px, 2vw, 28px); display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 12px; }
+header h1 { font: 600 28px/1.15 var(--font-display); margin: 0; text-wrap: balance; letter-spacing: .01em; }
+header p { margin: 4px 0 0; color: var(--muted); max-width: 90ch; }
+
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 10px var(--panel-w, 440px); gap: 6px; align-items: stretch; min-height: 0; }
+.layout.collapsed { grid-template-columns: minmax(0, 1fr) 10px; }
+.layout.collapsed .panel { display: none; }
+.splitter { position: relative; cursor: col-resize; touch-action: none; outline: none; }
+.splitter::before { content: ""; position: absolute; top: 0; bottom: 0; left: 4px; width: 2px; border-radius: 1px; background: var(--line); }
+.splitter .grip { position: absolute; top: 50%; left: 0; width: 10px; height: 40px; transform: translateY(-50%); border-radius: 5px; background: var(--chip); border: 1px solid var(--line); }
+.splitter:hover::before, .splitter.dragging::before, .splitter:focus-visible::before { background: var(--accent); }
+.splitter:hover .grip, .splitter.dragging .grip, .splitter:focus-visible .grip { border-color: var(--accent); }
+body.resizing { cursor: col-resize; user-select: none; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+.diagram-card { padding: 14px 14px 12px; display: flex; flex-direction: column; gap: 10px; min-width: 0; min-height: 0; }
+.toprow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
+
+.tabs { display: flex; flex-wrap: wrap; gap: 4px; padding: 3px; background: var(--zone); border: 1px solid var(--line); border-radius: 8px; width: fit-content; max-width: 100%; }
+.tabs button { background: transparent; border: 1px solid transparent; }
+.tabs button[aria-selected="true"] { background: var(--surface); border-color: var(--line); box-shadow: 0 1px 2px rgba(0,0,0,.06); }
+.tabs button[data-mode="slurm"][aria-selected="true"] { background: var(--slurm); border-color: var(--slurm); color: var(--on-slurm); }
+.tabs button[data-mode="kotl"][aria-selected="true"] { background: var(--kotl); border-color: var(--kotl); color: var(--on-kotl); }
+.tabs .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+.tabs .dot.sl { background: var(--slurm); }
+.tabs .dot.ko { background: var(--kotl); }
+.tabs button[aria-selected="true"] .dot { background: currentColor; }
+.tabs .sep { width: 1px; background: var(--line); margin: 4px 2px; }
+
+.stepbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+button { font: 500 13px var(--font-body); color: var(--ink); background: var(--chip); border: 1px solid var(--line); border-radius: 6px; padding: 5px 10px; cursor: pointer; }
+button:hover { border-color: var(--accent); }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button:disabled { opacity: .45; cursor: default; border-color: var(--line); }
+button.pill[aria-pressed="true"] { background: var(--hot); border-color: var(--hot); color: var(--on-hot); }
+.steptext { min-height: 2.8em; font-size: 14px; padding: 8px 12px; border-left: 3px solid var(--line); background: var(--zone); border-radius: 0 6px 6px 0; }
+.steptext.active { border-left-color: var(--hot); }
+.steptext.slurm { border-left-color: var(--slurm); }
+.steptext.kotl { border-left-color: var(--kotl); }
+.steptext b { font-weight: 600; }
+.steptext code, .panel code { font-family: var(--font-mono); font-size: .88em; }
+
+.svgwrap { position: relative; flex: 1 1 0; min-height: 420px; }
+svg.diagram { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend svg { width: 28px; height: 10px; }
+.legend .sw { width: 14px; height: 10px; border-radius: 2px; border: 1.5px solid; }
+
+/* Panel */
+.panel { padding: 18px 20px 20px; overflow-y: auto; min-height: 0; }
+.panel .kind { font: 500 11px var(--font-mono); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.panel .kind.sl { color: var(--slurm); }
+.panel .kind.ko { color: var(--kotl); }
+.panel h2 { font: 600 22px/1.2 var(--font-display); margin: 2px 0 6px; text-wrap: balance; }
+.panel .what { margin: 0 0 12px; }
+.panel ul, .panel ol { padding-left: 20px; margin: 0 0 14px; display: grid; gap: 7px; }
+.panel ol.sl li::marker { color: var(--slurm); font-weight: 600; }
+.panel .sec { font: 600 11px var(--font-mono); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 16px 0 8px; }
+.panel .note { font-size: 13px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 10px; margin: 14px 0; }
+.panel .hint { font-size: 13px; color: var(--muted); margin: 0 0 8px; }
+.panel .latest { font-size: 13px; color: var(--hot); font-weight: 600; margin: 0 0 12px; }
+
+/* Terminal blocks: always dark, like a real terminal */
+.term { border-radius: 8px; overflow: hidden; margin: 0 0 10px; background: #0d1520; border: 1px solid #223042; }
+.term-bar { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: #172231; color: #9fb0c2; font: 500 11px var(--font-mono); }
+.term-bar .dots { display: inline-flex; gap: 5px; }
+.term-bar .dots i { width: 9px; height: 9px; border-radius: 50%; background: #3a4858; }
+.term-bar .host { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.term-bar button { font: 500 11px var(--font-mono); background: transparent; color: #9fb0c2; border: 1px solid #2f3e50; padding: 2px 8px; border-radius: 4px; }
+.term-bar button:hover { border-color: #5fd4c4; color: #d7e3ef; }
+.term pre { margin: 0; padding: 10px 12px; font: 12px/1.6 var(--font-mono); color: #d7e3ef; overflow-x: auto; white-space: pre; }
+.term .p { color: #5fd4c4; user-select: none; }
+.term .o { color: #93a4b6; }
+.term .k { color: #6f8296; font-style: italic; }
+
+/* File cards */
+details.file { border: 1px solid var(--line); border-radius: 8px; margin: 0 0 8px; background: var(--surface); }
+details.file summary { list-style: none; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 1px 10px; align-items: center; padding: 8px 10px; cursor: pointer; border-radius: 8px; }
+details.file summary::-webkit-details-marker { display: none; }
+details.file summary:hover { background: var(--chip); }
+details.file summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+details.file .ext { grid-row: span 3; align-self: start; margin-top: 2px; font: 600 10px var(--font-mono); text-transform: uppercase; padding: 4px 6px; border-radius: 4px; background: var(--chip); border: 1px solid var(--line); color: var(--muted); min-width: 40px; text-align: center; }
+details.file .fname { font: 600 13px var(--font-mono); overflow-wrap: anywhere; }
+details.file .chev { grid-row: span 3; align-self: start; color: var(--muted); transition: transform .15s; font-size: 12px; margin-top: 3px; }
+details.file[open] .chev { transform: rotate(90deg); }
+details.file .fpath { grid-column: 2; font: 11px var(--font-mono); color: var(--muted); overflow-wrap: anywhere; }
+details.file .fdesc { grid-column: 2; font-size: 12.5px; color: var(--muted); }
+details.file pre { margin: 0; border-top: 1px solid var(--line); padding: 10px 12px; background: var(--code-bg); font: 12px/1.55 var(--font-mono); overflow-x: auto; border-radius: 0 0 8px 8px; white-space: pre; }
+
+/* SVG */
+.zone.ws { fill: var(--zone); stroke: var(--line); stroke-width: 1.5; }
+.zone.kotlz { fill: var(--kotl-tint); stroke: var(--kotl); stroke-width: 2; }
+.zone.slurmz { fill: var(--slurm-tint); stroke: var(--slurm); stroke-width: 2; }
+.zone.net { fill: none; stroke: var(--edge); stroke-width: 1.5; stroke-dasharray: 6 5; }
+.zone-label { font: 600 12px var(--font-mono); letter-spacing: .08em; fill: var(--muted); }
+.zone-label.sl { fill: var(--slurm); }
+.zone-sub { font: 12px var(--font-body); fill: var(--muted); }
+.band-label { font: 600 11px var(--font-mono); letter-spacing: .08em; fill: var(--kotl); }
+.tag-kotl { fill: var(--kotl); }
+.tag-kotl-text { font: 600 12px var(--font-mono); letter-spacing: .06em; fill: var(--on-kotl); text-anchor: middle; }
+.divider { stroke: var(--kotl); stroke-opacity: .45; stroke-width: 1.5; stroke-dasharray: 4 4; }
+.node { cursor: pointer; outline: none; transition: opacity .2s; }
+.node .box { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; transition: stroke .15s; }
+.node .box.kchip { fill: var(--kotl-tint); stroke: var(--kotl); }
+.node .box.bus { fill: var(--kotl); stroke: none; }
+.node .inner { fill: var(--chip); stroke: var(--line); stroke-width: 1; }
+.n-title { font: 600 14px var(--font-body); fill: var(--ink); text-anchor: middle; }
+.n-sub { font: 11.5px var(--font-mono); fill: var(--muted); text-anchor: middle; }
+.bus-label { font: 600 11.5px var(--font-mono); fill: var(--kotl); text-anchor: middle; }
+.node:hover .box { stroke: var(--accent); }
+.node:hover .box.bus { fill: var(--accent); }
+.node:focus-visible .box { stroke: var(--accent); stroke-width: 2; stroke-dasharray: 4 3; }
+.node.later .box { stroke-dasharray: 5 4; }
+.node.selected .box { stroke: var(--accent); stroke-width: 2.5; }
+.node.selected .box.bus { fill: var(--accent); }
+.node.hot .box { stroke: var(--hot); stroke-width: 2.5; }
+.node.hot .box.bus { fill: var(--hot); }
+.edge { fill: none; stroke: var(--edge); stroke-width: 1.6; marker-end: url(#arr); transition: opacity .2s; }
+.edge.bg { stroke-dasharray: 5 4; }
+.edge.fut { stroke-dasharray: 2 4; }
+.edge.hot { stroke: var(--hot); stroke-width: 2.4; marker-end: url(#arr-hot); }
+.e-label { font: 11px var(--font-mono); fill: var(--muted); transition: opacity .2s; }
+.e-label.hot { fill: var(--hot); font-weight: 500; }
+.ah { fill: var(--edge); }
+.ah-hot { fill: var(--hot); }
+.ah-sl { fill: var(--slurm); }
+.dim { opacity: .3; }
+.badge { display: none; cursor: pointer; }
+.badge circle { fill: var(--slurm); stroke: var(--surface); stroke-width: 2; }
+.badge text { font: 600 12px var(--font-mono); fill: var(--on-slurm); text-anchor: middle; }
+/* "Kotl ↔ Slurm" view */
+.lens .node:not([data-slurm]) { opacity: .28; }
+.lens .node[data-slurm] .box { stroke: var(--slurm); stroke-width: 2.5; }
+.lens .edge:not(.sl), .lens .e-label:not(.sl) { opacity: .25; }
+.lens .edge.sl { stroke: var(--slurm); stroke-width: 2.4; marker-end: url(#arr-sl); }
+.lens .e-label.sl { fill: var(--slurm); font-weight: 500; }
+.lens .badge { display: inline; }
+/* "What's Kotl" view */
+.lens-kotl .node:not([data-kotl]) { opacity: .28; }
+.lens-kotl .node[data-kotl] .box { stroke: var(--kotl); stroke-width: 2.5; }
+.lens-kotl .edge, .lens-kotl .e-label { opacity: .35; }
+/* Build status (from status.json) */
+.sdot { stroke: var(--surface); stroke-width: 1.5; pointer-events: none; }
+.sdot.s-planned { fill: var(--st-planned); }
+.sdot.s-in_progress { fill: var(--st-progress); }
+.sdot.s-built { fill: var(--st-built); }
+.sdot.s-tested { fill: var(--st-tested); }
+.sdot.s-failing { fill: var(--st-failing); }
+.sdot.s-blocked { fill: var(--surface); stroke: var(--st-failing); stroke-width: 2.5; }
+.sdot.s-later, .sdot.s-parked { fill: var(--surface); stroke: var(--edge); stroke-width: 1.5; stroke-dasharray: 2 2; }
+.sd { display: inline-block; width: 10px; height: 10px; border-radius: 50%; flex: none; vertical-align: -1px; }
+.sd.s-planned { background: var(--st-planned); }
+.sd.s-in_progress { background: var(--st-progress); }
+.sd.s-built { background: var(--st-built); }
+.sd.s-tested { background: var(--st-tested); }
+.sd.s-failing { background: var(--st-failing); }
+.sd.s-blocked { border: 2.5px solid var(--st-failing); }
+.sd.s-later, .sd.s-parked { border: 1.5px dashed var(--edge); }
+.sblock { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; margin: 4px 0 14px; background: var(--chip); font-size: 13.5px; }
+.sblock .srow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.sblock .srow b { font-weight: 600; }
+.sblock .mtag { font: 500 11px var(--font-mono); color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; background: var(--surface); }
+.sblock dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; margin: 8px 0 0; }
+.sblock dt { color: var(--muted); font-size: 12.5px; }
+.sblock dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.sblock ul { margin: 2px 0 0; padding-left: 18px; gap: 3px; }
+.counts { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0 0 14px; font-size: 13px; }
+.counts span { display: inline-flex; align-items: center; gap: 6px; }
+.mlist { margin: 0 0 14px; }
+.mlist h3 { font: 600 13px var(--font-body); margin: 12px 0 6px; }
+.mlist h3 span { font: 500 11px var(--font-mono); color: var(--muted); margin-right: 6px; }
+.mlist button { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; background: transparent; border: 1px solid transparent; padding: 4px 6px; font-weight: 400; }
+.mlist button:hover { background: var(--chip); border-color: var(--line); }
+.mlist button .st { margin-left: auto; font-size: 12px; color: var(--muted); }
+.banner { font-size: 13px; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--st-progress); background: var(--chip); }
+.stamp { font: 12px var(--font-mono); color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+
+/* Narrow screens: back to a normal scrolling page. */
+@media (max-width: 1000px) {
+  html, body { height: auto; }
+  .wrap { height: auto; min-height: 0; }
+  .layout, .layout.collapsed { grid-template-columns: 1fr; }
+  .layout.collapsed .panel { display: block; }
+  .splitter, #toggle-panel { display: none; }
+  .svgwrap { position: static; flex: none; min-height: 0; overflow-x: auto; }
+  svg.diagram { position: static; min-width: 980px; height: auto; }
+  .panel { overflow: visible; }
+}
+</style>
+</head>
+<body>
+<!--
+  This page only draws. Everything it shows comes from two files next to it:
+    architecture.json  boxes, arrows, details, commands, files, flows   (edit to change the design)
+    status.json        build status per part                             (edit as you build; tools/status.py checks both)
+  Open it through a web server:  cd docs/architecture && python3 -m http.server 8000
+-->
+<div class="wrap">
+  <header>
+    <h1 id="title">Kotl Architecture</h1>
+    <p><span id="intro"></span> <span class="stamp" id="stamp"></span></p>
+    <div class="banner" id="banner" hidden></div>
+  </header>
+
+  <div class="layout">
+    <section class="card diagram-card" aria-label="Architecture diagram">
+      <div class="toprow">
+        <div class="tabs" role="tablist" aria-label="View" id="tabs">
+          <button type="button" role="tab" data-mode="whole" aria-selected="true">Whole picture</button>
+          <button type="button" role="tab" data-mode="progress" aria-selected="false"><span class="dot" style="background:var(--st-tested)"></span>Build progress</button>
+          <button type="button" role="tab" data-mode="kotl" aria-selected="false"><span class="dot ko"></span>What's Kotl</button>
+          <button type="button" role="tab" data-mode="slurm" aria-selected="false"><span class="dot sl"></span>Kotl ↔ Slurm</button>
+          <span class="sep" aria-hidden="true"></span>
+        </div>
+        <button type="button" id="toggle-panel" aria-controls="panel" aria-expanded="true">Hide details ›</button>
+      </div>
+      <div class="stepbar" id="stepbar" role="group" aria-label="Steps">
+        <button type="button" id="prev" aria-label="Previous step">◀</button>
+        <span id="pills" style="display:contents"></span>
+        <button type="button" id="next" aria-label="Next step">▶</button>
+      </div>
+      <div class="steptext" id="steptext" aria-live="polite"></div>
+
+      <div class="svgwrap">
+        <svg class="diagram" id="dg" role="img" aria-label="Kotl architecture diagram">
+          <defs>
+            <marker id="arr" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker>
+            <marker id="arr-hot" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="11" markerHeight="11" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path class="ah-hot" d="M0,0 L10,5 L0,10 z"/></marker>
+            <marker id="arr-sl" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="11" markerHeight="11" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path class="ah-sl" d="M0,0 L10,5 L0,10 z"/></marker>
+          </defs>
+        </svg>
+      </div>
+
+      <div class="legend" aria-hidden="true">
+        <span><i class="sw" style="border-color:var(--kotl);background:var(--kotl-tint)"></i>Kotl (ours)</span>
+        <span><i class="sw" style="border-color:var(--slurm);background:var(--slurm-tint)"></i>Slurm</span>
+        <span><i class="sw" style="border-color:var(--line);background:var(--surface)"></i>other off-the-shelf / hardware</span>
+        <span><svg viewBox="0 0 28 10"><line x1="0" y1="5" x2="28" y2="5" stroke="var(--edge)" stroke-width="1.6"/></svg>job path</span>
+        <span><svg viewBox="0 0 28 10"><line x1="0" y1="5" x2="28" y2="5" stroke="var(--edge)" stroke-width="1.6" stroke-dasharray="5 4"/></svg>background check</span>
+        <span><svg viewBox="0 0 28 10"><line x1="0" y1="5" x2="28" y2="5" stroke="var(--edge)" stroke-width="1.6" stroke-dasharray="2 4"/></svg>later</span>
+        <span><svg viewBox="0 0 28 10"><line x1="0" y1="5" x2="28" y2="5" stroke="var(--hot)" stroke-width="2.4"/></svg>current step</span>
+        <span><i class="sd s-planned"></i>planned</span>
+        <span><i class="sd s-in_progress"></i>in progress</span>
+        <span><i class="sd s-built"></i>built</span>
+        <span><i class="sd s-tested"></i>tested</span>
+        <span><i class="sd s-failing"></i>failing</span>
+        <span><i class="sd s-blocked"></i>blocked</span>
+        <span><i class="sd s-later"></i>later</span>
+      </div>
+    </section>
+
+    <div class="splitter" id="splitter" role="separator" aria-orientation="vertical" aria-label="Resize details panel. Arrow keys resize, Enter hides or shows, double-click resets." tabindex="0" aria-valuemin="280"><span class="grip"></span></div>
+    <aside class="card panel" id="panel" aria-live="polite"></aside>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   Renderer. No content lives here: it all comes from
+   architecture.json (design) and status.json (build status).
+   ============================================================ */
+const NS = "http://www.w3.org/2000/svg";
+let A = null;        // architecture.json
+let STATUS = null;   // status.json
+let D = {}, F = {}, FLOWS = {};
+let nodes = [], edges = [], labels = [], firstNode = null;
+let mode = "whole", step = 0, pills = [], currentKey = null;
+
+const svg = document.getElementById("dg");
+const panel = document.getElementById("panel");
+const tabsEl = document.getElementById("tabs");
+const stepbar = document.getElementById("stepbar");
+const pillsEl = document.getElementById("pills");
+const stepText = document.getElementById("steptext");
+const prevBtn = document.getElementById("prev");
+const nextBtn = document.getElementById("next");
+const layout = document.querySelector(".layout");
+const splitter = document.getElementById("splitter");
+const toggleBtn = document.getElementById("toggle-panel");
+
+function esc(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+function el(tag, attrs, parent, text) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) if (attrs[k] !== undefined && attrs[k] !== null) e.setAttribute(k, attrs[k]);
+  if (text != null) e.textContent = text;
+  (parent || svg).appendChild(e);
+  return e;
+}
+function rotated(l) { return l.rotate ? { transform: "translate(" + l.x + "," + l.y + ") rotate(" + l.rotate + ")" } : { x: l.x, y: l.y }; }
+
+/* ---------- Drawing ---------- */
+function draw() {
+  svg.setAttribute("viewBox", "0 0 " + A.canvas.w + " " + A.canvas.h);
+  svg.setAttribute("aria-label", A.intro || "Architecture diagram");
+  (A.zones || []).forEach(z => {
+    if (z.kind === "kotl") {
+      el("rect", { class: "zone kotlz", x: z.x, y: z.y, width: z.w, height: z.h, rx: 10 });
+      const w = Math.max(70, (z.label || "").length * 7.6 + 16);
+      el("rect", { class: "tag-kotl", x: z.x + 12, y: z.y + 10, width: w, height: 22, rx: 5 });
+      el("text", { class: "tag-kotl-text", x: z.x + 12 + w / 2, y: z.y + 25 }, null, z.label);
+    } else {
+      const c = z.kind === "slurm" ? "zone slurmz" : z.kind === "net" ? "zone net" : "zone ws";
+      el("rect", { class: c, x: z.x, y: z.y, width: z.w, height: z.h, rx: 10 });
+      if (z.label) el("text", { class: "zone-label" + (z.kind === "slurm" ? " sl" : ""), x: z.x + 16, y: z.y + 27 }, null, z.label);
+      if (z.sub) el("text", { class: "zone-sub", x: z.x + 16, y: z.y + 45 }, null, z.sub);
+    }
+  });
+  (A.texts || []).forEach(t => el("text", { class: t.class || "zone-label", x: t.x, y: t.y }, null, t.text));
+  (A.dividers || []).forEach(d => el("line", { class: "divider", x1: d.x1, y1: d.y1, x2: d.x2, y2: d.y2 }));
+
+  (A.edges || []).forEach(e => {
+    const c = "edge" + (e.style === "bg" ? " bg" : e.style === "fut" ? " fut" : "") + (e.slurm ? " sl" : "");
+    el("path", { class: c, id: e.id, d: e.d });
+  });
+  (A.edges || []).forEach(e => {
+    if (!e.label) return;
+    const l = e.label;
+    el("text", Object.assign({ class: "e-label" + (e.slurm ? " sl" : ""), "data-edge": e.id, "text-anchor": l.anchor || "start" }, rotated(l)), null, l.text);
+  });
+
+  (A.nodes || []).forEach(n => {
+    const g = el("g", {
+      class: "node" + (n.later ? " later" : ""), "data-id": n.id, "data-detail": n.detail,
+      "data-kotl": n.owner === "kotl" ? "1" : null, "data-slurm": (n.owner === "slurm" || n.slurm) ? "1" : null,
+      tabindex: 0, role: "button", "aria-label": n.title
+    });
+    const boxClass = "box" + (n.style === "chip" ? " kchip" : n.style === "bus" ? " bus" : "");
+    el("rect", { class: boxClass, x: n.x, y: n.y, width: n.w, height: n.h, rx: n.style === "bus" ? 4 : 7 }, g);
+    const subs = n.sub || [];
+    const cx = n.x + n.w / 2;
+    if (n.style !== "bus") {
+      let ty;
+      if (n.align === "top") ty = n.y + 27;
+      else { const block = (subs.length ? 20 + 17 * (subs.length - 1) : 0); ty = n.y + n.h / 2 - block / 2 + 5; }
+      el("text", { class: "n-title", x: cx, y: ty }, g, n.title);
+      subs.forEach((s, i) => el("text", { class: "n-sub", x: cx, y: ty + 20 + 17 * i }, g, s));
+    }
+    if (n.inner) {
+      el("rect", { class: "inner", x: n.inner.x, y: n.inner.y, width: n.inner.w, height: n.inner.h, rx: 5 }, g);
+      el("text", { class: "n-title", x: n.inner.x + n.inner.w / 2, y: n.inner.y + n.inner.h / 2 + 5 }, g, n.inner.text);
+    }
+    (n.labels || []).forEach(l => el("text", Object.assign({ class: "bus-label" }, rotated(l)), g, l.text));
+  });
+
+  (A.nodes || []).filter(n => n.badge).forEach(n => {
+    const b = el("g", { class: "badge", "data-target": n.detail || n.id });
+    el("circle", { cx: n.x + n.w, cy: n.y, r: 11 }, b);
+    el("text", { x: n.x + n.w, y: n.y + 4 }, b, String(n.badge));
+  });
+
+  nodes = Array.from(svg.querySelectorAll(".node"));
+  edges = Array.from(svg.querySelectorAll(".edge"));
+  labels = Array.from(svg.querySelectorAll(".e-label"));
+  firstNode = svg.querySelector(".node");
+
+  nodes.forEach(n => {
+    n.addEventListener("click", () => select(detailKey(n)));
+    n.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(detailKey(n)); } });
+  });
+  svg.querySelectorAll(".badge").forEach(b => b.addEventListener("click", () => select(b.dataset.target)));
+
+  Object.keys(FLOWS).forEach(k => {
+    const b = document.createElement("button");
+    b.type = "button"; b.setAttribute("role", "tab"); b.dataset.mode = k; b.setAttribute("aria-selected", "false");
+    b.textContent = FLOWS[k].tab || k;
+    tabsEl.appendChild(b);
+  });
+  tabsEl.querySelectorAll("button").forEach(t => t.addEventListener("click", () => setMode(t.dataset.mode)));
+}
+
+/* ---------- Build status ---------- */
+const ST_LABEL = { planned: "Planned", in_progress: "In progress", built: "Built, not tested", tested: "Tested", failing: "Failing", blocked: "Blocked", later: "Later", parked: "Parked" };
+const ST_ORDER = ["in_progress", "failing", "blocked", "built", "tested", "planned", "later", "parked"];
+function stClass(s) { return ST_LABEL[s] ? s : "planned"; }
+function fmtTime(t) {
+  if (!t) return "";
+  const d = new Date(t);
+  return isNaN(d) ? String(t) : d.toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+}
+function testLine(t) {
+  if (!t) return "not run yet";
+  return (t.passed || 0) + " passed · " + (t.failed || 0) + " failed" + (t.ran_at ? " · " + fmtTime(t.ran_at) : "");
+}
+function renderStatus(key) {
+  const s = STATUS && STATUS.features && STATUS.features[key];
+  if (!s) return "";
+  const st = stClass(s.status);
+  let h = '<div class="sblock"><div class="srow"><span class="sd s-' + st + '"></span><b>' + ST_LABEL[st] + '</b>' +
+    (s.milestone ? '<span class="mtag">' + esc(s.milestone) + '</span>' : '') + '</div><dl>';
+  if (s.now) h += '<dt>Now</dt><dd>' + esc(s.now) + '</dd>';
+  h += '<dt>Code tests</dt><dd>' + esc(testLine(s.tests && s.tests.unit)) + '</dd>';
+  h += '<dt>On a board</dt><dd>' + esc(testLine(s.tests && s.tests.hardware)) + '</dd>';
+  if (s.last_commit) h += '<dt>Last commit</dt><dd><code>' + esc(String(s.last_commit.hash || "").slice(0, 7)) + '</code> ' + esc(s.last_commit.message) + (s.last_commit.date ? ' · ' + esc(fmtTime(s.last_commit.date)) : '') + '</dd>';
+  if (s.code && s.code.length) h += '<dt>Code</dt><dd>' + s.code.map(c => '<code>' + esc(c) + '</code>').join(', ') + '</dd>';
+  if (s.issues && s.issues.length) h += '<dt>Open issues</dt><dd><ul>' + s.issues.map(i => '<li>' + esc(i) + '</li>').join('') + '</ul></dd>';
+  if (s.log && s.log.length) h += '<dt>Recent</dt><dd><ul>' + s.log.slice(-5).reverse().map(l => '<li>' + esc(fmtTime(l.date)) + ' · ' + esc(l.text) + '</li>').join('') + '</ul></dd>';
+  return h + '</dl></div>';
+}
+function renderProgress() {
+  if (!STATUS) return '<div class="kind">Build progress</div><h2>Build progress</h2><p class="what">No status loaded. This view reads <code>status.json</code> from the same folder.</p>';
+  const feats = STATUS.features || {};
+  const keys = Object.keys(feats);
+  const counts = {};
+  keys.forEach(k => { const s = stClass(feats[k].status); counts[s] = (counts[s] || 0) + 1; });
+  let h = '<div class="kind">Build progress</div><h2>Build progress</h2>';
+  h += '<p class="what">Where every part of Kotl stands, by milestone. Click a row to see exactly what\'s happening.</p>';
+  h += '<div class="counts">' + ST_ORDER.filter(s => counts[s]).map(s => '<span><i class="sd s-' + s + '"></i>' + counts[s] + ' ' + ST_LABEL[s].toLowerCase() + '</span>').join('') + '</div>';
+  h += '<div class="mlist">';
+  const ms = STATUS.milestones || {};
+  Object.keys(ms).concat(["(none)"]).forEach(m => {
+    const inM = keys.filter(k => (feats[k].milestone || "(none)") === m);
+    if (!inM.length) return;
+    h += '<h3><span>' + esc(m) + '</span>' + esc(ms[m] || "Not in a milestone") + '</h3>';
+    inM.forEach(k => {
+      const s = feats[k], st = stClass(s.status);
+      const title = s.title || (D[k] && D[k].title) || k;
+      h += '<button type="button" data-goto="' + esc(k) + '"><i class="sd s-' + st + '"></i>' + esc(title) + '<span class="st">' + ST_LABEL[st] + '</span></button>';
+    });
+  });
+  h += '</div><p class="note">Statuses come from <code>docs/architecture/status.json</code> in the repo. Only <code>tools/status.py refresh</code> sets tested or failing.</p>';
+  return h;
+}
+function renderDots() {
+  svg.querySelectorAll(".sdot").forEach(d => d.remove());
+  if (!STATUS || !STATUS.features) return;
+  nodes.forEach(g => {
+    const s = STATUS.features[detailKey(g)];
+    const r = g.querySelector("rect.box");
+    if (!s || !r) return;
+    const x = +r.getAttribute("x"), y = +r.getAttribute("y"), w = +r.getAttribute("width");
+    const isBus = r.classList.contains("bus");
+    const c = el("circle", { cx: isBus ? x + w / 2 : x + 12, cy: isBus ? y - 12 : y + 12, r: 5.5, class: "sdot s-" + stClass(s.status) }, g);
+    el("title", {}, c, ST_LABEL[stClass(s.status)] + (s.now ? " · " + s.now : ""));
+  });
+}
+
+/* ---------- Panel ---------- */
+function detailKey(n) { return n.dataset.detail || n.dataset.id; }
+function defaultPanel() { return mode === "slurm" ? "slurmlens" : mode === "kotl" ? "kotllens" : mode === "progress" ? "progress" : "overview"; }
+function renderTerm(t, i) {
+  const body = t.lines.map(l => {
+    if (l.c) return '<span class="p">$ </span>' + esc(l.c);
+    if (l.o) return '<span class="o">' + esc(l.o) + '</span>';
+    return '<span class="k">' + esc(l.k) + '</span>';
+  }).join("\n");
+  return '<div class="term"><div class="term-bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>' +
+    '<span class="host">' + esc(t.host) + '</span><button type="button" data-term="' + i + '">Copy</button></div><pre>' + body + '</pre></div>';
+}
+function renderFile(key) {
+  const f = F[key];
+  if (!f) return "";
+  return '<details class="file"><summary><span class="ext">' + esc(f.ext) + '</span><span class="fname">' + esc(f.name) +
+    '</span><span class="chev" aria-hidden="true">▶</span><span class="fpath">' + esc(f.path) + '</span><span class="fdesc">' + esc(f.desc) +
+    '</span></summary><pre><code>' + esc(f.body) + '</code></pre></details>';
+}
+function renderPanel(key) {
+  if (key === "progress") {
+    panel.innerHTML = renderProgress();
+    panel.scrollTop = 0;
+    panel.querySelectorAll("[data-goto]").forEach(b => b.addEventListener("click", () => select(b.dataset.goto)));
+    return;
+  }
+  const d = D[key] || D.overview || { kind: "", title: key };
+  let h = '<div class="kind' + (d.kindClass ? ' ' + d.kindClass : '') + '">' + (d.kind || "") + '</div><h2>' + (d.title || key) + '</h2>';
+  h += renderStatus(key);
+  if (d.what) h += '<p class="what">' + d.what + '</p>';
+  if (d.bullets) h += '<ul>' + d.bullets.map(b => '<li>' + b + '</li>').join('') + '</ul>';
+  if (d.ordered) h += '<ol class="sl">' + d.ordered.map(b => '<li>' + b + '</li>').join('') + '</ol>';
+  if (d.term && d.term.length) h += '<div class="sec">Commands</div>' + d.term.map(renderTerm).join('');
+  if (d.files && d.files.length) h += '<div class="sec">Files · click to open</div>' + d.files.map(renderFile).join('');
+  if (d.note) h += '<p class="note">' + d.note + '</p>';
+  if (key === "overview" && A.latest) h += '<p class="latest">' + esc(A.latest) + '</p>';
+  if (d.hint) h += '<p class="hint">' + d.hint + '</p>';
+  const backLabel = mode === "slurm" ? "Where Kotl meets Slurm" : mode === "kotl" ? "What's Kotl" : mode === "progress" ? "Build progress" : "Whole picture";
+  if (key !== defaultPanel()) h += '<button type="button" id="back">← ' + backLabel + '</button>';
+  panel.innerHTML = h;
+  panel.scrollTop = 0;
+  const back = document.getElementById("back");
+  if (back) back.addEventListener("click", () => select(null));
+  panel.querySelectorAll("[data-term]").forEach(btn => btn.addEventListener("click", () => {
+    const t = d.term[+btn.dataset.term];
+    const text = t.lines.filter(l => l.c).map(l => l.c).join("\n");
+    try {
+      navigator.clipboard.writeText(text).then(() => { btn.textContent = "Copied"; setTimeout(() => btn.textContent = "Copy", 1200); },
+        () => { btn.textContent = "Select text"; });
+    } catch (e) { btn.textContent = "Select text"; }
+  }));
+}
+function select(key) {
+  currentKey = key;
+  if (key && layout.classList.contains("collapsed")) setCollapsed(false);
+  nodes.forEach(n => n.classList.toggle("selected", key !== null && detailKey(n) === key));
+  renderPanel(key || defaultPanel());
+  if (key && window.matchMedia("(max-width: 1000px)").matches) {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    panel.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+  }
+}
+
+/* ---------- Modes and flows ---------- */
+function clearHighlights() { [...nodes, ...edges, ...labels].forEach(x => x.classList.remove("hot", "dim")); }
+function setStep(n) {
+  const flow = FLOWS[mode];
+  if (!flow) return;
+  const steps = flow.steps;
+  step = Math.max(1, Math.min(steps.length, n));
+  pills.forEach((p, i) => p.setAttribute("aria-pressed", String(i + 1 === step)));
+  prevBtn.disabled = step <= 1;
+  nextBtn.disabled = step >= steps.length;
+  const s = steps[step - 1];
+  stepText.className = "steptext active";
+  stepText.innerHTML = "<b>Step " + step + " · " + esc(s.name) + ".</b> " + s.text;
+  nodes.forEach(n => { const on = s.nodes.includes(n.dataset.id); n.classList.toggle("hot", on); n.classList.toggle("dim", !on); });
+  edges.forEach(e => {
+    const on = s.edges.includes(e.id);
+    e.classList.toggle("hot", on);
+    e.classList.toggle("dim", !on);
+    if (on) svg.insertBefore(e, firstNode); // keep a highlighted path on top where paths share a line
+  });
+  labels.forEach(l => { const on = s.edges.includes(l.dataset.edge); l.classList.toggle("hot", on); l.classList.toggle("dim", !on); });
+}
+function setMode(m) {
+  mode = m;
+  tabsEl.querySelectorAll("button").forEach(t => t.setAttribute("aria-selected", String(t.dataset.mode === m)));
+  svg.classList.toggle("lens", m === "slurm");
+  svg.classList.toggle("lens-kotl", m === "kotl");
+  clearHighlights();
+  pillsEl.innerHTML = "";
+  pills = [];
+  const flow = FLOWS[m];
+  stepbar.style.display = flow ? "flex" : "none";
+  if (flow) {
+    pills = flow.steps.map((s, i) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "pill";
+      b.textContent = (i + 1) + " " + s.name;
+      b.setAttribute("aria-pressed", "false");
+      b.addEventListener("click", () => setStep(i + 1));
+      pillsEl.appendChild(b);
+      return b;
+    });
+    setStep(1);
+  } else if (m === "slurm") {
+    stepText.className = "steptext slurm";
+    stepText.innerHTML = "<b>Purple</b> shows where Kotl meets Slurm. The numbers match the list on the right.";
+  } else if (m === "kotl") {
+    stepText.className = "steptext kotl";
+    stepText.innerHTML = "<b>Teal</b> is Kotl: everything we write and maintain. Everything faded is off the shelf or hardware.";
+  } else if (m === "progress") {
+    stepText.className = "steptext";
+    stepText.innerHTML = "Each dot is a part's <b>build status</b>. The list on the right groups them by milestone; click any row or box for details.";
+  } else {
+    stepText.className = "steptext";
+    stepText.innerHTML = "Click any box for its commands, files and build status. Pick a tab to see progress, what Kotl is, where it meets Slurm, or follow a flow.";
+  }
+  select(null);
+}
+prevBtn.addEventListener("click", () => setStep(step - 1));
+nextBtn.addEventListener("click", () => setStep(step + 1));
+
+/* ---------- Resizable, collapsible details panel (remembered in this browser only) ---------- */
+const PANEL_MIN = 280, PANEL_DEFAULT = 440;
+function store(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+function load(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+let panelW = parseInt(load("kotl-panel-w2"), 10) || PANEL_DEFAULT;
+function maxW() { return Math.max(PANEL_MIN, Math.round(layout.clientWidth * 0.65)); }
+function applyW(w) {
+  panelW = Math.round(Math.min(maxW(), Math.max(PANEL_MIN, w)));
+  layout.style.setProperty("--panel-w", panelW + "px");
+  splitter.setAttribute("aria-valuenow", panelW);
+  splitter.setAttribute("aria-valuemax", maxW());
+}
+function setCollapsed(c) {
+  layout.classList.toggle("collapsed", c);
+  toggleBtn.setAttribute("aria-expanded", String(!c));
+  toggleBtn.textContent = c ? "‹ Show details" : "Hide details ›";
+  store("kotl-panel-collapsed", c ? "1" : "0");
+}
+splitter.addEventListener("pointerdown", e => {
+  if (layout.classList.contains("collapsed")) setCollapsed(false);
+  splitter.setPointerCapture(e.pointerId);
+  splitter.classList.add("dragging");
+  document.body.classList.add("resizing");
+});
+splitter.addEventListener("pointermove", e => {
+  if (!splitter.classList.contains("dragging")) return;
+  applyW(layout.getBoundingClientRect().right - e.clientX - 3);
+});
+function endDrag() {
+  if (!splitter.classList.contains("dragging")) return;
+  splitter.classList.remove("dragging");
+  document.body.classList.remove("resizing");
+  store("kotl-panel-w2", panelW);
+}
+splitter.addEventListener("pointerup", endDrag);
+splitter.addEventListener("pointercancel", endDrag);
+splitter.addEventListener("dblclick", () => { applyW(PANEL_DEFAULT); store("kotl-panel-w2", panelW); });
+splitter.addEventListener("keydown", e => {
+  const moves = { ArrowLeft: panelW + 24, ArrowRight: panelW - 24, Home: maxW(), End: PANEL_MIN };
+  if (e.key in moves) { e.preventDefault(); if (layout.classList.contains("collapsed")) setCollapsed(false); applyW(moves[e.key]); store("kotl-panel-w2", panelW); }
+  else if (e.key === "Enter") { e.preventDefault(); setCollapsed(!layout.classList.contains("collapsed")); }
+});
+toggleBtn.addEventListener("click", () => setCollapsed(!layout.classList.contains("collapsed")));
+window.addEventListener("resize", () => applyW(panelW));
+applyW(panelW);
+setCollapsed(load("kotl-panel-collapsed") === "1");
+
+/* ---------- Load ---------- */
+function showBanner(msg) { const b = document.getElementById("banner"); b.hidden = false; b.textContent = msg; }
+fetch("architecture.json", { cache: "no-store" })
+  .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+  .then(a => {
+    A = a; D = a.details || {}; F = a.files || {}; FLOWS = a.flows || {};
+    document.getElementById("title").textContent = a.title || "Architecture";
+    document.title = a.title || "Architecture";
+    document.getElementById("intro").textContent = a.intro || "";
+    draw();
+    setMode("whole");
+    return fetch("status.json", { cache: "no-store" })
+      .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(s => {
+        STATUS = s;
+        renderDots();
+        document.getElementById("stamp").textContent = s.updated ? "Status as of " + fmtTime(s.updated) + (s.repo_commit ? " · " + String(s.repo_commit).slice(0, 7) : "") + "." : "";
+        select(currentKey);
+      })
+      .catch(() => showBanner("Couldn't load status.json, so build dots are hidden."));
+  })
+  .catch(() => showBanner("Couldn't load architecture.json. Open this page through a web server (for example: cd docs/architecture && python3 -m http.server 8000), or use the published copy."));
+</script>
+</body>
+</html>

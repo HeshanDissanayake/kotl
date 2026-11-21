@@ -1,0 +1,430 @@
+{
+  "schema": 1,
+  "updated": "2026-11-21T12:00:00Z",
+  "repo_commit": null,
+  "watch": [
+    "kotl/",
+    "deploy/",
+    "plugin/",
+    "tools/"
+  ],
+  "shared": [],
+  "statuses": {
+    "planned": "Not started",
+    "in_progress": "Being worked on now (set by the agent)",
+    "built": "Code done, not yet proven by tests (set by the agent)",
+    "tested": "All its tests pass (set only by tools/status.py)",
+    "failing": "At least one of its tests fails (set only by tools/status.py)",
+    "blocked": "Waiting on something; say what in issues (set by the agent)",
+    "later": "Planned for after the first release",
+    "parked": "On hold until there's a reason"
+  },
+  "milestones": {
+    "M0": "Repo, tooling and status checks",
+    "M1": "Workstation and PC setup (Slurm, accounts, SSH lockdown, FireSim)",
+    "M2": "Core path end to end with a dummy module (no FPGA)",
+    "M3": "FireSim batch jobs on a real board",
+    "M4": "Health check, ETA notices, interactive sessions",
+    "M5": "Kotl plugin for Claude Code",
+    "Later": "After the first release"
+  },
+  "features": {
+    "tooling": {
+      "title": "Repo tooling",
+      "status": "planned",
+      "milestone": "M0",
+      "now": "",
+      "code": [
+        "tools/",
+        "tests/conftest.py",
+        ".githooks/pre-commit"
+      ],
+      "tests": {
+        "unit": null,
+        "hardware": null
+      },
+      "last_commit": null,
+      "issues": [],
+      "log": [],
+      "drawn": false
+    },
+    "queue": {
+      "title": "Slurm queue + priority",
+      "status": "planned",
+      "milestone": "M1",
+      "now": "",
+      "code": [
+        "deploy/slurm/"
+      ],
+      "tests": {
+        "unit": null,
+        "hardware": null
+      },
+      "last_commit": null,
+      "issues": [],
+      "log": []
+    },
+    "starter": {
+      "title": "Slurm job starter",
+      "status": "planned",
+      "milestone": "M1",
+      "now": "",
+      "code": [
+        "deploy/slurm/"
+      ],
+      "tests": {
+        "unit": null,
+        "hardware": null
+      },
+      "last_commit": null,
+      "issues": [],
+      "log": []
+    },
+    "runner": {
+      "title": "Slurm health runner",
+      "status": "planned",
+      "milestone": "M1",
+      "now": "",
+      "code": [
+        "deploy/slurm/"
+      ],
+      "tests": {
+        "unit": null,
+        "hardware": null
+      },
+      "last_commit": null,
+      "issues": [],
+      "log": []
+    },
+    "acct": {
+      "title": "Slurm accounting",
+      "status": "planned",
+      "milestone": "M1",
+      "now": "",
+      "code": [
+        "deploy/slurm/"
+      ],
+      "tests": {
+        "unit": null,
+        "hardware": null
+      },
+      "last_commit": null,
+      "issues": [],
+      "log": []
+    },
+    "os": {
+      "title": "Workstation OS setup",
+      "status": "planned",
+      "milestone": "M1",
+      "now": "",
+      "code": [
+        "deploy/accounts.sh",
+        "deploy/sudoers/",
+        "deploy/systemd/"
+      ],
+      "tests": {
+        "unit": null,
+        "hardware": null
+      },
+      "last_commit": null,
+      "issues": [],
+      "log": []
+    },
+    "firesim": {
+      "title": "FireSim install",
+      "status": "planned",
+      "milestone": "M1",
+      "now": "",
+      "code": [
+        "deploy/firesim/"
+      ],
+      "tests": {
+        "unit": null,
+        "hardware": null
+      },
+      "last_commit": null,
+      "issues": [],
+      "log": []
+    },
+    "key": {
+      "title": "kotl SSH key",
+      "status": "planned",
+      "milestone": "M1",
+      "now": "",
+      "code": [
+        "deploy/ssh/"
+      ],
+      "tests": {
+        "unit": null,
+        "hardware": null
+      },
+      "last_commit": null,
+      "issues": [],
+      "log": []
+    },
+    "pc1": {
+      "title": "VCU118 PC 1 setup",
+      "status": "planned",
+      "milestone": "M1",
+      "now": "",
+      "code": [
+        "deploy/pc/"
+      ],
+      "tests": {
+        "unit": null,
+        "hardware": null
+      },
+      "last_commit": null,
+      "issues": [],
+      "log": []
+    },
+    "pc2": {
+      "title": "VCU118 PC 2 setup",
+      "status": "planned",
+      "milestone": "M1",
+      "now": "",
+      "code": [
+        "deploy/pc/"
+      ],
+      "tests": {
+        "unit": null,
+        "hardware": null
+      },
+      "last_commit": null,
+      "issues": [],
+      "log": []
+    },
+    "registry": {
+      "title": "Board registry",
+      "status": "planned",
+      "milestone": "M2",
+      "now": "",
+      "code": [
+        "kotl/core/registry.py"
+      ],
+      "tests": {
+        "unit": null,
+        "hardware": null
+      },
+      "last_commit": null,
+      "issues": [],
+      "log": []
+    },
+    "launcher": {
+      "title": "Launcher",
+      "status": "planned",
+      "milestone": "M2",
+      "now": "",
+      "code": [
+        "kotl/core/launcher.py",
+        "deploy/job.sh"
+      ],
+      "tests": {
+        "unit": null,
+        "hardware": null
+      },
+      "last_commit": null,
+      "issues": [],
+      "log": []
+    },
+    "cli": {
+      "title": "kotl CLI",
+      "status": "planned",
+      "milestone": "M2",
+      "now": "",
+      "code": [
+        "kotl/cli/",
+        "kotl/slurm.py"
+      ],
+      "tests": {
+        "unit": null,
+        "hardware": null
+      },
+      "last_commit": null,
+      "issues": [],
+      "log": []
+    },
+    "results": {
+      "title": "Job results",
+      "status": "planned",
+      "milestone": "M2",
+      "now": "",
+      "code": [
+        "kotl/core/results.py"
+      ],
+      "tests": {
+        "unit": null,
+        "hardware": null
+      },
+      "last_commit": null,
+      "issues": [],
+      "log": []
+    },
+    "fsmod": {
+      "title": "FireSim module",
+      "status": "planned",
+      "milestone": "M3",
+      "now": "",
+      "code": [
+        "kotl/modules/firesim/"
+      ],
+      "tests": {
+        "unit": null,
+        "hardware": null
+      },
+      "last_commit": null,
+      "issues": [],
+      "log": []
+    },
+    "health": {
+      "title": "Health check",
+      "status": "planned",
+      "milestone": "M4",
+      "now": "",
+      "code": [
+        "kotl/core/health.py",
+        "deploy/health.sh"
+      ],
+      "tests": {
+        "unit": null,
+        "hardware": null
+      },
+      "last_commit": null,
+      "issues": [],
+      "log": []
+    },
+    "notifier": {
+      "title": "ETA notifier",
+      "status": "planned",
+      "milestone": "M4",
+      "now": "",
+      "code": [
+        "kotl/core/notifier.py",
+        "deploy/systemd/"
+      ],
+      "tests": {
+        "unit": null,
+        "hardware": null
+      },
+      "last_commit": null,
+      "issues": [],
+      "log": []
+    },
+    "attach": {
+      "title": "Console attach",
+      "status": "planned",
+      "milestone": "M4",
+      "now": "",
+      "code": [
+        "kotl/core/attach.py"
+      ],
+      "tests": {
+        "unit": null,
+        "hardware": null
+      },
+      "last_commit": null,
+      "issues": [],
+      "log": []
+    },
+    "plugin": {
+      "title": "Kotl plugin for Claude Code",
+      "status": "planned",
+      "milestone": "M5",
+      "now": "",
+      "code": [
+        "plugin/"
+      ],
+      "tests": {
+        "unit": null,
+        "hardware": null
+      },
+      "last_commit": null,
+      "issues": [],
+      "log": []
+    },
+    "power": {
+      "title": "Power monitor",
+      "status": "later",
+      "milestone": "Later",
+      "now": "",
+      "code": [],
+      "tests": {
+        "unit": null,
+        "hardware": null
+      },
+      "last_commit": null,
+      "issues": [],
+      "log": []
+    },
+    "dashboard": {
+      "title": "Usage dashboard",
+      "status": "later",
+      "milestone": "Later",
+      "now": "",
+      "code": [],
+      "tests": {
+        "unit": null,
+        "hardware": null
+      },
+      "last_commit": null,
+      "issues": [],
+      "log": []
+    },
+    "program": {
+      "title": "Program / reset module",
+      "status": "later",
+      "milestone": "Later",
+      "now": "",
+      "code": [],
+      "tests": {
+        "unit": null,
+        "hardware": null
+      },
+      "last_commit": null,
+      "issues": [],
+      "log": []
+    },
+    "drvtest": {
+      "title": "Driver tests module",
+      "status": "later",
+      "milestone": "Later",
+      "now": "",
+      "code": [],
+      "tests": {
+        "unit": null,
+        "hardware": null
+      },
+      "last_commit": null,
+      "issues": [],
+      "log": []
+    },
+    "more": {
+      "title": "More boards",
+      "status": "later",
+      "milestone": "Later",
+      "now": "",
+      "code": [],
+      "tests": {
+        "unit": null,
+        "hardware": null
+      },
+      "last_commit": null,
+      "issues": [],
+      "log": []
+    },
+    "affinity": {
+      "title": "Same-design pick",
+      "status": "parked",
+      "milestone": "Later",
+      "now": "",
+      "code": [],
+      "tests": {
+        "unit": null,
+        "hardware": null
+      },
+      "last_commit": null,
+      "issues": [],
+      "log": []
+    }
+  }
+}

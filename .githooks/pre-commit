@@ -1,0 +1,4 @@
+#!/bin/sh
+# Refuse commits where code, status.json and architecture.json disagree.
+# Enable once per clone:  git config core.hooksPath .githooks
+exec python3 tools/status.py check --staged

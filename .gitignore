@@ -1,0 +1,4 @@
+.kotl/
+__pycache__/
+.venv/
+kotl-handoff.zip
