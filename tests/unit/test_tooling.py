@@ -101,6 +101,7 @@ def test_agent_cannot_claim_tested(repo):
     st_path = repo / "docs/architecture/status.json"
     st = json.loads(st_path.read_text())
     st["features"]["registry"]["status"] = "tested"
+    st["features"]["registry"]["tests"] = {"unit": None, "hardware": None}   # no results to back it
     st_path.write_text(json.dumps(st))
     r = run(repo, sys.executable, "tools/status.py", "check", check=False)
     assert r.returncode != 0 and "only 'refresh' may set that" in r.stdout + r.stderr

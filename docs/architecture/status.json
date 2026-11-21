@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "updated": "2026-11-21T15:10:37Z",
-  "repo_commit": "f0570143516cdf3e04e290f939d0b08ff7510c62",
+  "updated": "2026-11-21T15:10:55Z",
+  "repo_commit": "3556e18cebdfde61e2bea72632158eb235869933",
   "watch": [
     "kotl/",
     "deploy/",
@@ -31,7 +31,7 @@
   "features": {
     "tooling": {
       "title": "Repo tooling",
-      "status": "failing",
+      "status": "tested",
       "milestone": "M0",
       "now": "Hook enabled, package skeleton in place, tooling covered by tests/unit/test_tooling.py.",
       "code": [
@@ -41,9 +41,9 @@
       ],
       "tests": {
         "unit": {
-          "passed": 8,
-          "failed": 1,
-          "ran_at": "2026-11-21T15:10:37Z"
+          "passed": 9,
+          "failed": 0,
+          "ran_at": "2026-11-21T15:10:55Z"
         },
         "hardware": null
       },
@@ -57,6 +57,10 @@
         {
           "date": "2026-11-21",
           "text": "M0: enabled .githooks, added kotl/ skeleton, pytest.ini and 9 tagged tests proving the hook refuses unstatused and unowned code and refresh turns built features green."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "Fixed test_agent_cannot_claim_tested: it now clears the feature's results instead of assuming none exist."
         }
       ],
       "drawn": false
@@ -73,7 +77,7 @@
         "unit": {
           "passed": 4,
           "failed": 0,
-          "ran_at": "2026-11-21T15:10:37Z"
+          "ran_at": "2026-11-21T15:10:55Z"
         },
         "hardware": null
       },
@@ -111,14 +115,14 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-21T15:10:37Z"
+          "ran_at": "2026-11-21T15:10:55Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "ce7c72864fa89b4304fd198c018493fdf73088f8",
-        "message": "M1: deploy scripts for the workstation and PC (not yet run)",
-        "date": "2026-11-22T01:39:10+11:00"
+        "hash": "3556e18cebdfde61e2bea72632158eb235869933",
+        "message": "M2: board lease code (registry, launcher, kotl CLI, results) and its installer",
+        "date": "2026-11-22T02:10:38+11:00"
       },
       "issues": [],
       "log": [
@@ -152,7 +156,7 @@
         "unit": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-21T15:10:37Z"
+          "ran_at": "2026-11-21T15:10:55Z"
         },
         "hardware": null
       },
@@ -185,7 +189,7 @@
         "unit": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-21T15:10:37Z"
+          "ran_at": "2026-11-21T15:10:55Z"
         },
         "hardware": null
       },
@@ -227,7 +231,7 @@
         "unit": {
           "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-21T15:10:37Z"
+          "ran_at": "2026-11-21T15:10:55Z"
         },
         "hardware": null
       },
@@ -272,7 +276,7 @@
         "unit": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-21T15:10:37Z"
+          "ran_at": "2026-11-21T15:10:55Z"
         },
         "hardware": {
           "passed": 2,
@@ -317,7 +321,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-21T15:10:37Z"
+          "ran_at": "2026-11-21T15:10:55Z"
         },
         "hardware": {
           "passed": 1,
@@ -362,7 +366,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-21T15:10:37Z"
+          "ran_at": "2026-11-21T15:10:55Z"
         },
         "hardware": {
           "passed": 1,
@@ -440,11 +444,15 @@
         "unit": {
           "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-21T15:10:37Z"
+          "ran_at": "2026-11-21T15:10:55Z"
         },
         "hardware": null
       },
-      "last_commit": null,
+      "last_commit": {
+        "hash": "3556e18cebdfde61e2bea72632158eb235869933",
+        "message": "M2: board lease code (registry, launcher, kotl CLI, results) and its installer",
+        "date": "2026-11-22T02:10:38+11:00"
+      },
       "issues": [],
       "log": [
         {
@@ -469,11 +477,15 @@
         "unit": {
           "passed": 25,
           "failed": 0,
-          "ran_at": "2026-11-21T15:10:37Z"
+          "ran_at": "2026-11-21T15:10:55Z"
         },
         "hardware": null
       },
-      "last_commit": null,
+      "last_commit": {
+        "hash": "3556e18cebdfde61e2bea72632158eb235869933",
+        "message": "M2: board lease code (registry, launcher, kotl CLI, results) and its installer",
+        "date": "2026-11-22T02:10:38+11:00"
+      },
       "issues": [],
       "log": [
         {
@@ -508,11 +520,15 @@
         "unit": {
           "passed": 13,
           "failed": 0,
-          "ran_at": "2026-11-21T15:10:37Z"
+          "ran_at": "2026-11-21T15:10:55Z"
         },
         "hardware": null
       },
-      "last_commit": null,
+      "last_commit": {
+        "hash": "3556e18cebdfde61e2bea72632158eb235869933",
+        "message": "M2: board lease code (registry, launcher, kotl CLI, results) and its installer",
+        "date": "2026-11-22T02:10:38+11:00"
+      },
       "issues": [],
       "log": [
         {
@@ -545,11 +561,15 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-21T15:10:37Z"
+          "ran_at": "2026-11-21T15:10:55Z"
         },
         "hardware": null
       },
-      "last_commit": null,
+      "last_commit": {
+        "hash": "3556e18cebdfde61e2bea72632158eb235869933",
+        "message": "M2: board lease code (registry, launcher, kotl CLI, results) and its installer",
+        "date": "2026-11-22T02:10:38+11:00"
+      },
       "issues": [],
       "log": [
         {
@@ -605,7 +625,7 @@
         "unit": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-21T15:10:37Z"
+          "ran_at": "2026-11-21T15:10:55Z"
         },
         "hardware": null
       },
