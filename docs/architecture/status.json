@@ -157,7 +157,12 @@
       },
       "last_commit": null,
       "issues": [],
-      "log": []
+      "log": [
+        {
+          "date": "2026-11-22",
+          "text": "View: System files tab lists every change on the workstation."
+        }
+      ]
     },
     "firesim": {
       "title": "Users' FireSim (check, no install)",
@@ -235,6 +240,10 @@
         {
           "date": "2026-11-22",
           "text": "Design: soft lockdown now; virtex-host password logins still work."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "View: System files tab lists every change on the PC (kotl account, kotl-keys, one sudoers line)."
         }
       ]
     },
@@ -599,6 +608,10 @@
         {
           "date": "2026-11-22",
           "text": "Design: lockdown setting, soft now (job's own work only) and full later (kill every virtex-host process)."
+        },
+        {
+          "date": "2026-11-22",
+          "text": "Design: kotl-keys helper and PC sudoers rule shown as file cards."
         }
       ]
     }

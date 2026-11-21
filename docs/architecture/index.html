@@ -504,7 +504,8 @@ function renderDots() {
 
 /* ---------- Panel ---------- */
 function detailKey(n) { return n.dataset.detail || n.dataset.id; }
-function defaultPanel() { return mode === "slurm" ? "slurmlens" : mode === "kotl" ? "kotllens" : mode === "progress" ? "progress" : "overview"; }
+function stepDetail() { const f = FLOWS[mode]; const s = f && f.steps[step - 1]; return s && s.detail; }
+function defaultPanel() { return stepDetail() || (mode === "slurm" ? "slurmlens" : mode === "kotl" ? "kotllens" : mode === "progress" ? "progress" : "overview"); }
 function renderTerm(t, i) {
   const body = t.lines.map(l => {
     if (l.c) return '<span class="p">$ </span>' + esc(l.c);
@@ -586,6 +587,7 @@ function setStep(n) {
     if (on) svg.insertBefore(e, firstNode); // keep a highlighted path on top where paths share a line
   });
   labels.forEach(l => { const on = s.edges.includes(l.dataset.edge); l.classList.toggle("hot", on); l.classList.toggle("dim", !on); });
+  if (s.detail) { currentKey = null; nodes.forEach(n => n.classList.remove("selected")); renderPanel(s.detail); }
 }
 function setMode(m) {
   mode = m;

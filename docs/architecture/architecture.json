@@ -2,7 +2,7 @@
  "schema": 1,
  "title": "Kotl Architecture",
  "intro": "Teal is Kotl, our product. Purple is Slurm. Gray is everything else off the shelf, plus the hardware. The dot on each box is its build status; click a box for exactly what's happening.",
- "latest": "Latest: soft lockdown for now. Password logins to virtex-host still work, and the end step kills only the job's own work. A single setting switches to full lockdown later.",
+ "latest": "Latest: new System files tab, listing every file, account and package Kotl adds or edits on the workstation, the FPGA PC and users' side.",
  "canvas": {
   "w": 1520,
   "h": 820
@@ -1211,6 +1211,68 @@
      ]
     }
    ]
+  },
+  "sysfiles": {
+   "tab": "System files",
+   "steps": [
+    {
+     "name": "Summary",
+     "text": "What Kotl installs or edits on each machine. Every change is made by a <code>deploy/</code> script that the admin runs, and each script can undo its own changes.",
+     "nodes": [
+      "os",
+      "pc1"
+     ],
+     "edges": [],
+     "detail": "sys-summary"
+    },
+    {
+     "name": "Workstation",
+     "text": "The workstation carries almost everything: Slurm, MariaDB, the kotl account, Kotl's programs and a few small config snippets.",
+     "nodes": [
+      "os",
+      "queue",
+      "starter",
+      "runner",
+      "acct",
+      "cli",
+      "launcher",
+      "health",
+      "notifier",
+      "attach",
+      "registry",
+      "results",
+      "access",
+      "fsmod"
+     ],
+     "edges": [],
+     "detail": "sys-ws"
+    },
+    {
+     "name": "FPGA PC",
+     "text": "On the PC: a kotl account, one helper script and one sudoers line. sshd stays as it is until full lockdown.",
+     "nodes": [
+      "pc1",
+      "key"
+     ],
+     "edges": [
+      "e-bus-pc1"
+     ],
+     "detail": "sys-pc"
+    },
+    {
+     "name": "Users",
+     "text": "Nothing system-wide for users; their Chipyard is only read.",
+     "nodes": [
+      "remote",
+      "local",
+      "plugin-r",
+      "plugin-l",
+      "firesim"
+     ],
+     "edges": [],
+     "detail": "sys-users"
+    }
+   ]
   }
  },
  "details": {
@@ -1916,10 +1978,14 @@
     "<b>sudo:</b> one rule lets users run exactly two Kotl programs as kotl.",
     "<b>systemd timers:</b> start the notifier (and later the power monitor) every minute.",
     "<b>OpenSSH:</b> carries the kotl key to the FPGA PCs.",
-    "<b>Accounts:</b> users in <code>kotl-users</code>; the <code>kotl</code> service account."
+    "<b>Accounts:</b> users in <code>kotl-users</code>; the <code>kotl</code> service account.",
+    "Full list of what Kotl changes here: the <b>System files</b> tab."
    ],
    "files": [
     "sudoers",
+    "profiled",
+    "sshclient",
+    "kotlconf",
     "notiftimer"
    ]
   },
@@ -1950,8 +2016,10 @@
     "Reboots are harmless: the health check sees it come back."
    ],
    "files": [
-    "sshd",
+    "kotlkeys",
+    "pcsudoers",
     "authkeys",
+    "sshd",
     "screenrc"
    ]
   },
@@ -2038,6 +2106,90 @@
     "sshd"
    ],
    "note": "The PC-side helper is a small script installed by the admin in M1. No other Kotl code runs on the PCs."
+  },
+  "sys-summary": {
+   "kind": "System files",
+   "title": "What Kotl changes, per machine",
+   "what": "Every system file, account and package that Kotl adds or edits, grouped by machine. Step through the tabs above. All of it is installed by scripts under <code>deploy/</code> that the admin runs, never by Kotl itself.",
+   "bullets": [
+    "<b>Workstation (comparch):</b> Slurm + MariaDB + munge, the kotl account and group, <code>/opt/kotl</code>, <code>/etc/kotl</code>, <code>/srv/kotl</code>, <code>/var/lib/kotl</code>, a sudoers rule, PATH and SSH client snippets, and a systemd timer.",
+    "<b>VCU118 PC 1:</b> in soft lockdown (now) only a kotl account, one helper script and one sudoers line. <code>sshd</code> and virtex-host's password are untouched. Full lockdown adds one sshd file.",
+    "<b>Users:</b> nothing system-wide on their PCs, and nothing written into their Chipyard or home folder.",
+    "Each script has an <code>--undo</code> that removes exactly what it added."
+   ],
+   "note": "Click a step to see that machine's list; open a file card for its contents. Paths marked (sketch) are tested in M1 before use."
+  },
+  "sys-ws": {
+   "kind": "System files · workstation",
+   "title": "Workstation (comparch)",
+   "what": "Everything Kotl adds on the workstation. Nothing outside these paths changes.",
+   "bullets": [
+    "<b>Packages:</b> <code>slurm-wlm</code>, <code>slurmdbd</code>, <code>munge</code>, <code>mariadb-server</code>, <code>expect</code> <i>(new · M1)</i>",
+    "<b>Accounts:</b> system user <code>kotl</code>, group <code>kotl-users</code> (all regular users), Slurm's own <code>slurm</code> user <i>(new · M1, deploy/accounts.sh)</i>",
+    "<code>/etc/slurm/slurm.conf</code>: the single-node Slurm config: license, priority, ETA, KillWait, health check, Epilog <i>(new · M1)</i>",
+    "<code>/etc/slurm/slurmdbd.conf</code>: accounting daemon, using the MariaDB database <code>slurm_acct_db</code> <i>(new · M1)</i>",
+    "<code>/etc/munge/munge.key</code>: Slurm's local auth key (owner munge, 0400) <i>(new · M1)</i>",
+    "<code>/etc/sudoers.d/kotl</code>: users may run exactly two Kotl programs as kotl <i>(new · M1)</i>",
+    "<code>/etc/profile.d/kotl.sh</code>: puts the firesim wrapper first on PATH <i>(new · M1)</i>",
+    "<code>/etc/ssh/ssh_config.d/kotl.conf</code>: <code>ssh vcu118-pc1</code> uses your job key during a lease <i>(new · M1)</i>",
+    "<code>/etc/kotl/kotl.conf</code>: Kotl settings: lockdown mode, admin, PC account, idle time <i>(new · M1)</i>",
+    "<code>/etc/systemd/system/kotl-notifier.{service,timer}</code>: runs the notifier every minute <i>(new · M4)</i>",
+    "<code>/opt/kotl/</code>: Kotl's programs: launch, attach, job.sh, epilog.sh, health.sh, bin/firesim, adapters/ <i>(new · M1–M3)</i>",
+    "<code>/var/lib/kotl/kotl.db</code>: board registry (owner kotl) <i>(new · M2)</i>",
+    "<code>/srv/kotl/</code>: jobs/ and out/&lt;user&gt;/&lt;job&gt;/, owner-only, deleted after 30 days <i>(new · M2)</i>",
+    "<code>/run/kotl/keys/</code>: job keys while a lease is held (tmpfs, gone on reboot) <i>(new · M3)</i>",
+    "<code>/home/kotl/.ssh/</code>: the kotl key and its host alias <i>(new · M1)</i>",
+    "<b>Services enabled:</b> <code>munge</code>, <code>mariadb</code>, <code>slurmdbd</code>, <code>slurmctld</code>, <code>slurmd</code> <i>(M1)</i>"
+   ],
+   "files": [
+    "slurmconf",
+    "slurmdbd",
+    "sudoers",
+    "profiled",
+    "sshclient",
+    "kotlconf",
+    "epilog",
+    "jobsh",
+    "notifsvc",
+    "notiftimer",
+    "kotlsshconfig",
+    "registry"
+   ]
+  },
+  "sys-pc": {
+   "kind": "System files · FPGA PC",
+   "title": "VCU118 PC 1 (192.168.1.2)",
+   "what": "Kotl's footprint on the FPGA PC is deliberately tiny. In soft lockdown (now), sshd, passwords and existing keys are untouched.",
+   "bullets": [
+    "<b>Accounts:</b> system user <code>kotl</code> (key login only) <i>(new · M1, deploy/pc/setup.sh)</i>",
+    "<code>/home/kotl/.ssh/authorized_keys</code>: the kotl public key <i>(new · M1)</i>",
+    "<code>/usr/local/bin/kotl-keys</code>: adds and removes job keys; the only Kotl code on the PC <i>(new · M3)</i>",
+    "<code>/etc/sudoers.d/kotl</code>: kotl may run only kotl-keys, as virtex-host <i>(new · M3)</i>",
+    "<code>/home/virtex-host/.ssh/authorized_keys</code>: Kotl adds and removes only its own <code>kotl-job-*</code> lines; your lines stay <i>(edited at run time · M3)</i>",
+    "<b>Full lockdown only (later):</b> <code>/etc/ssh/sshd_config.d/kotl.conf</code> (keys only, AllowUsers) and the separate admin account. Not installed now.",
+    "<b>Not touched:</b> FireSim's files, the XDMA driver, virtex-host's password, the sims folder."
+   ],
+   "files": [
+    "kotlkeys",
+    "pcsudoers",
+    "authkeys",
+    "sshd"
+   ]
+  },
+  "sys-users": {
+   "kind": "System files · users",
+   "title": "Users' PCs and folders",
+   "what": "Kotl changes nothing system-wide for users, and writes nothing into their Chipyard.",
+   "bullets": [
+    "<b>Their Chipyard and FireSim:</b> read only. Kotl copies <code>config_runtime.yaml</code> into <code>/srv/kotl/jobs/&lt;job&gt;/</code> and changes the copy.",
+    "<b>Their home folder:</b> nothing, unless they run <code>kotl new my-job</code> (creates that folder) or <code>kotl fetch</code> (downloads results).",
+    "<b>Their own PC:</b> only the Claude Code plugin, if they install it (M5)."
+   ],
+   "files": [
+    "workloadjson",
+    "runtestsh",
+    "kotljson"
+   ]
   }
  },
  "files": {
@@ -2208,6 +2360,41 @@
    "ext": "conf",
    "desc": "Kotl's own settings. Local to the workstation; user names stay here, not in git.",
    "body": "# soft: password logins and existing keys still work; end step kills only the job's own work\n# full: virtex-host key-only, end step kills every virtex-host process\nlockdown = soft\n\nadmin = <admin>            # change with deploy/set-admin.sh\npc_account = virtex-host\nidle = 30m"
+  },
+  "slurmdbd": {
+   "name": "slurmdbd.conf",
+   "path": "/etc/slurm/",
+   "ext": "conf",
+   "desc": "Slurm accounting daemon: job history and fair-share, stored in MariaDB",
+   "body": "DbdHost=localhost\nSlurmUser=slurm\nStorageType=accounting_storage/mysql\nStorageHost=localhost\nStorageUser=slurm\nStoragePass=<set by deploy/slurm/install.sh, never in git>\nStorageLoc=slurm_acct_db\nLogFile=/var/log/slurm/slurmdbd.log"
+  },
+  "sshclient": {
+   "name": "kotl.conf",
+   "path": "/etc/ssh/ssh_config.d/ (workstation)",
+   "ext": "conf",
+   "desc": "Makes plain `ssh vcu118-pc1` use your job key during a lease. No files in your home change.",
+   "body": "Host vcu118-pc1\n  HostName 192.168.1.2\n  User virtex-host\n  # present only while you hold a lease on this board\n  IdentityFile /run/kotl/keys/%u/vcu118-pc1\n  IdentitiesOnly no      # soft lockdown: your password still works too"
+  },
+  "kotlsshconfig": {
+   "name": "config",
+   "path": "/home/kotl/.ssh/ (workstation)",
+   "ext": "conf",
+   "desc": "Kotl's own key and host alias, readable only by the kotl account",
+   "body": "Host vcu118-pc1\n  HostName 192.168.1.2\n  User kotl\n  IdentityFile ~/.ssh/id_ed25519   # the kotl key (generated in M1, never leaves this account)"
+  },
+  "kotlkeys": {
+   "name": "kotl-keys",
+   "path": "/usr/local/bin/ (on each FPGA PC)",
+   "ext": "sh",
+   "desc": "The only Kotl code on a PC: adds and removes job keys for virtex-host (sketch)",
+   "body": "#!/bin/sh\n# kotl-keys add <job> '<key line>' | remove <job>     runs as virtex-host (see sudoers)\nAK=/home/virtex-host/.ssh/authorized_keys\ncase \"$1\" in\n  add)    printf '%s\\n' \"$3\" >> \"$AK\" ;;            # line ends with kotl-job-<job>\n  remove) sed -i \"/ kotl-job-$2\\$/d\" \"$AK\"         # only Kotl's own lines\n          # end this job's sessions and its FireSim screens\n          # (full lockdown: pkill -u virtex-host)\n          ;;\nesac"
+  },
+  "pcsudoers": {
+   "name": "kotl",
+   "path": "/etc/sudoers.d/ (on each FPGA PC)",
+   "ext": "sudo",
+   "desc": "Lets the kotl account run only kotl-keys as virtex-host",
+   "body": "kotl ALL=(virtex-host) NOPASSWD: /usr/local/bin/kotl-keys"
   }
  }
 }
