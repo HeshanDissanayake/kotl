@@ -2,25 +2,80 @@
   "name": "kotl-status",
   "displayName": "Kotl",
   "description": "The lab's FPGA board queue (Kotl) in the status bar: who holds each board, time against ETA, your jobs, notices.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "kotl",
   "license": "UNLICENSED",
-  "engines": { "vscode": "^1.80.0" },
-  "categories": ["Other"],
-  "activationEvents": ["onStartupFinished"],
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "main": "./extension.js",
   "contributes": {
     "commands": [
-      { "command": "kotl.top", "title": "Kotl: Open kotl top" },
-      { "command": "kotl.refresh", "title": "Kotl: Refresh" },
-      { "command": "kotl.notices", "title": "Kotl: Show notices" }
+      {
+        "command": "kotl.top",
+        "title": "Kotl: Open kotl top"
+      },
+      {
+        "command": "kotl.refresh",
+        "title": "Kotl: Refresh",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "kotl.notices",
+        "title": "Kotl: Show notices"
+      }
     ],
     "configuration": {
       "title": "Kotl",
       "properties": {
-        "kotl.ssh": { "type": "string", "default": "", "description": "Leave empty on the workstation. On your own PC: the workstation's ssh name (e.g. comparch); Kotl is then read over ssh." },
-        "kotl.refreshSeconds": { "type": "number", "default": 30, "minimum": 10, "description": "How often to read Kotl's status." }
+        "kotl.ssh": {
+          "type": "string",
+          "default": "",
+          "description": "Leave empty on the workstation. On your own PC: the workstation's ssh name (e.g. comparch); Kotl is then read over ssh."
+        },
+        "kotl.refreshSeconds": {
+          "type": "number",
+          "default": 30,
+          "minimum": 10,
+          "description": "How often to read Kotl's status."
+        }
       }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "kotl",
+          "title": "Kotl",
+          "icon": "media/kotl.svg"
+        }
+      ]
+    },
+    "views": {
+      "kotl": [
+        {
+          "id": "kotl.status",
+          "name": "Boards and queue"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "kotl.refresh",
+          "when": "view == kotl.status",
+          "group": "navigation"
+        },
+        {
+          "command": "kotl.top",
+          "when": "view == kotl.status"
+        }
+      ]
     }
   }
 }

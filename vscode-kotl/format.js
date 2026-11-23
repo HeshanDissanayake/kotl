@@ -68,4 +68,33 @@ function tooltip(s, now) {
   return out.join('\n');
 }
 
-module.exports = { minutes, fmt, statusText, tooltip };
+// The Kotl panel: sections with rows { label, description, tooltip }.
+function tree(s) {
+  if (!s) return [{ label: 'Reading Kotl…', children: [] }];
+  if (s.problem) return [{ label: "Kotl can't be reached here", description: '', children: [{ label: s.problem }] }];
+  const { byJob, waiting, mine } = parts(s);
+  const boards = s.boards.map(b => {
+    const q = b.job_id ? byJob.get(String(b.job_id)) : null;
+    let warns = [];
+    try { warns = JSON.parse(b.warnings || '[]'); } catch (e) { warns = []; }
+    return {
+      label: b.name,
+      description: q ? `${b.state} · ${q.user === s.user ? 'you' : q.user} · ${kind(q.name)} · ${usedOfEta(q)} of ETA` : b.state,
+      state: b.state,
+      children: warns.map(w => ({ label: '⚠ ' + w.split(':')[0], tooltip: w })),
+    };
+  });
+  const wait = waiting.map((q, i) => ({ label: `${ordinal(i + 1)}: job ${q.job}`, description: `${q.user} · ${kind(q.name)} · ETA ${fmt(minutes(q.eta))} · starts ${startsAt(q.start)}` }));
+  const me = mine.map(q => ({
+    label: `job ${q.job} (${kind(q.name)})`,
+    description: q.state === 'RUNNING' ? `running · ${usedOfEta(q)} of ETA` : `waiting · starts ${startsAt(q.start)} · ${ordinal(waiting.indexOf(q) + 1)} in line`,
+  }));
+  return [
+    { label: 'Boards', description: `${s.boards.length}`, children: boards },
+    { label: 'Waiting', description: waiting.length ? `${waiting.length}` : 'nobody', children: wait },
+    { label: 'Your jobs', description: `${mine.length}`, children: me },
+    { label: 'Notices', description: s.unread ? `${s.unread} unread` : 'none unread', children: [], command: s.unread ? 'kotl.notices' : undefined },
+  ];
+}
+
+module.exports = { minutes, fmt, statusText, tooltip, tree };

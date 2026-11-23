@@ -8,7 +8,7 @@ import zipfile
 from xml.sax.saxutils import escape
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-FILES = ["package.json", "extension.js", "format.js"]
+FILES = ["package.json", "extension.js", "format.js", "media/kotl.svg"]
 
 
 def build(out_dir):
@@ -32,7 +32,7 @@ def build(out_dir):
 """
     types = ('<?xml version="1.0" encoding="utf-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
              '<Default Extension=".json" ContentType="application/json"/><Default Extension=".js" ContentType="application/javascript"/>'
-             '<Default Extension=".vsixmanifest" ContentType="text/xml"/></Types>')
+             '<Default Extension=".vsixmanifest" ContentType="text/xml"/><Default Extension=".svg" ContentType="image/svg+xml"/></Types>')
     out = os.path.join(out_dir, f"{pkg['name']}-{pkg['version']}.vsix")
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
         z.writestr("[Content_Types].xml", types)

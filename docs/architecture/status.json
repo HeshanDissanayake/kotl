@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "updated": "2026-11-23T10:51:01Z",
-  "repo_commit": "346c02b3953c9a4acd4d4242e73d9f14b4a88301",
+  "updated": "2026-11-23T10:56:51Z",
+  "repo_commit": "aa9c7c754213543c8f5176bdfccf4f3a1b597557",
   "watch": [
     "deploy/",
     "kotl/",
@@ -50,7 +50,7 @@
         "unit": {
           "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-23T10:51:01Z"
+          "ran_at": "2026-11-23T10:56:51Z"
         },
         "hardware": null
       },
@@ -88,7 +88,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-23T10:51:01Z"
+          "ran_at": "2026-11-23T10:56:51Z"
         },
         "hardware": null
       },
@@ -126,7 +126,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-23T10:51:01Z"
+          "ran_at": "2026-11-23T10:56:51Z"
         },
         "hardware": null
       },
@@ -171,7 +171,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-23T10:51:01Z"
+          "ran_at": "2026-11-23T10:56:51Z"
         },
         "hardware": null
       },
@@ -204,7 +204,7 @@
         "unit": {
           "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-23T10:51:01Z"
+          "ran_at": "2026-11-23T10:56:51Z"
         },
         "hardware": null
       },
@@ -246,7 +246,7 @@
         "unit": {
           "passed": 14,
           "failed": 0,
-          "ran_at": "2026-11-23T10:51:01Z"
+          "ran_at": "2026-11-23T10:56:51Z"
         },
         "hardware": null
       },
@@ -291,12 +291,12 @@
         "unit": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-23T10:51:01Z"
+          "ran_at": "2026-11-23T10:56:51Z"
         },
         "hardware": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-23T10:51:01Z"
+          "ran_at": "2026-11-23T10:56:51Z"
         }
       },
       "last_commit": {
@@ -336,12 +336,12 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-23T10:51:01Z"
+          "ran_at": "2026-11-23T10:56:51Z"
         },
         "hardware": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-23T10:51:01Z"
+          "ran_at": "2026-11-23T10:56:51Z"
         }
       },
       "last_commit": {
@@ -381,12 +381,12 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-23T10:51:01Z"
+          "ran_at": "2026-11-23T10:56:51Z"
         },
         "hardware": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-23T10:51:01Z"
+          "ran_at": "2026-11-23T10:56:51Z"
         }
       },
       "last_commit": {
@@ -463,7 +463,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-23T10:51:01Z"
+          "ran_at": "2026-11-23T10:56:51Z"
         },
         "hardware": null
       },
@@ -516,14 +516,14 @@
         "unit": {
           "passed": 37,
           "failed": 0,
-          "ran_at": "2026-11-23T10:51:01Z"
+          "ran_at": "2026-11-23T10:56:51Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "bfecd9eae33e573a5f321e4da9546dfd886dd0b1",
-        "message": "kotl-band: a live Kotl line above the Claude Code prompt (a mod)",
-        "date": "2026-11-23T21:25:36+11:00"
+        "hash": "aa9c7c754213543c8f5176bdfccf4f3a1b597557",
+        "message": "VS Code extension: Kotl in the status bar",
+        "date": "2026-11-23T21:51:01+11:00"
       },
       "issues": [],
       "log": [
@@ -586,7 +586,7 @@
         "unit": {
           "passed": 19,
           "failed": 0,
-          "ran_at": "2026-11-23T10:51:01Z"
+          "ran_at": "2026-11-23T10:56:51Z"
         },
         "hardware": null
       },
@@ -655,7 +655,7 @@
         "unit": {
           "passed": 4,
           "failed": 0,
-          "ran_at": "2026-11-23T10:51:01Z"
+          "ran_at": "2026-11-23T10:56:51Z"
         },
         "hardware": null
       },
@@ -740,7 +740,7 @@
         "unit": {
           "passed": 20,
           "failed": 0,
-          "ran_at": "2026-11-23T10:51:01Z"
+          "ran_at": "2026-11-23T10:56:51Z"
         },
         "hardware": null
       },
@@ -824,7 +824,7 @@
         "unit": {
           "passed": 6,
           "failed": 0,
-          "ran_at": "2026-11-23T10:51:01Z"
+          "ran_at": "2026-11-23T10:56:51Z"
         },
         "hardware": null
       },
@@ -861,7 +861,7 @@
         "unit": {
           "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-23T10:51:01Z"
+          "ran_at": "2026-11-23T10:56:51Z"
         },
         "hardware": null
       },
@@ -901,14 +901,14 @@
         "unit": {
           "passed": 18,
           "failed": 0,
-          "ran_at": "2026-11-23T10:51:01Z"
+          "ran_at": "2026-11-23T10:56:51Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "5fb3c76a217b28d09c36727d1a4f251e5f37b202",
-        "message": "kotl-band: tested on all four surfaces; NEXT.md: restart the VS Code server too",
-        "date": "2026-11-23T21:37:44+11:00"
+        "hash": "aa9c7c754213543c8f5176bdfccf4f3a1b597557",
+        "message": "VS Code extension: Kotl in the status bar",
+        "date": "2026-11-23T21:51:01+11:00"
       },
       "issues": [],
       "log": [
@@ -939,6 +939,10 @@
         {
           "date": "2026-11-23",
           "text": "VS Code extension (user request; the Claude band didn't show in VS Code): status bar with each board's holder and time of ETA, your job count, notices; a hover with the queue and your place in line; click opens kotl top. Plain JS, no build; .vsix built with the standard library; installed for heshds and published at /opt/kotl/kotl-status.vsix."
+        },
+        {
+          "date": "2026-11-23",
+          "text": "VS Code extension 0.2.0: a Kotl panel in the activity bar (boards, waiting, your jobs, notices) and a one-time pointer to it; 0.1.0 had activated fine but its status-bar item was easy to miss."
         }
       ]
     },
@@ -1050,12 +1054,12 @@
         "unit": {
           "passed": 21,
           "failed": 0,
-          "ran_at": "2026-11-23T10:51:01Z"
+          "ran_at": "2026-11-23T10:56:51Z"
         },
         "hardware": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-23T10:51:01Z"
+          "ran_at": "2026-11-23T10:56:51Z"
         }
       },
       "last_commit": {
@@ -1173,7 +1177,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-23T10:51:01Z"
+          "ran_at": "2026-11-23T10:56:51Z"
         },
         "hardware": null
       },

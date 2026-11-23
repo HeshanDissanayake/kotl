@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert');
-const { minutes, statusText, tooltip } = require('../format');
+const { minutes, statusText, tooltip, tree } = require('../format');
 
 const SNAP = {
   user: 'alice',
@@ -41,4 +41,22 @@ test('unreachable says why', () => {
   const s = { problem: "this terminal can't reach Kotl: not in kotl-users yet" };
   assert.equal(statusText(s), '$(warning) Kotl: unreachable');
   assert.match(tooltip(s), /not in kotl-users/);
+});
+
+test('panel: boards, waiting, your jobs, notices', () => {
+  const [boards, waiting, mine, notices] = tree(SNAP);
+  assert.equal(boards.children[0].description, 'busy · bob · run · 12m/30m of ETA');
+  assert.equal(boards.children[0].children[0].label, '⚠ glibc differs');
+  assert.equal(waiting.description, '2');
+  assert.equal(waiting.children[0].label, '1st: job 42');
+  assert.equal(mine.description, '2');
+  assert.equal(mine.children[0].description, 'waiting · starts ~10:52 · 1st in line');
+  assert.equal(notices.description, '2 unread');
+  assert.equal(notices.command, 'kotl.notices');
+});
+
+test('panel says why when unreachable', () => {
+  const t = tree({ problem: 'not in kotl-users yet' });
+  assert.equal(t[0].label, "Kotl can't be reached here");
+  assert.equal(t[0].children[0].label, 'not in kotl-users yet');
 });

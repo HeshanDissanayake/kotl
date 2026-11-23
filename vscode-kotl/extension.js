@@ -3,7 +3,7 @@
 'use strict';
 const vscode = require('vscode');
 const { execFile } = require('child_process');
-const { statusText, tooltip } = require('./format');
+const { statusText, tooltip, tree } = require('./format');
 
 function readStatus(ssh) {
   const [cmd, args] = ssh
@@ -17,7 +17,29 @@ function readStatus(ssh) {
   });
 }
 
+class KotlTree {
+  constructor() { this.snap = null; this._ev = new vscode.EventEmitter(); this.onDidChangeTreeData = this._ev.event; }
+  set(s) { this.snap = s; this._ev.fire(); }
+  getChildren(el) { return el ? el.children || [] : tree(this.snap); }
+  getTreeItem(el) {
+    const kids = el.children && el.children.length;
+    const it = new vscode.TreeItem(el.label, kids ? vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.None);
+    it.description = el.description;
+    it.tooltip = el.tooltip || [el.label, el.description].filter(Boolean).join(' — ');
+    if (el.state) it.iconPath = new vscode.ThemeIcon('circuit-board', new vscode.ThemeColor(el.state === 'idle' ? 'testing.iconPassed' : el.state === 'busy' ? 'list.warningForeground' : 'list.errorForeground'));
+    if (el.command) it.command = { command: el.command, title: el.label };
+    return it;
+  }
+}
+
 function activate(context) {
+  const panel = new KotlTree();
+  context.subscriptions.push(vscode.window.registerTreeDataProvider('kotl.status', panel));
+  if (!context.globalState.get('kotl.welcomed')) {
+    context.globalState.update('kotl.welcomed', true);
+    vscode.window.showInformationMessage('Kotl is in the status bar (bottom left) and in the Kotl panel (the chip icon on the left).', 'Open Kotl panel')
+      .then(pick => pick && vscode.commands.executeCommand('workbench.view.extension.kotl'));
+  }
   const item = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 50);
   item.command = 'kotl.top';
   item.text = statusText(null);
@@ -29,6 +51,7 @@ function activate(context) {
     const cfg = vscode.workspace.getConfiguration('kotl');
     const s = await readStatus(cfg.get('ssh') || process.env.KOTL_SSH || '');
     item.text = statusText(s);
+    panel.set(s);
     const md = new vscode.MarkdownString(tooltip(s, Date.now()));
     md.supportThemeIcons = true;
     item.tooltip = md;
