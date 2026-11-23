@@ -72,7 +72,7 @@ def test_firesim_smoke_run_passed(tmp_path):
     job = os.environ["KOTL_SMOKE_JOB"]
     s = status(job)
     assert s and s["state"] == "done" and s["mode"] == "run", s
-    assert s["rc"] == 0 and s["result"] in ("passed", "succeeded"), s
+    assert s["rc"] == 0 and s["result"] == "passed", s          # the uartlog showed a real power-off
     assert s["ended"] - s["started"] < 2 * s["eta_s"]           # it ended by itself, not by --max
     r = run(KOTL, "fetch", job, "--to", str(tmp_path))
     assert r.returncode == 0, r.stderr

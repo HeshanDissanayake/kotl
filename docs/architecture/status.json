@@ -9,7 +9,8 @@
     "tools/"
   ],
   "shared": [
-    "deploy/NEXT.md"
+    "deploy/NEXT.md",
+    "deploy/examples/"
   ],
   "statuses": {
     "planned": "Not started",
@@ -901,7 +902,7 @@
         "date": "2026-11-23T17:33:17+11:00"
       },
       "issues": [
-        "Soft lockdown: password logins to virtex-host bypass the queue until full lockdown (user's choice for now)."
+        "FireSim smoke (job 47): Kotl ran and cleaned up correctly, but the driver didn't start on the PC: the workstation's glibc (2.39-0ubuntu8.12) is newer than the PC's, and FireSim bundles the workstation libc. Fix on the PC: upgrade libc6."
       ],
       "log": [
         {
@@ -943,6 +944,10 @@
         {
           "date": "2026-11-23",
           "text": "Board test (user OK): job key logs in during a lease, refused after release. M2 integration 7/7 again, now adding and removing keys on the PC."
+        },
+        {
+          "date": "2026-11-23",
+          "text": "Job 47: Kotl part correct (ended when runworkload returned, key removed), but the simulation itself failed: glibc mismatch workstation 8.12 vs PC. Smoke check tightened: deploy/examples/firesim-smoke.sh prints KOTL RESULT only on a real power-off."
         }
       ]
     },
