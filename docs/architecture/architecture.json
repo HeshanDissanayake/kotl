@@ -1280,7 +1280,7 @@
     "Users keep <b>their own Chipyard and FireSim</b> and run them unchanged inside a generic lease: <code>kotl run -- &lt;command&gt;</code> ends when the command exits, <code>kotl lease</code> ends on release. Kotl enforces an <b>exit plan</b>, not FireSim.",
     "The core is a generic <b>board lease</b> (queue, claim, SSH access, end step). <b>Adapters</b> are admin board care, later: FireSim (flash, recover), program/reset, board tests."
    ],
-   "hint": "Click any box for its commands and files. The tabs show what Kotl is, where it meets Slurm, and three flows step by step."
+   "hint": "Click any box for its commands and files. The tabs show build progress, what Kotl is, where it meets Slurm, a FireSim run, a lease by hand, maintenance and every system file Kotl changes."
   },
   "kotllens": {
    "kind": "Kotl · our product",
@@ -1513,7 +1513,7 @@
      "host": "you@laptop",
      "lines": [
       {
-       "c": "ssh -t ws kotl firesim attach 1235"
+       "c": "ssh -t ws kotl attach 1235"
       },
       {
        "o": "attached to job 1235 on vcu118-pc1 · detach: Ctrl-a d"
@@ -1651,24 +1651,27 @@
    "kind": "Kotl · core",
    "kindClass": "ko",
    "title": "Job results",
-   "what": "One folder per job, filled by the end step and the adapter's collect step.",
+   "what": "One folder per job, written by the launcher at start and at the end step.",
    "bullets": [
-    "Local users read it through <code>~/kotl-results</code>. Remote users run <code>kotl fetch</code>; the Claude plugin does it for them.",
-    "kotl writes, the owner reads. Other users can't see it.",
-    "Deleted automatically after 30 days."
+    "Owner only (0700, owned by kotl): you read it through the launcher, which checks the job is yours. <code>kotl logs JOB [-f]</code> shows the output; <code>kotl fetch JOB</code> unpacks the whole folder into <code>./kotl-results/JOB/</code>.",
+    "Remote users run the same over SSH (<code>ssh ws kotl fetch JOB</code>); the Claude plugin does it for them.",
+    "Other users can't see it. Deleted automatically after 30 days (<code>keep_days</code> in kotl.conf)."
    ],
    "term": [
     {
-     "host": "you@laptop",
+     "host": "you@ws",
      "lines": [
       {
-       "c": "ssh ws kotl fetch 1234"
+       "c": "kotl logs 1235 -f              # follow a running job"
       },
       {
-       "o": "rsync into ./results/1234/ … done"
+       "c": "kotl fetch 1234"
       },
       {
-       "c": "ssh ws kotl logs 1235 -f     # follow a running job's console"
+       "o": "kotl: results in kotl-results/1234/"
+      },
+      {
+       "c": "cat kotl-results/1234/status.json"
       }
      ]
     }
@@ -2293,14 +2296,14 @@
    "path": "/srv/kotl/out/",
    "ext": "dir",
    "desc": "One folder per job; kept 30 days",
-   "body": "/srv/kotl/out/alice/1234/\n  status.json      # result, times, board\n  uartlog          # console log from FireSim\n  launcher.log     # what Kotl did, step by step\n  expect.log       # only if --expect was used\n  outputs/         # files listed in the workload"
+   "body": "/srv/kotl/out/<user>/<job>/     (owner only, deleted after 30 days)\n  status.json      # job, result, exit code, times, board, PC\n  output.log       # everything your command printed\n  launcher.log     # what Kotl did, step by step (claim, key added/removed, guards, end)\n  outputs/         # files the job saved with 'launch put' (optional)"
   },
   "statusjson": {
    "name": "status.json",
    "path": "/srv/kotl/out/<user>/<job>/",
    "ext": "json",
-   "desc": "Written by the launcher when the job ends",
-   "body": "{\n  \"job\": 1234,\n  \"user\": \"alice\",\n  \"module\": \"firesim\",\n  \"board\": \"vcu118-pc1\",\n  \"result\": \"passed\",          // passed | failed | hung | over_max | cancelled\n  \"eta\": \"3h\",\n  \"max\": \"6h\",\n  \"submitted\": \"2026-11-21T10:02:11\",\n  \"started\":   \"2026-11-21T10:40:03\",\n  \"ended\":     \"2026-11-21T13:21:13\",\n  \"setup_seconds\": 412\n}"
+   "desc": "Written by the launcher at start and at the end step. result: passed | failed | succeeded | cancelled | released | over_max | idle | killed | no_access",
+   "body": "{\n  \"job\": 40,\n  \"user\": \"alice\",\n  \"mode\": \"run\",\n  \"board\": \"vcu118-pc1\",\n  \"state\": \"done\",\n  \"result\": \"passed\",\n  \"rc\": 0,\n  \"reason\": null,\n  \"eta_s\": 1800,\n  \"max_s\": 3600,\n  \"idle_s\": null,\n  \"started\": 1763870400.0,\n  \"ended\": 1763870940.0,\n  \"command\": \"sh -c firesim infrasetup \\u2026 && firesim runworkload \\u2026\",\n  \"pc_address\": \"192.168.1.2\",\n  \"pc_user\": \"virtex-host\"\n}"
   },
   "workloadjson": {
    "name": "marshal.json",
