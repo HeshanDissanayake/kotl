@@ -106,11 +106,11 @@ docs/architecture/
 - The exit plan: the ETA is required, `--max` defaults to 2× ETA, and a lease always has the idle guard (`kotl-keys busy`). The end step stops simulations left on the PC.
 - Done when: the job key works during a lease and is refused after it; `kotl run -- firesim …` with `linux-poweroff` passes from a user's own Chipyard; a run that never ends trips `--max`, leaves no simulation on the PC, and the result shows in `kotl history` and Slurm's history.
 
-**M4: Health check, ETA notices, interactive sessions**
-- `health.sh` run by Slurm, with registry updates, one driver reload attempt, and alerts.
-- The notifier with its systemd timer: ETA and 2× ETA notices, start-estimate slips, board down/up.
-- `kotl firesim session` / `attach` / `end`, with the console lockdown verified.
-- Done when: unplugging or breaking a board marks it down and back, and a session can attach, detach and end cleanly.
+**M4: Health check, ETA notices, console attach**
+- Health check (Slurm, every 5 min): reachable, Xilinx card, XDMA driver, glibc. One driver reload (`kotl-xdma-reload`, root on the PC through one sudoers line, user's choice). An idle failing board goes down with a Slurm reservation holding its license (queued jobs wait, user's choice); recovery brings it back. Warnings (glibc, unleased work) stay on the board.
+- Notifier (systemd timer, every minute): ETA, 2x ETA (owner and admin), start slips; per-user inbox (`kotl notices`, `kotl top`, `kotl status`). `kotl board drain` holds the license too.
+- `kotl attach JOB`: FireSim's console with the job key.
+- Done when: breaking a board (driver unloaded) marks it down after one reload attempt, queued jobs wait, and it comes back; a job past its ETA produces the notice; attach opens and detaches cleanly.
 
 **M5: Kotl plugin for Claude Code**
 - The skill (kotl commands, expect scripts with timeouts, fetch-then-read-status workflow) and hooks (suggest `kotl run` around board commands, show the queue at session start).

@@ -19,6 +19,13 @@ CREATE TABLE IF NOT EXISTS jobs (
   eta INTEGER, max INTEGER, idle INTEGER, started REAL, ended REAL,
   reason TEXT, result TEXT, rc INTEGER, command TEXT, pc_address TEXT
 );
+CREATE TABLE IF NOT EXISTS notices (
+  id INTEGER PRIMARY KEY AUTOINCREMENT, user TEXT NOT NULL, at REAL NOT NULL,
+  text TEXT NOT NULL, read INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE IF NOT EXISTS notified (
+  key TEXT PRIMARY KEY, at REAL NOT NULL, value TEXT
+);
 """
 
 
@@ -109,6 +116,33 @@ class Registry:
         if not b:
             raise RegistryError(f"no board {name}")
         self.set_state(name, "draining" if b["job_id"] else "maintenance")
+
+    # --- notices (the notifier and the health check write; each user reads their own)
+    def notify(self, user, text, at=None):
+        self.db.execute("INSERT INTO notices(user, at, text) VALUES (?,?,?)", (user, at or time.time(), text))
+
+    def notices(self, user, unread_only=False, limit=50):
+        q = "SELECT * FROM notices WHERE user=?" + (" AND read=0" if unread_only else "")
+        return [dict(r) for r in self.db.execute(q + " ORDER BY id DESC LIMIT ?", (user, limit))]
+
+    def mark_read(self, user):
+        self.db.execute("UPDATE notices SET read=1 WHERE user=? AND read=0", (user,))
+
+    def once(self, key, value=None, at=None):
+        """True the first time a key is seen (or when its stored value changes): 'notify once'."""
+        row = self.db.execute("SELECT value FROM notified WHERE key=?", (key,)).fetchone()
+        if row and (value is None or row["value"] == str(value)):
+            return False
+        self.db.execute("INSERT OR REPLACE INTO notified(key, at, value) VALUES (?,?,?)",
+                        (key, at or time.time(), None if value is None else str(value)))
+        return True
+
+    def remembered(self, key):
+        row = self.db.execute("SELECT value, at FROM notified WHERE key=?", (key,)).fetchone()
+        return dict(row) if row else None
+
+    def forget(self, key):
+        self.db.execute("DELETE FROM notified WHERE key=?", (key,))
 
     # --- jobs
     def start_job(self, job_id, user, mode, board, eta, max_, idle, command=""):

@@ -7,6 +7,8 @@
   kotl top                             the same, live, with your jobs (l logs, c cancel, r release, f fetch)
   kotl cancel JOB                      cancel your job (Slurm allows only the owner or root)
   kotl history | logs JOB [-f] | fetch JOB [--to DIR]
+  kotl attach [JOB]                    FireSim's console on your job's PC (Ctrl-a d detaches)
+  kotl notices [--all]                 ETA, start-time and board notices for you
   kotl board list | add NAME TYPE HOST | drain NAME | resume NAME | check    (changes: admin only)
 
 The ETA is required. It's the queue's estimate and never kills a job; --max (default 2x ETA)
@@ -157,7 +159,11 @@ def cmd_status(a):
     if not rows:
         print("(no Kotl jobs queued or running)")
     print()
-    return launch("boards")
+    rc = launch("boards")
+    n = unread_count()
+    if n:
+        print(f"\nkotl: {n} unread notice{'s' if n > 1 else ''}: kotl notices")
+    return rc
 
 
 def cmd_cancel(a):
@@ -176,6 +182,35 @@ def cmd_fetch(a):
         t.extractall(a.to, filter="data")
     print(f"kotl: results in {os.path.join(a.to, str(a.job))}/")
     return 0
+
+
+def my_running_jobs():
+    import json
+    rc, out, _ = launch("history", "--limit", "20", "--json", capture=True)
+    rows = json.loads(out or b"[]") if rc == 0 else []
+    return [r["job_id"] for r in rows if not r.get("result")]
+
+
+def cmd_attach(a):
+    import pwd
+    from kotl.core import attach
+    job = a.job
+    if not job:
+        running = my_running_jobs()
+        if len(running) != 1:
+            die("give the job number (kotl attach JOB)" if running else "you have no running job", 1)
+        job = running[0]
+    argv, why = attach.argv_for(job_status(job, tries=1), pwd.getpwuid(os.getuid()).pw_name, job)
+    if not argv:
+        die(why, 1)
+    print(f"kotl: attaching to job {job}'s console · Ctrl-a d detaches", file=sys.stderr)
+    os.execvp(argv[0], argv)
+
+
+def unread_count():
+    import json
+    rc, out, _ = launch("notices", "--unread", "--json", capture=True)
+    return len(json.loads(out or b"[]")) if rc == 0 else 0
 
 
 def cmd_board(a):
@@ -206,6 +241,8 @@ def main(argv=None):
     sub.add_parser("status")
     sub.add_parser("top", help="live view of boards, queue and your jobs")
     sub.add_parser("cancel").add_argument("job", type=int)
+    sub.add_parser("attach").add_argument("job", nargs="?", type=int)
+    sub.add_parser("notices").add_argument("--all", action="store_true")
     sub.add_parser("history").add_argument("--limit", type=int, default=20)
     lg = sub.add_parser("logs"); lg.add_argument("job", type=int); lg.add_argument("-f", "--follow", action="store_true")
     fe = sub.add_parser("fetch"); fe.add_argument("job", type=int); fe.add_argument("--to", default="kotl-results")
@@ -230,6 +267,10 @@ def main(argv=None):
         return top.main()
     if a.cmd == "cancel":
         return cmd_cancel(a)
+    if a.cmd == "attach":
+        return cmd_attach(a)
+    if a.cmd == "notices":
+        return launch("notices", *([] if a.all else ["--unread"]), "--read")
     if a.cmd == "history":
         return launch("history", "--limit", a.limit)
     if a.cmd == "logs":

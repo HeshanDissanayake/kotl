@@ -81,3 +81,9 @@ def test_launcher_json_for_top(tmp_path, monkeypatch, capsys):
 def test_screen_shows_board_warnings():
     snap = dict(SNAP, boards=[dict(SNAP["boards"][0], warnings='["glibc differs: workstation A, PC B"]')])
     assert "! glibc differs: workstation A, PC B" in "\n".join(top.render(snap, width=100, now=NOW))
+
+
+def test_screen_shows_unread_notices():
+    snap = dict(SNAP, notices=[{"at": NOW, "text": "job 41 passed its ETA (30m); nothing is stopped."}])
+    text = "\n".join(top.render(snap, width=100, now=NOW))
+    assert "NOTICES (1 unread" in text and "job 41 passed its ETA" in text

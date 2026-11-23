@@ -7,13 +7,16 @@
 #   sudo bash setup.sh --keys-helper /tmp/kotl-keys      (M3, with kotl-keys copied next to it)
 #       installs /usr/local/bin/kotl-keys and one sudoers line: kotl may run only kotl-keys,
 #       as the FireSim account (virtex-host). Can be combined with --key.
+#   sudo bash setup.sh --driver-helper /tmp/kotl-xdma-reload     (M4, copied next to it)
+#       installs /usr/local/bin/kotl-xdma-reload and one sudoers line: kotl may run only that
+#       script, as root, with no arguments (the health check's one driver reload)
 #   sudo bash setup.sh --undo
-#       deletes the kotl account, kotl-keys and the sudoers line
+#       deletes the kotl account, kotl-keys, kotl-xdma-reload and their sudoers lines
 #
 # Add --dry-run to preview without changing anything.
 set -euo pipefail
 
-DRY=0 ACTION=install KEY="" HELPER="" ACCOUNT=virtex-host
+DRY=0 ACTION=install KEY="" HELPER="" ACCOUNT=virtex-host DRIVER=""
 say() { printf 'kotl-pc: %s\n' "$*"; }
 die() { printf 'kotl-pc: error: %s\n' "$*" >&2; exit 1; }
 run() { if [ "$DRY" = 1 ]; then printf 'would run: %s\n' "$*"; else "$@"; fi; }
@@ -24,6 +27,7 @@ while [ $# -gt 0 ]; do
     --undo) ACTION=undo ;;
     --key) KEY=${2:-}; shift ;;
     --keys-helper) HELPER=${2:-}; shift ;;
+    --driver-helper) DRIVER=${2:-}; shift ;;
     --account) ACCOUNT=${2:-}; shift ;;
     -h|--help) sed -n '2,11p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) die "unknown option $1" ;;
@@ -33,9 +37,28 @@ done
 [ "$DRY" = 1 ] || [ "$(id -u)" = 0 ] || die "run as root (sudo bash $0 ...), or add --dry-run"
 
 if [ "$ACTION" = undo ]; then
-  run rm -f /usr/local/bin/kotl-keys /etc/sudoers.d/kotl
+  run rm -f /usr/local/bin/kotl-keys /etc/sudoers.d/kotl /usr/local/bin/kotl-xdma-reload /etc/sudoers.d/kotl-driver
   if getent passwd kotl >/dev/null; then run userdel --remove kotl; else say "no kotl account here"; fi
   exit 0
+fi
+
+if [ -n "$DRIVER" ]; then
+  [ -f "$DRIVER" ] || die "--driver-helper: no file $DRIVER"
+  head -n 3 "$DRIVER" | grep -q 'managed by kotl' || die "--driver-helper: $DRIVER is not Kotl's kotl-xdma-reload"
+  modinfo xdma >/dev/null 2>&1 || say "WARNING: 'modinfo xdma' finds no xdma module, so modprobe can't reload it here"
+  run install -m 755 -o root -g root "$DRIVER" /usr/local/bin/kotl-xdma-reload
+  rule='kotl ALL=(root) NOPASSWD: /usr/local/bin/kotl-xdma-reload ""'
+  if [ "$DRY" = 1 ]; then
+    say "would write /etc/sudoers.d/kotl-driver (440): $rule"
+  else
+    tmp=$(mktemp)
+    printf '# managed by kotl (deploy/pc/setup.sh)\n%s\n' "$rule" >"$tmp"
+    visudo -cf "$tmp" >/dev/null || { rm -f "$tmp"; die "sudoers line failed visudo"; }
+    install -m 440 -o root -g root "$tmp" /etc/sudoers.d/kotl-driver
+    rm -f "$tmp"
+  fi
+  say "kotl-xdma-reload installed; kotl may run it as root, with no arguments"
+  [ -n "$HELPER$KEY" ] || exit 0
 fi
 
 if [ -n "$HELPER" ]; then

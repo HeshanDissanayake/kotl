@@ -37,7 +37,8 @@ def snapshot():
     except slurm.SlurmError:
         queue = []
     return {"user": me(), "boards": launch_json("boards"), "queue": queue,
-            "mine": launch_json("history", "--limit", "8"), "when": time.strftime("%H:%M:%S")}
+            "mine": launch_json("history", "--limit", "8"), "when": time.strftime("%H:%M:%S"),
+            "notices": launch_json("notices", "--unread")}
 
 
 def ago(seconds):
@@ -76,7 +77,12 @@ def render(snap, width=80, selected=0, now=None):
         state = j["result"] or "running"
         mark = ">" if i == selected else " "
         lines.append(f" {mark}{j['job_id']:>6} {j['mode']:6} {state:10} {took:>6}  {(j.get('command') or '')[:max(10, width - 40)]}")
-    lines += ["", " [l] logs  [c] cancel  [r] release  [f] fetch  [up/down] pick"]
+    unread = snap.get("notices") or []
+    if unread:
+        lines += ["", f" NOTICES ({len(unread)} unread · kotl notices)"]
+        for n in unread[:3]:
+            lines.append(f"  {time.strftime('%H:%M', time.localtime(n['at']))}  {n['text']}")
+    lines += ["", " [l] logs  [a] attach  [c] cancel  [r] release  [f] fetch  [up/down] pick"]
     return [ln[:width] for ln in lines]
 
 
@@ -88,6 +94,11 @@ def action(key, job):
     if key == "l":
         subprocess.run(cli.launch_cmd() + ["logs", jid, "-f"] if not job["result"] else cli.launch_cmd() + ["logs", jid])
         input("\n-- end of log · Enter to go back --")
+        return ""
+    if key == "a":
+        if job["result"]:
+            return f"job {jid} has already ended"
+        subprocess.run(["kotl", "attach", jid])
         return ""
     if key == "f":
         r = subprocess.run(["kotl", "fetch", jid], capture_output=True, text=True)
@@ -123,7 +134,7 @@ def loop(scr):
             selected = min(selected + 1, max(0, len(snap["mine"]) - 1))
         elif k == curses.KEY_UP:
             selected = max(selected - 1, 0)
-        elif k in (ord("l"), ord("c"), ord("r"), ord("f")):
+        elif k in (ord("l"), ord("a"), ord("c"), ord("r"), ord("f")):
             job = snap["mine"][selected] if selected < len(snap["mine"]) else None
             if chr(k) in "cr" and job and not job["result"]:
                 scr.addstr(min(len(lines), h - 1), 0, f" {'release' if chr(k) == 'r' else 'cancel'} job {job['job_id']}? y/n ")

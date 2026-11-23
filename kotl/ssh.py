@@ -26,3 +26,8 @@ def address(host):
     r = subprocess.run(["ssh", "-G", host], capture_output=True, text=True)
     m = re.search(r"^hostname (\S+)$", r.stdout, re.M)
     return m.group(1) if m else host
+
+
+def attach_argv(target, key, remote):
+    """The ssh command a user runs (as themselves) to reach their job's PC with the job key only."""
+    return ["ssh", "-t", "-o", "IdentitiesOnly=yes", "-o", "IdentityAgent=none", "-i", key, target, remote]

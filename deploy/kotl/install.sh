@@ -5,8 +5,9 @@
 #       copies kotl/ to /opt/kotl/lib, installs /opt/kotl/launch, /opt/kotl/job.sh,
 #       /opt/kotl/epilog.sh, the kotl command (/opt/kotl/bin/kotl, linked from /usr/local/bin),
 #       an SSH client entry per board (/etc/ssh/ssh_config.d/kotl.conf: your job key during a lease),
-#       adds each board to the registry, and makes kotl a Slurm operator (so its guards can
-#       cancel a hung job). Re-run after every update of the repo.
+#       the notifier's systemd timer (every minute), adds each board to the registry, and makes
+#       kotl a Slurm admin (its guards cancel hung jobs; its health check holds a down board's
+#       license with a reservation). Re-run after every update of the repo.
 #   kotl/install.sh --undo     removes the code (the registry and results stay)
 #
 # Add --dry-run to preview without changing anything.
@@ -56,12 +57,18 @@ install_all() {
   put_file /opt/kotl/health.sh 755 root:root <"$DEPLOY_DIR/health.sh"
   run ln -sfn /opt/kotl/bin/kotl /usr/local/bin/kotl
 
-  # kotl may cancel jobs (only its guards do), so it is a Slurm operator
+  # kotl cancels hung jobs (guards) and holds a down board's license (reservations): Slurm admin
   if [ "$KOTL_DRY_RUN" = 1 ] || [ -z "$(sacctmgr -n -P show user kotl format=user 2>/dev/null)" ]; then
-    run sacctmgr -i add user name=kotl account=kotl adminlevel=Operator
+    run sacctmgr -i add user name=kotl account=kotl adminlevel=Admin
   else
-    run sacctmgr -i modify user name=kotl set adminlevel=Operator
+    run sacctmgr -i modify user name=kotl set adminlevel=Admin
   fi
+
+  # the ETA notifier: one pass a minute, as kotl
+  put_file /etc/systemd/system/kotl-notifier.service 644 root:root <"$DEPLOY_DIR/systemd/kotl-notifier.service"
+  put_file /etc/systemd/system/kotl-notifier.timer 644 root:root <"$DEPLOY_DIR/systemd/kotl-notifier.timer"
+  run systemctl daemon-reload
+  run systemctl enable --now kotl-notifier.timer
 
   local b name type host addr account client
   account=$(get_conf /etc/kotl/kotl.conf pc_account); account=${account:-virtex-host}
@@ -86,6 +93,16 @@ undo_all() {
   remove_file /opt/kotl/launch
   remove_file /opt/kotl/bin/kotl
   remove_file /etc/ssh/ssh_config.d/kotl.conf
+  run systemctl disable --now kotl-notifier.timer || true
+  remove_file /etc/systemd/system/kotl-notifier.service
+  remove_file /etc/systemd/system/kotl-notifier.timer
+  run systemctl daemon-reload
+  # release any license a down board still holds
+  if [ "$KOTL_DRY_RUN" != 1 ]; then
+    for r in $(scontrol show reservation -o 2>/dev/null | sed -n 's/^ReservationName=\(kotl-down-[^ ]*\).*/\1/p'); do
+      run scontrol delete ReservationName="$r"
+    done
+  fi
   remove_file /opt/kotl/job.sh
   run rm -f /usr/local/bin/kotl
   # Slurm still names the epilog: leave a no-op so the node never drains

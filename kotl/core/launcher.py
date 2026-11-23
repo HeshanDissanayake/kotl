@@ -13,6 +13,8 @@ or from the kotl CLI. Every subcommand checks who is asking:
   logs JOB [-f]   fetch JOB   history   status JOB      read your own jobs
   boards                     every board's state (and health warnings)
   health                     (kotl, root or admin) run the health checks on every board's PC
+  notify                     (kotl only) one pass of the ETA notifier
+  notices [--unread] [--read]    your notices; --read marks them read
   board-add NAME TYPE HOST | board-drain NAME | board-resume NAME    admin only
 """
 import argparse
@@ -188,6 +190,9 @@ class Launcher:
         self.revoke_access(job_id, j["board"])
         if self.reg.finish(job_id, result, rc):
             self.reg.release(job_id)
+            b = self.reg.board(j["board"])
+            if b and b["state"] == "maintenance":      # it was draining: now hold its license
+                self.slurm.hold_license(f"kotl-maint-{b['name']}", f"{b['type']}:1")
             j = self.reg.job(job_id)
             os.makedirs(d, exist_ok=True)
             results.write_status(d, self.status_doc(j, state="done"))
@@ -321,7 +326,14 @@ class Launcher:
     def health(self):
         from kotl.core import health
         self.need_admin()
-        return health.run(self.reg, ssh=self.ssh)
+        return health.run(self.reg, ssh=self.ssh, slurm=self.slurm, admin=self.cfg.get("admin"),
+                          account=self.cfg.get("pc_account"))
+
+    def notify(self):
+        from kotl.core import notifier
+        if self.who not in ("kotl", "root"):
+            raise Refused("the notifier is run by Kotl's timer")
+        return notifier.run(self.reg, slurm=self.slurm, admin=self.cfg.get("admin"), now=self.clock)
 
     # --- admin
     def need_admin(self):
@@ -352,6 +364,9 @@ def main(argv=None):
     sub.add_parser("board-drain").add_argument("name")
     sub.add_parser("board-resume").add_argument("name")
     sub.add_parser("health").add_argument("--quiet", action="store_true")
+    sub.add_parser("notify")
+    no = sub.add_parser("notices"); no.add_argument("--unread", action="store_true")
+    no.add_argument("--read", action="store_true"); no.add_argument("--json", action="store_true")
     a = ap.parse_args(argv)
     os.umask(0o077)   # everything the launcher writes is kotl's alone
 
@@ -396,16 +411,36 @@ def main(argv=None):
             if not a.quiet:
                 for name, ws in found.items():
                     print(f"{name}: " + ("ok" if not ws else "; ".join(ws)))
+        elif a.cmd == "notify":
+            L.notify()
+        elif a.cmd == "notices":
+            rows = L.reg.notices(L.who, unread_only=a.unread)
+            if a.json:
+                print(json.dumps(rows))
+            else:
+                for r in rows:
+                    mark = " " if r["read"] else "*"
+                    print(f"{mark} {time.strftime('%m-%d %H:%M', time.localtime(r['at']))}  {r['text']}")
+                if not rows:
+                    print("(no notices)")
+            if a.read:
+                L.reg.mark_read(L.who)
         elif a.cmd == "board-add":
             L.need_admin(); L.reg.add_board(a.name, a.host, a.type); print(L.boards_table())
         elif a.cmd == "board-drain":
-            L.need_admin(); L.reg.drain(a.name); print(L.boards_table())
+            L.need_admin(); L.reg.drain(a.name)
+            b = L.reg.board(a.name)
+            if b["state"] == "maintenance":           # idle: hold the license now (busy: at its end step)
+                L.slurm.hold_license(f"kotl-maint-{a.name}", f"{b['type']}:1")
+            print(L.boards_table())
         elif a.cmd == "board-resume":
             L.need_admin()
             b = L.reg.board(a.name)
             if b and b["job_id"]:
                 raise Refused(f"{a.name} is held by job {b['job_id']}; it returns by itself when that job ends")
-            L.reg.set_state(a.name, "idle"); print(L.boards_table())
+            L.reg.set_state(a.name, "idle")
+            L.slurm.release_hold(f"kotl-maint-{a.name}")
+            print(L.boards_table())
     except (Refused, RegistryError, slurm_mod.SlurmError, ssh_mod.SSHError) as ex:
         print(f"kotl: {ex}", file=sys.stderr)
         return 1

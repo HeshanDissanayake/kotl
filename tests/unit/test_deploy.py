@@ -16,7 +16,7 @@ SCRIPTS = {  # script -> feature it belongs to
     "slurm/install.sh": "queue", "epilog.sh": "starter", "health.sh": "health",
     "ssh/setup-kotl-key.sh": "key", "pc/setup.sh": "pc1", "firesim/check.sh": "firesim",
     "kotl/install.sh": "launcher", "job.sh": "launcher",
-    "pc/kotl-keys": "access",
+    "pc/kotl-keys": "access", "pc/kotl-xdma-reload": "health",
 }
 
 
@@ -242,7 +242,11 @@ def test_kotl_install_dry_run(tmp_path):
     assert launch.startswith("#!/usr/bin/python3 -I") and "kotl.core.launcher" in launch
     assert "kotl.cli.main" in (tmp_path / "opt/kotl/bin/kotl").read_text()
     assert (tmp_path / "opt/kotl/job.sh").read_text() == (DEPLOY / "job.sh").read_text()
-    assert "adminlevel=Operator" in r.stdout
+    assert "adminlevel=Admin" in r.stdout
+    assert "systemctl enable --now kotl-notifier.timer" in r.stdout
+    svc = (tmp_path / "etc/systemd/system/kotl-notifier.service").read_text()
+    assert "User=kotl" in svc and "ExecStart=/opt/kotl/launch notify" in svc
+    assert "OnUnitActiveSec=1min" in (tmp_path / "etc/systemd/system/kotl-notifier.timer").read_text()
     assert "board-add vcu118-pc1 vcu118 vcu118-pc1" in r.stdout
     assert not (tmp_path / "opt/kotl/bin/firesim").exists()          # generic: no firesim wrapper
     assert not (tmp_path / "etc/profile.d/kotl.sh").exists()           # and no PATH tricks
@@ -281,3 +285,20 @@ def test_pc_setup_installs_keys_helper(tmp_path):
     assert "kotl ALL=(root) NOPASSWD: /usr/local/bin/kotl-keys" in r.stdout
     r = dry("pc/setup.sh", "--keys-helper", str(DEPLOY / "accounts.sh"), root=tmp_path, check=False)
     assert r.returncode != 0
+
+
+@pytest.mark.feature("health")
+def test_pc_setup_installs_driver_helper_with_no_arguments(tmp_path):
+    r = dry("pc/setup.sh", "--driver-helper", str(DEPLOY / "pc/kotl-xdma-reload"), root=tmp_path)
+    assert "/usr/local/bin/kotl-xdma-reload" in r.stdout
+    assert 'kotl ALL=(root) NOPASSWD: /usr/local/bin/kotl-xdma-reload ""' in r.stdout   # "" = no arguments allowed
+    r = dry("pc/setup.sh", "--driver-helper", str(DEPLOY / "accounts.sh"), root=tmp_path, check=False)
+    assert r.returncode != 0
+
+
+@pytest.mark.feature("notifier")
+def test_notifier_units_removed_on_undo(tmp_path):
+    dry("kotl/install.sh", root=tmp_path)
+    r = dry("kotl/install.sh", "--undo", root=tmp_path)
+    assert "systemctl disable --now kotl-notifier.timer" in r.stdout
+    assert not (tmp_path / "etc/systemd/system/kotl-notifier.timer").exists()

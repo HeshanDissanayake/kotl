@@ -1,0 +1,8 @@
+# managed by kotl (deploy/kotl/install.sh)
+[Unit]
+Description=Kotl ETA notifier (one pass)
+
+[Service]
+Type=oneshot
+User=kotl
+ExecStart=/opt/kotl/launch notify

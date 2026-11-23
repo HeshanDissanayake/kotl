@@ -1,0 +1,9 @@
+#!/bin/sh
+# managed by kotl (deploy/pc/setup.sh). Installed on each FPGA PC as /usr/local/bin/kotl-xdma-reload.
+# Kotl's health check runs it (as root, through one sudoers line, with no arguments) when the
+# XDMA driver isn't loaded: one attempt to reload it. It changes nothing else.
+set -eu
+modprobe -r xdma 2>/dev/null || true
+modprobe xdma
+lsmod | grep -q '^xdma '
+echo "kotl-xdma-reload: xdma loaded"

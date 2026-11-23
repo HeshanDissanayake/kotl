@@ -1,6 +1,6 @@
-"""Health checks: glibc on the workstation vs each PC, and reachability (fake ssh)."""
+"""Health checks: one probe per PC, failures take an idle board down (with a license hold),
+one driver reload is tried, warnings stay on the board, recovery brings it back (fake ssh/slurm)."""
 import json
-import os
 import subprocess
 from pathlib import Path
 
@@ -13,56 +13,127 @@ from kotl.core.registry import Registry
 from kotl.ssh import SSHError
 
 pytestmark = pytest.mark.feature("health")
-NEW = "ldd (Ubuntu GLIBC 2.39-0ubuntu8.12) 2.39\nCopyright (C) 2024 Free Software Foundation, Inc.\n"
-OLD = "ldd (Ubuntu GLIBC 2.39-0ubuntu8.9) 2.39\n"
+HERE = "2.39-0ubuntu8.12"
+GOOD = {"host": "pc1", "card": "01:00.0 Processing accelerators: Xilinx", "xdma": "xdma",
+        "glibc": f"ldd (Ubuntu GLIBC {HERE}) 2.39"}
 
 
-class FakeSSH:
-    def __init__(self, answer=NEW, fail=False):
-        self.answer, self.fail, self.calls = answer, fail, []
+class FakePC:
+    """Answers health's probe, kotl-keys busy and the driver reload."""
+
+    def __init__(self, **state):
+        self.state = dict(GOOD, **state)
+        self.down = False
+        self.busy = False
+        self.reloads = 0
+        self.reload_fixes = False
 
     def run(self, host, argv, timeout=60, check=True):
-        self.calls.append((host, argv))
-        if self.fail:
-            raise SSHError(f"{host}: no answer within 20 s")
-        return self.answer
+        if self.down:
+            raise SSHError(f"{host}: no answer within 30 s")
+        if argv[:2] == ["sh", "-c"]:
+            return "".join(f"{k}={v}\n" for k, v in self.state.items())
+        if argv[-1] == "busy":
+            return "busy\n" if self.busy else "idle\n"
+        if argv[-1] == health.RELOAD:
+            self.reloads += 1
+            if self.reload_fixes:
+                self.state["xdma"] = "xdma"
+            return ""
+        raise AssertionError(argv)
+
+
+class FakeHolds:
+    def __init__(self):
+        self.held = set()
+
+    def hold_license(self, name, license):
+        self.held.add(name)
+        return True
+
+    def release_hold(self, name):
+        self.held.discard(name)
+        return True
+
+
+@pytest.fixture
+def reg(tmp_path):
+    r = Registry(str(tmp_path / "kotl.db"))
+    r.add_board("vcu118-pc1", "vcu118-pc1", "vcu118")
+    return r
+
+
+def run(reg, pc, holds):
+    return health.run(reg, ssh=pc, slurm=holds, admin="boss", account="virtex-host", here=HERE)
 
 
 @pytest.mark.parametrize("text,version", [
-    (NEW, "2.39-0ubuntu8.12"), (OLD, "2.39-0ubuntu8.9"),
-    ("ldd (GNU libc) 2.35\n", "2.35"), ("", ""),
+    (f"ldd (Ubuntu GLIBC {HERE}) 2.39\nCopyright", HERE), ("ldd (GNU libc) 2.35\n", "2.35"), ("", ""),
 ])
 def test_glibc_version(text, version):
     assert health.glibc_version(health.glibc_line(text)) == version
 
 
-def test_same_glibc_is_healthy():
-    assert health.check_board({"host": "pc"}, FakeSSH(NEW), here="2.39-0ubuntu8.12") == []
+def test_healthy_board_stays_idle(reg):
+    holds = FakeHolds()
+    assert run(reg, FakePC(), holds) == {"vcu118-pc1": []}
+    b = reg.board("vcu118-pc1")
+    assert b["state"] == "idle" and b["last_healthy"] and not holds.held
 
 
-def test_job_47_case_is_a_warning():
-    w = health.check_board({"host": "pc"}, FakeSSH(OLD), here="2.39-0ubuntu8.12")
-    assert len(w) == 1 and "workstation 2.39-0ubuntu8.12, PC 2.39-0ubuntu8.9" in w[0] and "upgrade libc6" in w[0]
+def test_missing_driver_tries_one_reload_then_goes_down(reg):
+    pc, holds = FakePC(xdma=""), FakeHolds()
+    found = run(reg, pc, holds)["vcu118-pc1"]
+    assert pc.reloads == 1 and "tried one XDMA driver reload" in found
+    assert reg.board("vcu118-pc1")["state"] == "down" and holds.held == {"kotl-down-vcu118-pc1"}
+    assert "vcu118-pc1 is DOWN: XDMA driver not loaded" in reg.notices("boss")[0]["text"]
+    run(reg, pc, holds)
+    assert pc.reloads == 1                                  # one reload per down period, not every 5 min
+    assert len(reg.notices("boss")) == 1                    # and one notice
 
 
-def test_older_glibc_release_needs_the_workaround():
-    w = health.check_board({"host": "pc"}, FakeSSH("ldd (Ubuntu GLIBC 2.35-0ubuntu3.13) 2.35\n"), here="2.39-0ubuntu8.12")
-    assert "older glibc release (2.35 vs 2.39)" in w[0] and "--use-pc-glibc" in w[0] and "upgrade libc6" not in w[0]
+def test_reload_that_works_keeps_the_board(reg):
+    pc, holds = FakePC(xdma=""), FakeHolds()
+    pc.reload_fixes = True
+    found = run(reg, pc, holds)["vcu118-pc1"]
+    assert reg.board("vcu118-pc1")["state"] == "idle" and not holds.held
+    assert found == ["tried one XDMA driver reload"]
 
 
-def test_unreachable_is_a_warning():
-    assert health.check_board({"host": "pc"}, FakeSSH(fail=True), here="x")[0].startswith("unreachable")
+def test_unreachable_goes_down_and_comes_back(reg):
+    pc, holds = FakePC(), FakeHolds()
+    pc.down = True
+    run(reg, pc, holds)
+    assert reg.board("vcu118-pc1")["state"] == "down" and pc.reloads == 0
+    pc.down = False
+    run(reg, pc, holds)
+    assert reg.board("vcu118-pc1")["state"] == "idle" and not holds.held
+    assert [n["text"] for n in reg.notices("boss")][0] == "vcu118-pc1 is back UP: its checks pass again"
 
 
-def test_run_stores_warnings_and_last_healthy(tmp_path, monkeypatch):
-    reg = Registry(str(tmp_path / "kotl.db"))
-    reg.add_board("vcu118-pc1", "vcu118-pc1", "vcu118")
-    monkeypatch.setattr(health, "local_glibc", lambda: "2.39-0ubuntu8.12")
-    found = health.run(reg, ssh=FakeSSH(OLD), now=lambda: 0)
-    assert found["vcu118-pc1"] and reg.warnings("vcu118-pc1") == found["vcu118-pc1"]
-    assert reg.board("vcu118-pc1")["last_healthy"] and reg.board("vcu118-pc1")["state"] == "idle"   # warn, don't take it away
-    health.run(reg, ssh=FakeSSH(NEW))
-    assert reg.warnings("vcu118-pc1") == []
+def test_busy_board_is_never_taken_from_a_job(reg):
+    reg.claim(41, "vcu118")
+    pc, holds = FakePC(card=""), FakeHolds()
+    found = run(reg, pc, holds)["vcu118-pc1"]
+    assert reg.board("vcu118-pc1")["state"] == "busy" and not holds.held
+    assert any("goes down when job 41 ends" in f for f in found)
+    reg.release(41)
+    run(reg, pc, holds)
+    assert reg.board("vcu118-pc1")["state"] == "down"
+
+
+def test_glibc_and_unleased_work_are_warnings(reg):
+    pc, holds = FakePC(glibc="ldd (Ubuntu GLIBC 2.35-0ubuntu3.13) 2.35"), FakeHolds()
+    pc.busy = True
+    found = run(reg, pc, holds)["vcu118-pc1"]
+    assert reg.board("vcu118-pc1")["state"] == "idle"
+    assert any("older glibc release (2.35 vs 2.39)" in f and "--use-pc-glibc" in f for f in found)
+    assert any("no Kotl job holding the board" in f for f in found)
+
+
+def test_patch_gap_suggests_upgrade():
+    w = health.glibc_warning(HERE, "2.39-0ubuntu8.9")
+    assert "upgrade libc6" in w and "older glibc release" not in w
 
 
 def test_registry_migrates_an_old_database(tmp_path):
@@ -79,25 +150,17 @@ def test_registry_migrates_an_old_database(tmp_path):
     assert reg.warnings("b") == ["x"]
 
 
-@pytest.fixture
-def launcher_for(tmp_path):
+def test_only_kotl_or_admin_runs_checks(tmp_path, monkeypatch):
     for d in ("var/lib/kotl", "srv/kotl/out", "etc/kotl"):
         (tmp_path / d).mkdir(parents=True)
     (tmp_path / "etc/kotl/kotl.conf").write_text("admin = boss\n")
     cfg = Config(prefix=str(tmp_path))
-
-    def make(who, ssh):
-        return Launcher(cfg, who=who, ssh=ssh)
-    make("kotl", FakeSSH()).reg.add_board("vcu118-pc1", "vcu118-pc1", "vcu118")
-    return make
-
-
-def test_only_kotl_or_admin_runs_checks(launcher_for, monkeypatch):
-    monkeypatch.setattr(health, "local_glibc", lambda: "2.39-0ubuntu8.12")
+    monkeypatch.setattr(health, "local_glibc", lambda: HERE)
+    Launcher(cfg, who="kotl").reg.add_board("vcu118-pc1", "vcu118-pc1", "vcu118")
     with pytest.raises(Refused):
-        launcher_for("alice", FakeSSH()).health()
-    assert launcher_for("boss", FakeSSH(OLD)).health()["vcu118-pc1"]
-    assert "! glibc differs" in launcher_for("alice", FakeSSH()).boards_table()   # everyone sees the warning
+        Launcher(cfg, who="alice", ssh=FakePC(), slurm=FakeHolds()).health()
+    Launcher(cfg, who="boss", ssh=FakePC(card=""), slurm=FakeHolds()).health()
+    assert "! no Xilinx card" in Launcher(cfg, who="alice").boards_table()   # everyone sees it
 
 
 def test_health_sh_always_exits_0():

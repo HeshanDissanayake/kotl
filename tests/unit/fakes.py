@@ -29,6 +29,16 @@ class FakeSlurm:
                  "eta": v["TimeLimit"], "used": "0:01", "start": "N/A", "reason": "None"}
                 for k, v in self.jobs.items()]
 
+    held = None
+
+    def hold_license(self, name, license):
+        self.held = (self.held or set()) | {name}
+        return True
+
+    def release_hold(self, name):
+        self.held = (self.held or set()) - {name}
+        return True
+
     def submit(self, script, args, **kw):
         self.submitted.append({"script": script, "args": list(args), **kw})
         return 100 + len(self.submitted)

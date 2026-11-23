@@ -60,3 +60,64 @@ def run_in_job(job_id, argv, env=None):
     Returns its exit code; output goes straight to the caller's terminal."""
     return subprocess.run(["srun", f"--jobid={job_id}", "--overlap", "--quiet", "--ntasks=1", *argv],
                           env=env).returncode
+
+
+def hold_license(name, license):
+    """Hold a license with a reservation nobody can use, so queued jobs wait (a board is down)."""
+    r = _run(["scontrol", "create", "reservation", f"ReservationName={name}", "StartTime=now",
+              "Duration=infinite", "Users=root", f"Licenses={license}", "Flags=ANY_NODES"], check=False)
+    return r.returncode == 0 or "already exists" in (r.stderr + r.stdout)
+
+
+def release_hold(name):
+    r = _run(["scontrol", "delete", f"ReservationName={name}"], check=False)
+    return r.returncode == 0 or "not found" in (r.stderr + r.stdout).lower()
+
+
+def holds():
+    """Names of current reservations."""
+    r = _run(["scontrol", "show", "reservation", "-o"], check=False)
+    return [tok.split("=", 1)[1] for line in r.stdout.splitlines() for tok in line.split()
+            if tok.startswith("ReservationName=")]
+
+
+def pending_starts():
+    """{job: (user, estimated start as epoch or None)} for pending Kotl jobs."""
+    import time as _t
+    r = _run(["squeue", "-h", "-t", "PENDING", "-o", "%i|%u|%j|%S"], check=False)
+    out = {}
+    for line in r.stdout.splitlines():
+        job, user, name, start = (line.split("|") + ["", "", "", ""])[:4]
+        if not name.startswith("kotl-"):
+            continue
+        try:
+            when = _t.mktime(_t.strptime(start, "%Y-%m-%dT%H:%M:%S"))
+        except ValueError:
+            when = None
+        out[int(job)] = (user, when)
+    return out
+
+
+def running_times():
+    """{job: (user, seconds used, time limit seconds or None)} for running Kotl jobs."""
+    r = _run(["squeue", "-h", "-t", "RUNNING", "-o", "%i|%u|%j|%M|%l"], check=False)
+    out = {}
+    for line in r.stdout.splitlines():
+        job, user, name, used, limit = (line.split("|") + [""] * 5)[:5]
+        if name.startswith("kotl-"):
+            out[int(job)] = (user, _secs(used), _secs(limit))
+    return out
+
+
+def _secs(text):
+    if not text or text in ("UNLIMITED", "INVALID", "NOT_SET"):
+        return None
+    days = 0
+    if "-" in text:
+        d, text = text.split("-", 1)
+        days = int(d)
+    parts = [int(x) for x in text.split(":")]
+    while len(parts) < 3:
+        parts.insert(0, 0)
+    h, m, s = parts
+    return ((days * 24 + h) * 60 + m) * 60 + s

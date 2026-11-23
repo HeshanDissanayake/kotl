@@ -290,3 +290,15 @@ def test_result_marker(env, text, rc, expect):
     L.start(7, "run")
     L.append_log(7, io.BytesIO(text))
     assert L.end(7, rc=rc) == expect
+
+
+@pytest.mark.feature("registry")
+def test_drain_holds_the_license_at_the_end_step(env):
+    cfg, fs, make = env
+    fs.add(7, "alice")
+    make("alice").start(7, "run")
+    make("boss").reg.drain("vcu118-pc1")                       # busy: draining, license still in use
+    assert not fs.held
+    make("alice").end(7, rc=0)
+    assert make("kotl").reg.board("vcu118-pc1")["state"] == "maintenance"
+    assert fs.held == {"kotl-maint-vcu118-pc1"}                # queued jobs now wait
