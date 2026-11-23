@@ -1418,7 +1418,7 @@
     "<b>Skill:</b> <code>kotl run</code> (preferred) and <code>kotl lease</code> with an ETA and an exit plan; FireSim through Kotl, with an honest <code>KOTL RESULT</code> and the glibc workaround; fetch, then read <code>status.json</code> first.",
     "<b>SessionStart hook:</b> the queue, the boards and your unread notices (shown, not marked read).",
     "<b>PreToolUse hook (Bash):</b> asks before <code>firesim infrasetup/runworkload/kill</code> runs outside <code>kotl run</code>/<code>lease</code>, and says how to run it through the queue. A suggestion with a question, not a block.",
-    "<b>kotl-band</b> (a second, optional plugin): a live Kotl line above the Claude Code prompt, from <code>kotl status --json</code> every 30 s: each board and who holds it against their ETA, how many wait, your jobs, unread notices, warnings. <code>/kotl</code> refreshes, <code>/kotl hide</code> hides. Read-only.",
+    "<b>kotl-band</b> (a second, optional plugin): a live Kotl band above the Claude Code prompt, from <code>kotl status --json</code> every 30 s. Line 1: each board, who holds it, the job's kind and time used of its ETA, how many wait. Line 2: your jobs: how many, each running one's time of its ETA, each waiting one's estimated start and place in line; unread notices. <code>/kotl</code> refreshes, <code>/kotl hide</code> hides. Read-only.",
     "<b>Anywhere:</b> on the workstation it runs <code>kotl</code>; on a user's own PC it runs <code>ssh $KOTL_SSH kotl …</code> (set <code>KOTL_SSH</code> in <code>~/.claude/settings.json</code> under <code>env</code>)."
    ],
    "files": [
@@ -1452,7 +1452,7 @@
        "o": "> run hostname on the FPGA board through kotl and tell me the result"
       },
       {
-       "o": "Kotl vcu118-pc1 busy (bob, run 12:03/30:00)  · 1 waiting · you: job 42 · 2 unread (kotl notices)"
+       "o": "Kotl  vcu118-pc1 busy: bob · run · 12m of 30m ETA   · 1 waiting\n      you: 1 job · 42 lease waiting, starts ~10:52 (1st in line) · 2 unread notices"
       }
      ]
     }
