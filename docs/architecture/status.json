@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "updated": "2026-11-23T08:29:30Z",
-  "repo_commit": "edc737fb8ff0cda07cce3d5633bc2c547250e1ab",
+  "updated": "2026-11-23T08:55:58Z",
+  "repo_commit": "65e9fe3e5447e83bfc57ac00aeb3d38934ddb713",
   "watch": [
     "kotl/",
     "deploy/",
@@ -47,7 +47,7 @@
         "unit": {
           "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-23T08:29:30Z"
+          "ran_at": "2026-11-23T08:55:58Z"
         },
         "hardware": null
       },
@@ -81,7 +81,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-23T08:29:30Z"
+          "ran_at": "2026-11-23T08:55:58Z"
         },
         "hardware": null
       },
@@ -117,16 +117,16 @@
       ],
       "tests": {
         "unit": {
-          "passed": 6,
+          "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-23T08:29:30Z"
+          "ran_at": "2026-11-23T08:55:58Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "3556e18cebdfde61e2bea72632158eb235869933",
-        "message": "M2: board lease code (registry, launcher, kotl CLI, results) and its installer",
-        "date": "2026-11-22T02:10:38+11:00"
+        "hash": "65e9fe3e5447e83bfc57ac00aeb3d38934ddb713",
+        "message": "Fix: health.sh and epilog.sh had no PATH under Slurm, so they did nothing",
+        "date": "2026-11-23T19:39:26+11:00"
       },
       "issues": [],
       "log": [
@@ -164,7 +164,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-23T08:29:30Z"
+          "ran_at": "2026-11-23T08:55:58Z"
         },
         "hardware": null
       },
@@ -197,7 +197,7 @@
         "unit": {
           "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-23T08:29:30Z"
+          "ran_at": "2026-11-23T08:55:58Z"
         },
         "hardware": null
       },
@@ -239,14 +239,14 @@
         "unit": {
           "passed": 14,
           "failed": 0,
-          "ran_at": "2026-11-23T08:29:30Z"
+          "ran_at": "2026-11-23T08:55:58Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "f0570143516cdf3e04e290f939d0b08ff7510c62",
-        "message": "M1 done: scripts run by the admin, verify-m1.sh 21/21 passed",
-        "date": "2026-11-22T02:01:39+11:00"
+        "hash": "7c3773b547e4d240bd2e4a525a02d56ba9a0ee65",
+        "message": "M4: health check takes broken boards down, notifier, kotl attach (not yet installed)",
+        "date": "2026-11-23T19:30:06+11:00"
       },
       "issues": [],
       "log": [
@@ -284,12 +284,12 @@
         "unit": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-23T08:29:30Z"
+          "ran_at": "2026-11-23T08:55:58Z"
         },
         "hardware": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-23T08:29:30Z"
+          "ran_at": "2026-11-23T08:55:58Z"
         }
       },
       "last_commit": {
@@ -329,12 +329,12 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-23T08:29:30Z"
+          "ran_at": "2026-11-23T08:55:58Z"
         },
         "hardware": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-23T08:29:30Z"
+          "ran_at": "2026-11-23T08:55:58Z"
         }
       },
       "last_commit": {
@@ -374,18 +374,18 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-23T08:29:30Z"
+          "ran_at": "2026-11-23T08:55:58Z"
         },
         "hardware": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-23T08:29:30Z"
+          "ran_at": "2026-11-23T08:55:58Z"
         }
       },
       "last_commit": {
-        "hash": "d7d5eac7e8d0cbade72b95fd64d600323a26b90a",
-        "message": "Generic redesign: users run their own tools inside kotl run / kotl lease",
-        "date": "2026-11-22T03:09:03+11:00"
+        "hash": "7c3773b547e4d240bd2e4a525a02d56ba9a0ee65",
+        "message": "M4: health check takes broken boards down, notifier, kotl attach (not yet installed)",
+        "date": "2026-11-23T19:30:06+11:00"
       },
       "issues": [],
       "log": [
@@ -432,9 +432,9 @@
         "hardware": null
       },
       "last_commit": {
-        "hash": "d7d5eac7e8d0cbade72b95fd64d600323a26b90a",
-        "message": "Generic redesign: users run their own tools inside kotl run / kotl lease",
-        "date": "2026-11-22T03:09:03+11:00"
+        "hash": "7c3773b547e4d240bd2e4a525a02d56ba9a0ee65",
+        "message": "M4: health check takes broken boards down, notifier, kotl attach (not yet installed)",
+        "date": "2026-11-23T19:30:06+11:00"
       },
       "issues": [],
       "log": [
@@ -454,16 +454,16 @@
       ],
       "tests": {
         "unit": {
-          "passed": 7,
+          "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-23T08:29:30Z"
+          "ran_at": "2026-11-23T08:55:58Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "a3c6b183f007cf2212f2b1da9be9e8b0951df823",
-        "message": "Health check: glibc on workstation vs each PC, and reachability",
-        "date": "2026-11-23T19:10:02+11:00"
+        "hash": "205ab4ee6c582a5aa41d6a744eca3ec874da54df",
+        "message": "Fix: re-adding a board (every install) wiped its state, job and health",
+        "date": "2026-11-23T19:31:32+11:00"
       },
       "issues": [],
       "log": [
@@ -509,14 +509,14 @@
         "unit": {
           "passed": 37,
           "failed": 0,
-          "ran_at": "2026-11-23T08:29:30Z"
+          "ran_at": "2026-11-23T08:55:58Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "a3c6b183f007cf2212f2b1da9be9e8b0951df823",
-        "message": "Health check: glibc on workstation vs each PC, and reachability",
-        "date": "2026-11-23T19:10:02+11:00"
+        "hash": "7c3773b547e4d240bd2e4a525a02d56ba9a0ee65",
+        "message": "M4: health check takes broken boards down, notifier, kotl attach (not yet installed)",
+        "date": "2026-11-23T19:30:06+11:00"
       },
       "issues": [],
       "log": [
@@ -575,14 +575,14 @@
         "unit": {
           "passed": 17,
           "failed": 0,
-          "ran_at": "2026-11-23T08:29:30Z"
+          "ran_at": "2026-11-23T08:55:58Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "a3c6b183f007cf2212f2b1da9be9e8b0951df823",
-        "message": "Health check: glibc on workstation vs each PC, and reachability",
-        "date": "2026-11-23T19:10:02+11:00"
+        "hash": "7c3773b547e4d240bd2e4a525a02d56ba9a0ee65",
+        "message": "M4: health check takes broken boards down, notifier, kotl attach (not yet installed)",
+        "date": "2026-11-23T19:30:06+11:00"
       },
       "issues": [],
       "log": [
@@ -632,7 +632,7 @@
         "unit": {
           "passed": 4,
           "failed": 0,
-          "ran_at": "2026-11-23T08:29:30Z"
+          "ran_at": "2026-11-23T08:55:58Z"
         },
         "hardware": null
       },
@@ -706,7 +706,7 @@
       "title": "Health check",
       "status": "in_progress",
       "milestone": "M4",
-      "now": "Code and unit tests done; waiting for the admin to run deploy/M4-SETUP.md.",
+      "now": "Live: Slurm runs it every 5 min (card, driver, glibc, unleased work); drain holds the license. Still to prove: a real driver failure (reload, down/up).",
       "code": [
         "deploy/M4-SETUP.md",
         "deploy/health.sh",
@@ -715,16 +715,16 @@
       ],
       "tests": {
         "unit": {
-          "passed": 16,
+          "passed": 17,
           "failed": 0,
-          "ran_at": "2026-11-23T08:29:30Z"
+          "ran_at": "2026-11-23T08:55:58Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "edc737fb8ff0cda07cce3d5633bc2c547250e1ab",
-        "message": "Health: tell an older glibc release (2.35 vs 2.39) from a patch gap",
-        "date": "2026-11-23T19:23:20+11:00"
+        "hash": "65e9fe3e5447e83bfc57ac00aeb3d38934ddb713",
+        "message": "Fix: health.sh and epilog.sh had no PATH under Slurm, so they did nothing",
+        "date": "2026-11-23T19:39:26+11:00"
       },
       "issues": [],
       "log": [
@@ -755,6 +755,10 @@
         {
           "date": "2026-11-23",
           "text": "Run by hand on the real PC: card and XDMA OK, glibc warning, unleased-work warning. But Slurm never ran it: health.sh had no PATH (Slurm gives none). Fixed."
+        },
+        {
+          "date": "2026-11-23",
+          "text": "Slurm's automatic run works (19:55): card and XDMA OK, glibc and unleased-work warnings. Integration: drain holds the license, a queued job waits, resume releases."
         }
       ]
     },
@@ -762,7 +766,7 @@
       "title": "ETA notifier",
       "status": "in_progress",
       "milestone": "M4",
-      "now": "Code and unit tests done; waiting for the admin to run deploy/M4-SETUP.md.",
+      "now": "Live: the timer runs every minute without errors. Still to prove: an actual ETA notice.",
       "code": [
         "deploy/systemd/",
         "kotl/core/notifier.py"
@@ -771,11 +775,15 @@
         "unit": {
           "passed": 6,
           "failed": 0,
-          "ran_at": "2026-11-23T08:29:30Z"
+          "ran_at": "2026-11-23T08:55:58Z"
         },
         "hardware": null
       },
-      "last_commit": null,
+      "last_commit": {
+        "hash": "7c3773b547e4d240bd2e4a525a02d56ba9a0ee65",
+        "message": "M4: health check takes broken boards down, notifier, kotl attach (not yet installed)",
+        "date": "2026-11-23T19:30:06+11:00"
+      },
       "issues": [],
       "log": [
         {
@@ -792,7 +800,7 @@
       "title": "Console attach",
       "status": "in_progress",
       "milestone": "M4",
-      "now": "Code and unit tests done; waiting for the admin to run deploy/M4-SETUP.md.",
+      "now": "Code and unit tests done. Still to prove: opening a real console during a lease.",
       "code": [
         "kotl/core/attach.py"
       ],
@@ -800,11 +808,15 @@
         "unit": {
           "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-23T08:29:30Z"
+          "ran_at": "2026-11-23T08:55:58Z"
         },
         "hardware": null
       },
-      "last_commit": null,
+      "last_commit": {
+        "hash": "7c3773b547e4d240bd2e4a525a02d56ba9a0ee65",
+        "message": "M4: health check takes broken boards down, notifier, kotl attach (not yet installed)",
+        "date": "2026-11-23T19:30:06+11:00"
+      },
       "issues": [],
       "log": [
         {
@@ -946,18 +958,18 @@
         "unit": {
           "passed": 21,
           "failed": 0,
-          "ran_at": "2026-11-23T08:29:30Z"
+          "ran_at": "2026-11-23T08:55:58Z"
         },
         "hardware": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-23T08:29:30Z"
+          "ran_at": "2026-11-23T08:55:58Z"
         }
       },
       "last_commit": {
-        "hash": "136dba22aa7636c5599cf2ba9f6ea500f185db17",
-        "message": "M3 done: real FireSim Linux boot on the VCU118 through kotl run (job 49)",
-        "date": "2026-11-23T19:20:13+11:00"
+        "hash": "7c3773b547e4d240bd2e4a525a02d56ba9a0ee65",
+        "message": "M4: health check takes broken boards down, notifier, kotl attach (not yet installed)",
+        "date": "2026-11-23T19:30:06+11:00"
       },
       "issues": [
         "The PC runs glibc 2.35 (Ubuntu 22.04), the workstation 2.39 (24.04): FireSim runs need --use-pc-glibc (or the same removal by hand). kotl board check reports it."
@@ -1069,14 +1081,14 @@
         "unit": {
           "passed": 7,
           "failed": 0,
-          "ran_at": "2026-11-23T08:29:30Z"
+          "ran_at": "2026-11-23T08:55:58Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "a3c6b183f007cf2212f2b1da9be9e8b0951df823",
-        "message": "Health check: glibc on workstation vs each PC, and reachability",
-        "date": "2026-11-23T19:10:02+11:00"
+        "hash": "7c3773b547e4d240bd2e4a525a02d56ba9a0ee65",
+        "message": "M4: health check takes broken boards down, notifier, kotl attach (not yet installed)",
+        "date": "2026-11-23T19:30:06+11:00"
       },
       "issues": [],
       "log": [
