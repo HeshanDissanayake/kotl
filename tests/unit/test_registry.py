@@ -66,3 +66,12 @@ def test_job_records(reg):
     assert reg.finish(5, "over_max", None) is True
     assert reg.finish(5, "succeeded", 0) is False      # ends once
     assert [j["job_id"] for j in reg.jobs("alice")] == [5] and reg.jobs("bob") == []
+
+
+def test_re_adding_a_board_keeps_its_job_and_health(reg):
+    reg.claim(41, "vcu118")
+    reg.set_warnings("vcu118-pc1", ["glibc differs"], healthy_at=0)
+    reg.add_board("vcu118-pc1", "new-host", "vcu118")            # what every install does
+    b = reg.board("vcu118-pc1")
+    assert b["state"] == "busy" and b["job_id"] == 41 and b["host"] == "new-host"
+    assert reg.warnings("vcu118-pc1") == ["glibc differs"] and b["last_healthy"]

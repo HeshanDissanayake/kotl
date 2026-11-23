@@ -461,7 +461,9 @@
         "message": "Health check: glibc on workstation vs each PC, and reachability",
         "date": "2026-11-23T19:10:02+11:00"
       },
-      "issues": [],
+      "issues": [
+        "Installed copy still has the board-add bug until the next deploy/kotl/install.sh: don't re-run the install while a job holds the board."
+      ],
       "log": [
         {
           "date": "2026-11-22",
@@ -482,6 +484,10 @@
         {
           "date": "2026-11-23",
           "text": "notices and notified tables; drain holds the license (now, or at the end step of the job holding the board); resume releases it."
+        },
+        {
+          "date": "2026-11-23",
+          "text": "Fix: board-add (run by every install) replaced the whole row, wiping state, job and health; now it only updates host and type."
         }
       ]
     },

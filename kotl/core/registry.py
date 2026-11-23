@@ -53,7 +53,10 @@ class Registry:
     def add_board(self, name, host, type_, state="idle"):
         if state not in STATES:
             raise RegistryError(f"unknown state {state}")
-        self.db.execute("INSERT OR REPLACE INTO boards(name, host, type, state) VALUES (?,?,?,?)",
+        # a new board starts in `state`; re-adding a known one (every install does) only updates
+        # its host and type, and never touches its state, job or health
+        self.db.execute("INSERT INTO boards(name, host, type, state) VALUES (?,?,?,?) "
+                        "ON CONFLICT(name) DO UPDATE SET host=excluded.host, type=excluded.type",
                         (name, host, type_, state))
 
     def boards(self):
