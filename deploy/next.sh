@@ -24,13 +24,14 @@ step() {
 
 log "=== next.sh started by $(id -un) (deploy/next.sh $(git rev-parse --short HEAD 2>/dev/null))"
 
-if ask "1. Publish the Kotl plugin at /opt/kotl (sudo: re-runs the Kotl install)"; then
+if ask "1. Publish the Kotl plugins at /opt/kotl (sudo: re-runs the Kotl install)"; then
   step "sudo deploy/kotl/install.sh --board vcu118-pc1=vcu118@vcu118-pc1"
 fi
 
-if ask "2. Install the plugin in your own Claude Code (no sudo)"; then
+if ask "2. Install the plugins (kotl, kotl-band) in your own Claude Code (no sudo)"; then
   step "claude plugin marketplace add /opt/kotl" &&
-  step "claude plugin install kotl@kotl"
+  step "claude plugin install kotl@kotl" &&
+  step "claude plugin install kotl-band@kotl"
 fi
 
 log "=== next.sh finished"

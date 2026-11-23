@@ -8,6 +8,11 @@
       "name": "kotl",
       "source": "./plugin",
       "description": "Use the lab's FPGA boards through Kotl from Claude Code."
+    },
+    {
+      "name": "kotl-band",
+      "source": "./plugin-band",
+      "description": "A live Kotl line above the Claude Code prompt: boards, queue, your jobs, notices."
     }
   ],
   "description": "The lab's Kotl plugin: use the FPGA board queue from Claude Code."

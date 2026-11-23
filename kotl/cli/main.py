@@ -148,7 +148,31 @@ def cmd_release(a):
     return 0
 
 
+def status_json():
+    """Everything a status display needs, as one JSON document (kotl status --json)."""
+    import json
+    import pwd
+
+    def lj(*args):
+        rc, out, _ = launch(*args, "--json", capture=True)
+        try:
+            return json.loads(out or b"[]") if rc == 0 else []
+        except ValueError:
+            return []
+    try:
+        queue = [r for r in slurm.queue() if r["name"].startswith("kotl-")]
+    except slurm.SlurmError:
+        queue = []
+    mine = [j for j in lj("history", "--limit", "10") if not j.get("result")]
+    return {"user": pwd.getpwuid(os.getuid()).pw_name, "boards": lj("boards"), "queue": queue,
+            "running_mine": mine, "unread": len(lj("notices", "--unread"))}
+
+
 def cmd_status(a):
+    if a.json:
+        import json
+        print(json.dumps(status_json()))
+        return 0
     rows = [r for r in slurm.queue() if r["name"].startswith("kotl-")]
     print(f"{'JOB':>6}  {'USER':10} {'KIND':6} {'STATE':9} {'ETA':>9} {'USED':>9}  START / REASON")
     for r in rows:
@@ -238,7 +262,7 @@ def main(argv=None):
     le = sub.add_parser("lease", help="hold a board until kotl release")
     le.add_argument("--eta", required=True); le.add_argument("--max")
     sub.add_parser("release").add_argument("job", nargs="?", type=int)
-    sub.add_parser("status")
+    sub.add_parser("status").add_argument("--json", action="store_true", help="for status displays")
     sub.add_parser("top", help="live view of boards, queue and your jobs")
     sub.add_parser("cancel").add_argument("job", type=int)
     sub.add_parser("attach").add_argument("job", nargs="?", type=int)

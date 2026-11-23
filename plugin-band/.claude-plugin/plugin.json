@@ -1,0 +1,6 @@
+{
+  "name": "kotl-band",
+  "version": "0.1.0",
+  "description": "A live Kotl line above the prompt: the FPGA boards, who holds them, the queue, your jobs and unread notices.",
+  "types": "./types/index.d.ts"
+}

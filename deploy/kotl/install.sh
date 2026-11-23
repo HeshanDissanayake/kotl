@@ -68,6 +68,15 @@ install_all() {
   find "$plug" -name '*.sh' -exec chmod 755 {} +
   if [ "$KOTL_DRY_RUN" != 1 ]; then chown -R root:root "$plug"; fi
   say "copied plugin/ to /opt/kotl/plugin"
+  local band
+  band=$(p /opt/kotl/plugin-band)
+  rm -rf "$band"
+  cp -r "$REPO/plugin-band" "$band"
+  find "$band" -type d -exec chmod 755 {} +
+  find "$band" -type f -exec chmod 644 {} +
+  find "$band" -name '*.test.tsx' -delete
+  if [ "$KOTL_DRY_RUN" != 1 ]; then chown -R root:root "$band"; fi
+  say "copied plugin-band/ to /opt/kotl/plugin-band"
   put_file /opt/kotl/.claude-plugin/marketplace.json 644 root:root <"$REPO/.claude-plugin/marketplace.json"
 
   # kotl cancels hung jobs (guards) and holds a down board's license (reservations): Slurm admin
@@ -103,7 +112,7 @@ undo_all() {
   lib=$(p /opt/kotl/lib)
   rm -rf "$lib"     # under the dry-run folder in a dry run
   say "removed /opt/kotl/lib"
-  rm -rf "$(p /opt/kotl/plugin)"     # under the dry-run folder in a dry run
+  rm -rf "$(p /opt/kotl/plugin)" "$(p /opt/kotl/plugin-band)"     # under the dry-run folder in a dry run
   remove_file /opt/kotl/.claude-plugin/marketplace.json
   remove_file /opt/kotl/launch
   remove_file /opt/kotl/bin/kotl

@@ -2,7 +2,7 @@
  "schema": 1,
  "title": "Kotl Architecture",
  "intro": "Teal is Kotl, our product. Purple is Slurm. Gray is everything else off the shelf, plus the hardware. The dot on each box is its build status; click a box for exactly what's happening.",
- "latest": "Latest: M5 code. The Kotl plugin for Claude Code: a skill, a session-start hook (queue and notices), and a question before FireSim board commands outside Kotl.",
+ "latest": "Latest: M5 code. The Kotl plugin for Claude Code (skill, session-start queue, a question before FireSim outside Kotl) and kotl-band, a live Kotl line above the prompt.",
  "canvas": {
   "w": 1520,
   "h": 820
@@ -1418,6 +1418,7 @@
     "<b>Skill:</b> <code>kotl run</code> (preferred) and <code>kotl lease</code> with an ETA and an exit plan; FireSim through Kotl, with an honest <code>KOTL RESULT</code> and the glibc workaround; fetch, then read <code>status.json</code> first.",
     "<b>SessionStart hook:</b> the queue, the boards and your unread notices (shown, not marked read).",
     "<b>PreToolUse hook (Bash):</b> asks before <code>firesim infrasetup/runworkload/kill</code> runs outside <code>kotl run</code>/<code>lease</code>, and says how to run it through the queue. A suggestion with a question, not a block.",
+    "<b>kotl-band</b> (a second, optional plugin): a live Kotl line above the Claude Code prompt, from <code>kotl status --json</code> every 30 s: each board and who holds it against their ETA, how many wait, your jobs, unread notices, warnings. <code>/kotl</code> refreshes, <code>/kotl hide</code> hides. Read-only.",
     "<b>Anywhere:</b> on the workstation it runs <code>kotl</code>; on a user's own PC it runs <code>ssh $KOTL_SSH kotl …</code> (set <code>KOTL_SSH</code> in <code>~/.claude/settings.json</code> under <code>env</code>)."
    ],
    "files": [
@@ -1435,6 +1436,9 @@
       },
       {
        "c": "claude plugin install kotl@kotl"
+      },
+      {
+       "c": "claude plugin install kotl-band@kotl     # optional: the live line above the prompt"
       }
      ]
     },
@@ -1446,6 +1450,9 @@
       },
       {
        "o": "> run hostname on the FPGA board through kotl and tell me the result"
+      },
+      {
+       "o": "Kotl vcu118-pc1 busy (bob, run 12:03/30:00)  · 1 waiting · you: job 42 · 2 unread (kotl notices)"
       }
      ]
     }
@@ -2178,7 +2185,7 @@
     "<code>/etc/systemd/system/kotl-notifier.{service,timer}</code>: runs the notifier every minute, as kotl <i>(new · M4)</i>",
     "<code>/opt/kotl/</code>: Kotl's code. M1: no-op <code>epilog.sh</code>, <code>health.sh</code>. M2: <code>lib/kotl/</code> (the package, root-owned), <code>launch</code>, <code>job.sh</code>, real <code>epilog.sh</code>, <code>bin/kotl</code>. M3: <code>bin/firesim</code>, adapters <i>(new · M1–M3)</i>",
     "<code>/usr/local/bin/kotl</code>: link to <code>/opt/kotl/bin/kotl</code>, so everyone has the command <i>(new · M2, deploy/kotl/install.sh)</i>",
-    "<code>/opt/kotl/plugin/</code> + <code>/opt/kotl/.claude-plugin/marketplace.json</code>: the Claude Code plugin, readable by everyone <i>(new · M5)</i>",
+    "<code>/opt/kotl/plugin/</code>, <code>/opt/kotl/plugin-band/</code> + <code>/opt/kotl/.claude-plugin/marketplace.json</code>: the Claude Code plugins, readable by everyone <i>(new · M5)</i>",
     "<b>Slurm:</b> the <code>kotl</code> account becomes an operator, so its guards can cancel a hung job <i>(M2)</i>",
     "<code>/var/lib/kotl/</code>: board registry kotl.db (owner kotl; folder M1, database M2) <i>(new · M1)</i>",
     "<code>/srv/kotl/</code>: jobs/ and out/&lt;user&gt;/&lt;job&gt;/, owner-only, deleted after 30 days (folders M1) <i>(new · M1)</i>",
@@ -2495,7 +2502,7 @@
    "path": "/opt/kotl/.claude-plugin/ (from the repo's .claude-plugin/)",
    "ext": "json",
    "desc": "Makes /opt/kotl a plugin marketplace everyone on the workstation can add",
-   "body": "{\n  \"name\": \"kotl\",\n  \"owner\": {\n    \"name\": \"Kotl\"\n  },\n  \"plugins\": [\n    {\n      \"name\": \"kotl\",\n      \"source\": \"./plugin\",\n      \"description\": \"Use the lab's FPGA boards through Kotl from Claude Code.\"\n    }\n  ],\n  \"description\": \"The lab's Kotl plugin: use the FPGA board queue from Claude Code.\"\n}"
+   "body": "{\n  \"name\": \"kotl\",\n  \"owner\": {\n    \"name\": \"Kotl\"\n  },\n  \"plugins\": [\n    {\n      \"name\": \"kotl\",\n      \"source\": \"./plugin\",\n      \"description\": \"Use the lab's FPGA boards through Kotl from Claude Code.\"\n    },\n    {\n      \"name\": \"kotl-band\",\n      \"source\": \"./plugin-band\",\n      \"description\": \"A live Kotl line above the Claude Code prompt: boards, queue, your jobs, notices.\"\n    }\n  ],\n  \"description\": \"The lab's Kotl plugin: use the FPGA board queue from Claude Code.\"\n}"
   }
  }
 }

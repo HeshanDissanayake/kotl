@@ -72,3 +72,17 @@ def test_fast_job_counts_as_started(fs, monkeypatch):
     assert cli.wait_running(5) is True
     monkeypatch.setattr(cli, "job_status", lambda job, tries=3: None)
     assert cli.wait_running(5) is False
+
+
+def test_status_json_for_displays(fs, monkeypatch, capsys):
+    import json as _json
+    fs.add(41, "alice", name="kotl-run"); fs.add(9, "bob", name="other-job")
+    answers = {"boards": [{"name": "vcu118-pc1", "state": "busy", "job_id": 41}],
+               "history": [{"job_id": 41, "result": None}, {"job_id": 40, "result": "passed"}],
+               "notices": [{"text": "x"}]}
+    monkeypatch.setattr(cli, "launch", lambda *a, **k: (0, _json.dumps(answers[a[0]]).encode(), ""))
+    assert cli.main(["status", "--json"]) == 0
+    s = _json.loads(capsys.readouterr().out)
+    assert [q["job"] for q in s["queue"]] == ["41"]                # only Kotl's jobs
+    assert [j["job_id"] for j in s["running_mine"]] == [41] and s["unread"] == 1
+    assert s["boards"][0]["state"] == "busy"

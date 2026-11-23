@@ -98,3 +98,20 @@ esac
 def test_session_start_is_quiet_without_kotl():
     r = sh("session-start.sh")
     assert r.returncode == 0 and r.stdout == ""
+
+
+def test_band_plugin_is_listed_and_shaped():
+    mk = json.loads((ROOT / ".claude-plugin/marketplace.json").read_text())
+    band = [p for p in mk["plugins"] if p["name"] == "kotl-band"][0]
+    root = ROOT / band["source"]
+    assert json.loads((root / ".claude-plugin/plugin.json").read_text())["name"] == "kotl-band"
+    assert json.loads((root / "hooks/hooks.json").read_text()) == {"modules": ["./register.tsx"]}
+    src = (root / "hooks/register.tsx").read_text()
+    assert "'kotl', 'status', '--json'" in src and "$.process.run" in src
+    assert "kotl run" not in src and "scancel" not in src          # read-only: never starts or stops a job
+
+
+@pytest.mark.skipif(not __import__("shutil").which("claude"), reason="Claude Code isn't installed here")
+def test_band_mod_tests_pass():
+    r = subprocess.run(["claude", "plugin", "test", str(ROOT / "plugin-band")], capture_output=True, text=True, timeout=300)
+    assert r.returncode == 0 and " 0 fail" in r.stdout + r.stderr, (r.stdout + r.stderr)[-2000:]

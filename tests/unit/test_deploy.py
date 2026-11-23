@@ -324,5 +324,7 @@ def test_install_publishes_the_plugin(tmp_path):
     assert os.access(tmp_path / "opt/kotl/plugin/hooks/pre-bash.sh", os.X_OK)
     mk = json.loads((tmp_path / "opt/kotl/.claude-plugin/marketplace.json").read_text())
     assert mk["plugins"][0]["source"] == "./plugin"
+    assert (tmp_path / "opt/kotl/plugin-band/hooks/register.tsx").exists()
+    assert not list((tmp_path / "opt/kotl/plugin-band").rglob("*.test.tsx"))
     dry("kotl/install.sh", "--undo", root=tmp_path)
     assert not (tmp_path / "opt/kotl/plugin").exists()
