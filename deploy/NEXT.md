@@ -3,7 +3,13 @@
 This file always holds only the current steps. **To run them: `bash ~/working_dir/kotl/deploy/next.sh`**
 (it asks before each step and logs everything to `.kotl/next.log`).
 
-## Why
+## The Claude band: fixed, needs the install
+
+The band never drew anything (CLI or VS Code): its `/kotl` command clashed with the kotl plugin's
+skill, and that stopped it before it read any data. Fixed (now `/kotl-band`). Step 1 below publishes
+it to `/opt/kotl`; then reload VS Code's window (or start a new `claude`).
+
+## XDMA (from before)
 
 Job 54 failed with `xdma_id != -1`. FireSim's infrasetup unloads the XDMA driver, flashes the FPGA,
 then loads it with `poll_mode=1`, but only if it isn't loaded already. Kotl's health check

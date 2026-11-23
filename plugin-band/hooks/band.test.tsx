@@ -15,14 +15,14 @@ const SNAP = {
 const BAND = { plugin: 'kotl-band', component: 'AbovePrompt', props: { hasSurvey: false } } as const
 
 test('the band shows the board, who holds it, the queue and unread notices', async ($, on) => {
-  on('command.register', () => ({ value: { command: 'kotl' } }))
+  on('command.register', () => ({ value: { command: 'kotl-band' } }))
   on('clock.every', () => ({ value: undefined }))
   on('clock.now', () => ({ value: 1_000 }))
   on('process.run', () => ({ value: { exitCode: 0, stdout: JSON.stringify(SNAP), stderr: '' } }))
   on('session.start', (_, e) => ({ cwd: e.cwd }))
 
   await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
-  await $.command.run({ command: 'kotl', args: '' })
+  await $.command.run({ command: 'kotl-band', args: '' })
 
   for (const surface of ['terminal', 'desktop', 'vscode', 'mobile'] as const) {
     const ui = await $.ui.mount({ ...BAND, surface })
@@ -38,8 +38,8 @@ test('the band shows the board, who holds it, the queue and unread notices', asy
   }
 })
 
-test('/kotl hide hides the band', async ($, on) => {
-  on('command.register', () => ({ value: { command: 'kotl' } }))
+test('/kotl-band hide hides the band', async ($, on) => {
+  on('command.register', () => ({ value: { command: 'kotl-band' } }))
   on('clock.every', () => ({ value: undefined }))
   on('clock.now', () => ({ value: 1_000 }))
   on('process.run', () => ({ value: { exitCode: 0, stdout: JSON.stringify(SNAP), stderr: '' } }))
@@ -50,7 +50,7 @@ test('/kotl hide hides the band', async ($, on) => {
   })
 
   await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
-  await $.command.run({ command: 'kotl', args: 'hide' })
+  await $.command.run({ command: 'kotl-band', args: 'hide' })
   const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
   expect((await ui.find({ type: 'Text', text: /vcu118-pc1/ }))).toBeFalsy()
   await ui.unmount()
@@ -58,14 +58,14 @@ test('/kotl hide hides the band', async ($, on) => {
 
 
 test('without Kotl the band says so instead of guessing', async ($, on) => {
-  on('command.register', () => ({ value: { command: 'kotl' } }))
+  on('command.register', () => ({ value: { command: 'kotl-band' } }))
   on('clock.every', () => ({ value: undefined }))
   on('clock.now', () => ({ value: 1_000 }))
   on('process.run', () => ({ value: { exitCode: 127, stdout: '', stderr: 'not found' } }))
   on('session.start', (_, e) => ({ cwd: e.cwd }))
 
   await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
-  expect((await $.command.run({ command: 'kotl', args: '' })).text).toBe('Kotl not reachable.')
+  expect((await $.command.run({ command: 'kotl-band', args: '' })).text).toBe('Kotl not reachable.')
   const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
   expect((await ui.find({ type: 'Text', text: /not reachable/ }))).toBeTruthy()
   await ui.unmount()
@@ -73,7 +73,7 @@ test('without Kotl the band says so instead of guessing', async ($, on) => {
 
 
 test('a terminal that can\'t reach Kotl is told why', async ($, on) => {
-  on('command.register', () => ({ value: { command: 'kotl' } }))
+  on('command.register', () => ({ value: { command: 'kotl-band' } }))
   on('clock.every', () => ({ value: undefined }))
   on('clock.now', () => ({ value: 1_000 }))
   const s = { ...SNAP, boards: [], problem: "this terminal can't reach Kotl: not in kotl-users yet (log in again, or restart tmux)" }
@@ -81,7 +81,7 @@ test('a terminal that can\'t reach Kotl is told why', async ($, on) => {
   on('session.start', (_, e) => ({ cwd: e.cwd }))
 
   await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
-  await $.command.run({ command: 'kotl', args: '' })
+  await $.command.run({ command: 'kotl-band', args: '' })
   const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
   expect((await ui.find({ type: 'Text', text: /not in kotl-users/ }))).toBeTruthy()
   await ui.unmount()
@@ -89,7 +89,7 @@ test('a terminal that can\'t reach Kotl is told why', async ($, on) => {
 
 
 test('your own running job shows as you, with its time against its ETA', async ($, on) => {
-  on('command.register', () => ({ value: { command: 'kotl' } }))
+  on('command.register', () => ({ value: { command: 'kotl-band' } }))
   on('clock.every', () => ({ value: undefined }))
   on('clock.now', () => ({ value: 1_000 }))
   const s = { ...SNAP, queue: [{ job: '41', user: 'alice', name: 'kotl-run', state: 'RUNNING', eta: '1:30:00', used: '1:05:10', start: 'N/A', reason: 'None' }],
@@ -97,10 +97,26 @@ test('your own running job shows as you, with its time against its ETA', async (
   on('process.run', () => ({ value: { exitCode: 0, stdout: JSON.stringify(s), stderr: '' } }))
   on('session.start', (_, e) => ({ cwd: e.cwd }))
   await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
-  await $.command.run({ command: 'kotl', args: '' })
+  await $.command.run({ command: 'kotl-band', args: '' })
   const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
   expect((await ui.find({ type: 'Text', text: /: you/ }))).toBeTruthy()
   expect((await ui.find({ type: 'Text', text: /you: 1 job$/ }))).toBeTruthy()
   expect((await ui.find({ type: 'Text', text: /41 run running 1h05m of 1h30m ETA/ }))).toBeTruthy()
+  await ui.unmount()
+})
+
+
+test('a refused command never stops the band (the kotl plugin owns /kotl)', async ($, on) => {
+  on('command.register', () => { throw new Error('"/kotl-band" refused: taken') })
+  on('clock.every', () => ({ value: undefined }))
+  on('clock.now', () => ({ value: 1_000 }))
+  on('process.run', () => ({ value: { exitCode: 0, stdout: JSON.stringify(SNAP), stderr: '' } }))
+  on('ui.log', () => ({ value: undefined }))
+  on('session.start', (_, e) => ({ cwd: e.cwd }))
+
+  await $.session.start({ cwd: '/', surface: 'vscode', isInteractive: true })
+  await new Promise(resolve => setTimeout(resolve, 20))
+  const ui = await $.ui.mount({ ...BAND, surface: 'vscode' })
+  expect((await ui.find({ type: 'Text', text: /vcu118-pc1/ }))).toBeTruthy()
   await ui.unmount()
 })

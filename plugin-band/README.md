@@ -5,7 +5,7 @@ for how long against their ETA, how many jobs are waiting, your own running jobs
 and board warnings. It reads `kotl status --json` every 30 seconds (on the workstation directly,
 on your own PC over `ssh $KOTL_SSH`) and never starts or stops anything.
 
-`/kotl` refreshes it now, `/kotl hide` hides it, `/kotl show` brings it back.
+`/kotl-band` refreshes it now, `/kotl-band hide` hides it, `/kotl-band show` brings it back.
 
 Install (on the workstation): `claude plugin marketplace add /opt/kotl` and
 `claude plugin install kotl-band@kotl`.

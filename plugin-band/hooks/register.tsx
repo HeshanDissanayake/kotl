@@ -72,20 +72,26 @@ async function fetchSnapshot($: EngineInterface): Promise<void> {
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     const started = await next(e)
-    await $.command.register({
-      name: 'kotl',
-      description: 'Kotl line above the prompt: /kotl (refresh), /kotl hide, /kotl show',
-    })
+    // the band's own work first: a refused command below must never stop it
     void poll($)
     $.clock.every(POLL_MS, () => poll($))
+    try {
+      // not /kotl: that name belongs to the kotl plugin's skill
+      await $.command.register({
+        name: 'kotl-band',
+        description: 'The Kotl band above the prompt: /kotl-band (refresh), /kotl-band hide, /kotl-band show',
+      })
+    } catch (err) {
+      $.ui.log(`kotl-band: /kotl-band not registered: ${String(err).slice(0, 200)}`, { to: 'debug' })
+    }
     return started
   })
 
-  on('command.run', { command: 'kotl' }, async ($, e) => {
+  on('command.run', { command: 'kotl-band' }, async ($, e) => {
     const arg = e.args.trim()
     if (arg === 'hide') {
       await update($, isHidden, () => true)
-      return { text: 'Kotl line hidden (/kotl show brings it back).' }
+      return { text: 'Kotl band hidden (/kotl-band show brings it back).' }
     }
     await update($, isHidden, () => false)
     await poll($)
