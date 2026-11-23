@@ -2308,7 +2308,7 @@
    "path": "/opt/kotl/",
    "ext": "sh",
    "desc": "Run by Slurm every 5 minutes: Kotl's checks as kotl; never fails, so it never drains the node",
-   "body": "#!/bin/sh\n# managed by kotl (deploy/kotl/install.sh)\n# Slurm runs this every 5 minutes (HealthCheckProgram= in slurm.conf), as root.\n# Kotl's checks run as kotl and only record warnings on the boards (kotl board list, kotl top).\n# It must always exit 0: a PC problem must never drain the workstation's own Slurm node.\n[ -x /opt/kotl/launch ] && timeout 120 runuser -u kotl -- /opt/kotl/launch health --quiet >/dev/null 2>&1\nexit 0"
+   "body": "#!/bin/sh\n# managed by kotl (deploy/kotl/install.sh)\n# Slurm runs this every 5 minutes (HealthCheckProgram= in slurm.conf), as root.\n# Kotl's checks run as kotl and only record warnings on the boards (kotl board list, kotl top).\n# It must always exit 0: a PC problem must never drain the workstation's own Slurm node.\n# Slurm runs this with an almost empty environment: no PATH, so set one\nPATH=/usr/sbin:/usr/bin:/sbin:/bin\nexport PATH\n[ -x /opt/kotl/launch ] && timeout 120 runuser -u kotl -- /opt/kotl/launch health --quiet >/dev/null 2>&1\nexit 0"
   },
   "notifsvc": {
    "name": "kotl-notifier.service",
@@ -2392,7 +2392,7 @@
    "path": "/opt/kotl/ (Epilog= in slurm.conf)",
    "ext": "sh",
    "desc": "Slurm runs this after every job, even if job.sh was killed: the end step again",
-   "body": "#!/bin/sh\n# managed by kotl (deploy/kotl/install.sh)\n# Slurm runs this as root after every job (Epilog= in slurm.conf): Kotl's end step again,\n# as a backup in case job.sh was killed. It does nothing for jobs that aren't Kotl's.\n# It must always exit 0, or Slurm drains the node.\n[ -x /opt/kotl/launch ] && runuser -u kotl -- /opt/kotl/launch end \"${SLURM_JOB_ID:-0}\" --epilog >/dev/null 2>&1\nexit 0"
+   "body": "#!/bin/sh\n# managed by kotl (deploy/kotl/install.sh)\n# Slurm runs this as root after every job (Epilog= in slurm.conf): Kotl's end step again,\n# as a backup in case job.sh was killed. It does nothing for jobs that aren't Kotl's.\n# It must always exit 0, or Slurm drains the node.\n# Slurm runs this with an almost empty environment: no PATH, so set one\nPATH=/usr/sbin:/usr/bin:/sbin:/bin\nexport PATH\n[ -x /opt/kotl/launch ] && runuser -u kotl -- /opt/kotl/launch end \"${SLURM_JOB_ID:-0}\" --epilog >/dev/null 2>&1\nexit 0"
   },
   "authkeys": {
    "name": "authorized_keys",

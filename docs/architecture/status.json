@@ -145,6 +145,10 @@
         {
           "date": "2026-11-22",
           "text": "epilog.sh now runs the end step (runuser kotl, launch end --epilog); always exits 0."
+        },
+        {
+          "date": "2026-11-23",
+          "text": "Fix: epilog.sh had no PATH under Slurm, so the backup end step never ran (job.sh's own end step always did the work). Now sets PATH."
         }
       ]
     },
@@ -461,9 +465,7 @@
         "message": "Health check: glibc on workstation vs each PC, and reachability",
         "date": "2026-11-23T19:10:02+11:00"
       },
-      "issues": [
-        "Installed copy still has the board-add bug until the next deploy/kotl/install.sh: don't re-run the install while a job holds the board."
-      ],
+      "issues": [],
       "log": [
         {
           "date": "2026-11-22",
@@ -749,6 +751,10 @@
         {
           "date": "2026-11-23",
           "text": "M4: card, driver, reachability; one XDMA reload (kotl-xdma-reload); idle failing board goes down with a Slurm license hold and an admin notice; recovery; busy boards untouched."
+        },
+        {
+          "date": "2026-11-23",
+          "text": "Run by hand on the real PC: card and XDMA OK, glibc warning, unleased-work warning. But Slurm never ran it: health.sh had no PATH (Slurm gives none). Fixed."
         }
       ]
     },

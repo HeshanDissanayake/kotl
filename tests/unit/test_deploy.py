@@ -302,3 +302,15 @@ def test_notifier_units_removed_on_undo(tmp_path):
     r = dry("kotl/install.sh", "--undo", root=tmp_path)
     assert "systemctl disable --now kotl-notifier.timer" in r.stdout
     assert not (tmp_path / "etc/systemd/system/kotl-notifier.timer").exists()
+
+
+@pytest.mark.feature("starter")
+@pytest.mark.parametrize("script", ["epilog.sh", "health.sh"])
+def test_slurm_hooks_work_without_path(script, tmp_path):
+    # Slurm starts Prolog/Epilog/HealthCheckProgram with no PATH: the scripts must set their own
+    fake = tmp_path / "opt"
+    text = (DEPLOY / script).read_text()
+    assert "PATH=/usr/sbin:/usr/bin:/sbin:/bin" in text
+    assert text.index("PATH=") < text.index("runuser")
+    r = subprocess.run(["/bin/sh", str(DEPLOY / script)], env={}, capture_output=True)
+    assert r.returncode == 0
