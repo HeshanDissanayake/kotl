@@ -115,3 +115,24 @@ def test_band_plugin_is_listed_and_shaped():
 def test_band_mod_tests_pass():
     r = subprocess.run(["claude", "plugin", "test", str(ROOT / "plugin-band")], capture_output=True, text=True, timeout=300)
     assert r.returncode == 0 and " 0 fail" in r.stdout + r.stderr, (r.stdout + r.stderr)[-2000:]
+
+
+VSCODE = ROOT / "vscode-kotl"
+
+
+@pytest.mark.skipif(not __import__("shutil").which("node"), reason="node isn't installed here")
+def test_vscode_extension_format_tests_pass():
+    r = subprocess.run(["node", "--test", "test/"], cwd=VSCODE, capture_output=True, text=True, timeout=120)
+    assert r.returncode == 0 and "# fail 0" in r.stdout, r.stdout[-2000:]
+
+
+def test_vscode_extension_packages(tmp_path):
+    import zipfile
+    r = subprocess.run(["python3", str(VSCODE / "build_vsix.py"), str(tmp_path)], capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr
+    names = zipfile.ZipFile(r.stdout.strip()).namelist()
+    assert {"extension.vsixmanifest", "extension/package.json", "extension/extension.js", "extension/format.js"} <= set(names)
+    pkg = json.loads((VSCODE / "package.json").read_text())
+    assert pkg["main"] == "./extension.js" and "onStartupFinished" in pkg["activationEvents"]
+    src = (VSCODE / "extension.js").read_text()
+    assert "'status', '--json'" in src and "scancel" not in src and "kotl run" not in src   # read-only

@@ -2,7 +2,7 @@
  "schema": 1,
  "title": "Kotl Architecture",
  "intro": "Teal is Kotl, our product. Purple is Slurm. Gray is everything else off the shelf, plus the hardware. The dot on each box is its build status; click a box for exactly what's happening.",
- "latest": "Latest: M5 code. The Kotl plugin for Claude Code (skill, session-start queue, a question before FireSim outside Kotl) and kotl-band, a live Kotl line above the prompt.",
+ "latest": "Latest: a VS Code extension puts Kotl in the status bar: who holds each board and their time of ETA, your jobs, notices; the hover has the queue.",
  "canvas": {
   "w": 1520,
   "h": 820
@@ -1419,6 +1419,7 @@
     "<b>SessionStart hook:</b> the queue, the boards and your unread notices (shown, not marked read).",
     "<b>PreToolUse hook (Bash):</b> asks before <code>firesim infrasetup/runworkload/kill</code> runs outside <code>kotl run</code>/<code>lease</code>, and says how to run it through the queue. A suggestion with a question, not a block.",
     "<b>kotl-band</b> (a second, optional plugin): a live Kotl band above the Claude Code prompt, from <code>kotl status --json</code> every 30 s. Line 1: each board, who holds it, the job's kind and time used of its ETA, how many wait. Line 2: your jobs: how many, each running one's time of its ETA, each waiting one's estimated start and place in line; unread notices. <code>/kotl</code> refreshes, <code>/kotl hide</code> hides. Read-only.",
+    "<b>VS Code extension</b> (<code>kotl.kotl-status</code>): the same in VS Code's status bar, in any window: each board, who holds it and their time of ETA, how many wait, your job count, unread notices; the hover lists the queue with estimated starts and your place in line; a click opens <code>kotl top</code>. Install: <code>code --install-extension /opt/kotl/kotl-status.vsix</code>.",
     "<b>Anywhere:</b> on the workstation it runs <code>kotl</code>; on a user's own PC it runs <code>ssh $KOTL_SSH kotl …</code> (set <code>KOTL_SSH</code> in <code>~/.claude/settings.json</code> under <code>env</code>)."
    ],
    "files": [
@@ -1439,6 +1440,9 @@
       },
       {
        "c": "claude plugin install kotl-band@kotl     # optional: the live line above the prompt"
+      },
+      {
+       "c": "code --install-extension /opt/kotl/kotl-status.vsix   # VS Code status bar"
       }
      ]
     },
@@ -2186,6 +2190,7 @@
     "<code>/opt/kotl/</code>: Kotl's code. M1: no-op <code>epilog.sh</code>, <code>health.sh</code>. M2: <code>lib/kotl/</code> (the package, root-owned), <code>launch</code>, <code>job.sh</code>, real <code>epilog.sh</code>, <code>bin/kotl</code>. M3: <code>bin/firesim</code>, adapters <i>(new · M1–M3)</i>",
     "<code>/usr/local/bin/kotl</code>: link to <code>/opt/kotl/bin/kotl</code>, so everyone has the command <i>(new · M2, deploy/kotl/install.sh)</i>",
     "<code>/opt/kotl/plugin/</code>, <code>/opt/kotl/plugin-band/</code> + <code>/opt/kotl/.claude-plugin/marketplace.json</code>: the Claude Code plugins, readable by everyone <i>(new · M5)</i>",
+    "<code>/opt/kotl/kotl-status.vsix</code>: the VS Code extension, for anyone to install <i>(new · M5)</i>",
     "<b>Slurm:</b> the <code>kotl</code> account becomes an operator, so its guards can cancel a hung job <i>(M2)</i>",
     "<code>/var/lib/kotl/</code>: board registry kotl.db (owner kotl; folder M1, database M2) <i>(new · M1)</i>",
     "<code>/srv/kotl/</code>: jobs/ and out/&lt;user&gt;/&lt;job&gt;/, owner-only, deleted after 30 days (folders M1) <i>(new · M1)</i>",

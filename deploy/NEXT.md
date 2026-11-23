@@ -20,3 +20,13 @@ loaded the wrong way from earlier, so check it once and reload it.
 
 Also: in your other Claude sessions, deactivate Kotl's test venv (`deactivate`) before running
 FireSim. Jobs 55 to 58 failed because that venv's Python hid Chipyard's.
+
+## VS Code
+
+The Kotl extension is installed in your VS Code (`kotl.kotl-status`). It needs the VS Code server
+restarted to show anything but "unreachable" (the same kotl-users reason): in VS Code run
+**Remote-SSH: Kill VS Code Server on Host**, then reconnect. Kotl then sits in the status bar
+(bottom left); hover it for the queue, click it for `kotl top`.
+
+Other users install it once with `code --install-extension /opt/kotl/kotl-status.vsix`
+(from a VS Code terminal).

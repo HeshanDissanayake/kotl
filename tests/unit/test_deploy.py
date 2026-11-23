@@ -326,6 +326,7 @@ def test_install_publishes_the_plugin(tmp_path):
     assert mk["plugins"][0]["source"] == "./plugin"
     assert (tmp_path / "opt/kotl/plugin-band/hooks/register.tsx").exists()
     assert not list((tmp_path / "opt/kotl/plugin-band").rglob("*.test.tsx"))
+    assert (tmp_path / "opt/kotl/kotl-status.vsix").stat().st_size > 1000
     dry("kotl/install.sh", "--undo", root=tmp_path)
     assert not (tmp_path / "opt/kotl/plugin").exists()
 

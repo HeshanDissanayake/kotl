@@ -79,6 +79,11 @@ install_all() {
   say "copied plugin-band/ to /opt/kotl/plugin-band"
   put_file /opt/kotl/.claude-plugin/marketplace.json 644 root:root <"$REPO/.claude-plugin/marketplace.json"
 
+  # the VS Code extension, as a .vsix anyone can install (code --install-extension)
+  local vsix
+  vsix=$(python3 "$REPO/vscode-kotl/build_vsix.py" "$(mktemp -d)")
+  put_file /opt/kotl/kotl-status.vsix 644 root:root <"$vsix"
+
   # kotl cancels hung jobs (guards) and holds a down board's license (reservations): Slurm admin
   if [ "$KOTL_DRY_RUN" = 1 ] || [ -z "$(sacctmgr -n -P show user kotl format=user 2>/dev/null)" ]; then
     run sacctmgr -i add user name=kotl account=kotl adminlevel=Admin
@@ -114,6 +119,7 @@ undo_all() {
   say "removed /opt/kotl/lib"
   rm -rf "$(p /opt/kotl/plugin)" "$(p /opt/kotl/plugin-band)"     # under the dry-run folder in a dry run
   remove_file /opt/kotl/.claude-plugin/marketplace.json
+  remove_file /opt/kotl/kotl-status.vsix
   remove_file /opt/kotl/launch
   remove_file /opt/kotl/bin/kotl
   remove_file /etc/ssh/ssh_config.d/kotl.conf
