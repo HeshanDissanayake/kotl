@@ -69,7 +69,19 @@ which python3        # must be /research/$USER/chipyard/.conda-env/bin/python3
 
 ---
 
-## 5. Make the smoke-test config (once)
+## 5. Build the linux-poweroff workload (once)
+
+FireSim makes its disk image (`poweroffnode.ext2`) from your existing `br-base.img`.
+Job 36 failed because this hadn't been built yet.
+
+```sh
+cd /research/$USER/chipyard/sims/firesim/deploy/workloads
+make linux-poweroff
+ls linux-poweroff/        # must list poweroffnode.ext2
+cd ..
+```
+
+## 5b. Make the smoke-test config (once)
 
 Your `config_runtime.yaml` already has the stock design
 (`xilinx_vcu118_firesim_rocket_singlecore_4GB_no_nic`) and the run farm

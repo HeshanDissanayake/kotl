@@ -929,6 +929,10 @@
         {
           "date": "2026-11-23",
           "text": "M3-SETUP.md rewritten with exact steps (venv vs conda python, smoke config from config_runtime.yaml). Jobs 30 and 34 failed in the user's environment; Kotl freed the board correctly both times."
+        },
+        {
+          "date": "2026-11-23",
+          "text": "Job 36: the user's own FireSim logged in with the job key and copied the driver to the PC; it stopped on a missing workload image (linux-poweroff not built). Kotl freed the board. kotl top checked in a pseudo-terminal."
         }
       ]
     },
