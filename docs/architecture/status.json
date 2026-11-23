@@ -925,6 +925,10 @@
         {
           "date": "2026-11-23",
           "text": "Band, user request: line 1 each board with who holds it, kind and time used of their ETA, and how many wait; line 2 your job count, each running job's time of its ETA, each waiting job's estimated start and place in line, unread notices."
+        },
+        {
+          "date": "2026-11-23",
+          "text": "Band tests now draw on all four surfaces (terminal, desktop, vscode, mobile). The workstation's VS Code server runs Claude Code 2.1.330, the same build as the CLI."
         }
       ]
     },

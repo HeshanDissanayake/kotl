@@ -13,6 +13,10 @@ Kotl line had almost nothing to show.
 Detach from tmux and run `tmux kill-server` (this closes ALL your tmux windows), or log out and
 back in. New shells then have the `kotl-users` group.
 
+Same for VS Code: its server on the workstation also started before M1. In VS Code run
+**Remote-SSH: Kill VS Code Server on Host**, then reconnect. The Kotl band then shows in the
+Claude panel too.
+
 ## 1. Update Kotl and the plugins (sudo)
 
 The Kotl line now says plainly when a terminal can't reach Kotl, instead of staying almost empty.

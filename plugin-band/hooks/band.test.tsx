@@ -24,7 +24,7 @@ test('the band shows the board, who holds it, the queue and unread notices', asy
   await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
   await $.command.run({ command: 'kotl', args: '' })
 
-  for (const surface of ['terminal', 'desktop'] as const) {
+  for (const surface of ['terminal', 'desktop', 'vscode', 'mobile'] as const) {
     const ui = await $.ui.mount({ ...BAND, surface })
     expect((await ui.find({ type: 'Text', text: /vcu118-pc1/ }))?.text).toContain('vcu118-pc1 busy')
     expect((await ui.find({ type: 'Text', text: /: bob/ }))).toBeTruthy()
