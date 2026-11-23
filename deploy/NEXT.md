@@ -4,51 +4,15 @@ This file always holds only the current steps. **To run them: `bash ~/working_di
 (it asks before each step and logs everything to `.kotl/next.log`; Claude sees the log with your
 next message). This file explains them.
 
-## 0. What runs as virtex-host on the PC? (read-only)
+## 1. Update kotl-keys on the PC, then Kotl on the workstation (sudo on both)
 
-The health check warns "something runs as virtex-host on the PC with no Kotl job holding the
-board". This shows what it is:
+- kotl-keys: "something runs as virtex-host" now counts only remote work (SSH sessions, screen,
+  tmux, FireSim drivers), not the PC's desktop login. That stops the long warning, and it lets a
+  lease's idle guard work at all.
+- Kotl: `kotl top` no longer crashes on terminals that can't hide the cursor; long process lists
+  are capped.
 
-```sh
-ssh virtex-host@192.168.1.2 'ps -u virtex-host -o pid,etime,cmd --sort=start_time'
-```
+## 2. Say "ok PC" in your next message if Claude may run its two short tests
 
-Your own `ssh` login shows up too (sshd, bash, ps). Anything else, such as `screen`,
-`FireSim-xilinx_vcu118`, or a VS Code server, is what the warning means.
-
-M4 is installed and the health check runs by itself every 5 minutes. Three live tests are left.
-
-## 0b. Update: the warning names what runs (sudo on the PC and the workstation)
-
-```sh
-cd ~/working_dir/kotl
-scp deploy/pc/setup.sh deploy/pc/kotl-keys virtex-host@192.168.1.2:/tmp/
-ssh -t virtex-host@192.168.1.2 "sudo bash /tmp/setup.sh --keys-helper /tmp/kotl-keys && rm /tmp/setup.sh /tmp/kotl-keys"
-sudo deploy/kotl/install.sh --board vcu118-pc1=vcu118@vcu118-pc1
-```
-
-After the next health run, `kotl board list` ends the warning with what runs, e.g.
-`…holding the board: bash, screen, sshd x2`. `kotl top` now wraps long warnings.
-
-## 1. Say "ok PC" so Claude may run these two itself
-
-- **ETA notice:** `kotl run --eta 1m -- sleep 100`. It passes its 1-minute ETA, and the
-  notifier should tell Claude within a minute. Holds the board about 2 minutes; adds and removes a
-  job key on the PC.
-- **Console attach:** a short `kotl lease`, then `kotl attach`. With no FireSim running it should
-  say there's no fsim0 console and list the PC's screens. Then `kotl release`. About 30 seconds.
-
-## 2. The driver-failure test (you, sudo on the PC), when nobody is running FireSim
-
-This unloads the XDMA driver on purpose. Kotl's next health check (within 5 minutes) should try
-one reload, find the driver back, and keep the board up.
-
-```sh
-ssh -t virtex-host@192.168.1.2 'sudo modprobe -r xdma && lsmod | grep -c "^xdma " ; echo unloaded'
-```
-
-Then tell Claude. It watches `kotl board list` for the reload note and the driver coming back.
-If the reload can't bring the driver back, the board goes down, queued jobs wait, and you get
-a notice. That's the other half of the test, and the fix is `sudo modprobe xdma` on the PC.
-
-Skip step 2 if you'd rather not break the driver now.
+- ETA notice: `kotl run --eta 1m -- sleep 100` (about 2 minutes on the board).
+- Console attach: a short lease, then `kotl attach` (about 30 seconds).
