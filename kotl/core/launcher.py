@@ -336,8 +336,9 @@ def main(argv=None):
     lg = sub.add_parser("logs"); lg.add_argument("job", type=int); lg.add_argument("-f", "--follow", action="store_true")
     sub.add_parser("fetch").add_argument("job", type=int)
     sub.add_parser("status").add_argument("job", type=int)
-    sub.add_parser("history").add_argument("--limit", type=int, default=20)
-    sub.add_parser("boards")
+    hi = sub.add_parser("history"); hi.add_argument("--limit", type=int, default=20)
+    hi.add_argument("--json", action="store_true")
+    sub.add_parser("boards").add_argument("--json", action="store_true")
     ba = sub.add_parser("board-add"); ba.add_argument("name"); ba.add_argument("type"); ba.add_argument("host")
     sub.add_parser("board-drain").add_argument("name")
     sub.add_parser("board-resume").add_argument("name")
@@ -373,9 +374,13 @@ def main(argv=None):
             j = L.own_job(a.job)
             print(json.dumps(results.read_status(L.dir_for(j)), indent=2))
         elif a.cmd == "history":
-            print(L.history(a.limit))
+            if a.json:
+                mine = None if L.who in ("root", "kotl") else L.who
+                print(json.dumps(L.reg.jobs(mine, a.limit)))
+            else:
+                print(L.history(a.limit))
         elif a.cmd == "boards":
-            print(L.boards_table())
+            print(json.dumps(L.reg.boards()) if a.json else L.boards_table())
         elif a.cmd == "board-add":
             L.need_admin(); L.reg.add_board(a.name, a.host, a.type); print(L.boards_table())
         elif a.cmd == "board-drain":

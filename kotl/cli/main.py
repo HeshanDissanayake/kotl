@@ -4,6 +4,7 @@
   kotl lease --eta 1h [--max 2h]       hold a board until you release it
   kotl release [JOB]                   end your lease
   kotl status                          the queue and every board
+  kotl top                             the same, live, with your jobs (l logs, c cancel, r release, f fetch)
   kotl cancel JOB                      cancel your job (Slurm allows only the owner or root)
   kotl history | logs JOB [-f] | fetch JOB [--to DIR]
   kotl board list | add NAME TYPE HOST | drain NAME | resume NAME    (changes: admin only)
@@ -201,6 +202,7 @@ def main(argv=None):
     le.add_argument("--eta", required=True); le.add_argument("--max")
     sub.add_parser("release").add_argument("job", nargs="?", type=int)
     sub.add_parser("status")
+    sub.add_parser("top", help="live view of boards, queue and your jobs")
     sub.add_parser("cancel").add_argument("job", type=int)
     sub.add_parser("history").add_argument("--limit", type=int, default=20)
     lg = sub.add_parser("logs"); lg.add_argument("job", type=int); lg.add_argument("-f", "--follow", action="store_true")
@@ -220,6 +222,9 @@ def main(argv=None):
         return cmd_release(a)
     if a.cmd == "status":
         return cmd_status(a)
+    if a.cmd == "top":
+        from kotl.cli import top
+        return top.main()
     if a.cmd == "cancel":
         return cmd_cancel(a)
     if a.cmd == "history":

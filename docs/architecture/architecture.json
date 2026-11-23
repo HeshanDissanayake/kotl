@@ -2,7 +2,7 @@
  "schema": 1,
  "title": "Kotl Architecture",
  "intro": "Teal is Kotl, our product. Purple is Slurm. Gray is everything else off the shelf, plus the hardware. The dot on each box is its build status; click a box for exactly what's happening.",
- "latest": "Latest: generic design. Users run their own tools (FireSim included) inside kotl run or kotl lease; Kotl enforces an exit plan, not FireSim. The FireSim adapter is now admin-only (later).",
+ "latest": "Latest: kotl top, a live terminal view of the boards, the queue and your jobs.",
  "canvas": {
   "w": 1520,
   "h": 820
@@ -476,6 +476,18 @@
    "sub": [
     "job keys · end step"
    ]
+  },
+  {
+   "id": "top",
+   "owner": "kotl",
+   "x": 673,
+   "y": 520,
+   "w": 170,
+   "h": 70,
+   "title": "kotl top",
+   "sub": [
+    "live terminal view"
+   ]
   }
  ],
  "edges": [
@@ -809,9 +821,9 @@
    "style": "solid",
    "label": {
     "text": "grant · revoke",
-    "x": 760,
-    "y": 524,
-    "anchor": "middle"
+    "x": 958,
+    "y": 515,
+    "anchor": "start"
    }
   },
   {
@@ -824,6 +836,19 @@
     "text": "job key",
     "x": 1165,
     "y": 549,
+    "anchor": "middle"
+   }
+  },
+  {
+   "id": "e-top-registry",
+   "from": "top",
+   "to": "registry",
+   "d": "M690,520 V485 H620 V470",
+   "style": "solid",
+   "label": {
+    "text": "reads",
+    "x": 655,
+    "y": 481,
     "anchor": "middle"
    }
   }
@@ -1443,6 +1468,9 @@
       },
       {
        "k": "# core"
+      },
+      {
+       "c": "kotl top                       # live view (q quits)"
       },
       {
        "c": "kotl status | history | cancel <job> | logs <job> -f | fetch <job>"
@@ -2147,6 +2175,52 @@
    "files": [
     "workloadjson",
     "runtestsh"
+   ]
+  },
+  "top": {
+   "kind": "Kotl · core",
+   "kindClass": "ko",
+   "title": "kotl top (terminal UI)",
+   "what": "A live screen of the boards, the queue and your own jobs, refreshed every 2 seconds. Plain terminal, nothing to install.",
+   "bullets": [
+    "<b>Boards:</b> state, which job holds each one, its owner, time used and ETA.",
+    "<b>Queue:</b> who is waiting, the estimated start, and why (e.g. waiting for the board).",
+    "<b>Your jobs:</b> running and recent ones with their results. Keys: <code>l</code> logs, <code>c</code> cancel, <code>r</code> release a lease, <code>f</code> fetch results.",
+    "Read-only for everyone else's jobs. It reads through the launcher's own checks (<code>launch boards --json</code>, <code>history --json</code>) and Slurm's queue, so it can see nothing <code>kotl status</code> can't."
+   ],
+   "term": [
+    {
+     "host": "you@ws",
+     "lines": [
+      {
+       "c": "kotl top"
+      },
+      {
+       "o": " Kotl top · you                              10:40:00 · q quit"
+      },
+      {
+       "o": " BOARDS"
+      },
+      {
+       "o": "  vcu118-pc1   busy         job 41  you   run   used 12:03  ETA 30:00"
+      },
+      {
+       "o": " QUEUE"
+      },
+      {
+       "o": "      42 bob   lease  waiting  ~10:52 (Licenses)  ETA 1:00:00"
+      },
+      {
+       "o": " YOUR JOBS"
+      },
+      {
+       "o": " >    41 run    running   12m  firesim runworkload -c x.yaml"
+      },
+      {
+       "o": " [l] logs  [c] cancel  [r] release  [f] fetch  [up/down] pick"
+      }
+     ]
+    }
    ]
   }
  },

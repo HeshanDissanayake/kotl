@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "updated": "2026-11-21T16:09:03Z",
-  "repo_commit": "15abe0d46f5710df6f565dbb3331033ff44380f0",
+  "updated": "2026-11-23T06:18:44Z",
+  "repo_commit": "1c94bf86ab0e307e25b94e346b5f2da5647d9f01",
   "watch": [
     "kotl/",
     "deploy/",
@@ -44,7 +44,7 @@
         "unit": {
           "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-21T16:09:03Z"
+          "ran_at": "2026-11-23T06:18:44Z"
         },
         "hardware": null
       },
@@ -78,7 +78,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-21T16:09:03Z"
+          "ran_at": "2026-11-23T06:18:44Z"
         },
         "hardware": null
       },
@@ -116,7 +116,7 @@
         "unit": {
           "passed": 6,
           "failed": 0,
-          "ran_at": "2026-11-21T16:09:03Z"
+          "ran_at": "2026-11-23T06:18:44Z"
         },
         "hardware": null
       },
@@ -157,7 +157,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-21T16:09:03Z"
+          "ran_at": "2026-11-23T06:18:44Z"
         },
         "hardware": null
       },
@@ -190,7 +190,7 @@
         "unit": {
           "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-21T16:09:03Z"
+          "ran_at": "2026-11-23T06:18:44Z"
         },
         "hardware": null
       },
@@ -232,7 +232,7 @@
         "unit": {
           "passed": 14,
           "failed": 0,
-          "ran_at": "2026-11-21T16:09:03Z"
+          "ran_at": "2026-11-23T06:18:44Z"
         },
         "hardware": null
       },
@@ -277,12 +277,12 @@
         "unit": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-21T16:09:03Z"
+          "ran_at": "2026-11-23T06:18:44Z"
         },
         "hardware": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-21T16:09:03Z"
+          "ran_at": "2026-11-23T06:18:44Z"
         }
       },
       "last_commit": {
@@ -322,12 +322,12 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-21T16:09:03Z"
+          "ran_at": "2026-11-23T06:18:44Z"
         },
         "hardware": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-21T16:09:03Z"
+          "ran_at": "2026-11-23T06:18:44Z"
         }
       },
       "last_commit": {
@@ -367,18 +367,18 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-21T16:09:03Z"
+          "ran_at": "2026-11-23T06:18:44Z"
         },
         "hardware": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-21T16:09:03Z"
+          "ran_at": "2026-11-23T06:18:44Z"
         }
       },
       "last_commit": {
-        "hash": "15abe0d46f5710df6f565dbb3331033ff44380f0",
-        "message": "M3: job keys and the firesim wrapper (not yet installed)",
-        "date": "2026-11-22T02:42:53+11:00"
+        "hash": "d7d5eac7e8d0cbade72b95fd64d600323a26b90a",
+        "message": "Generic redesign: users run their own tools inside kotl run / kotl lease",
+        "date": "2026-11-22T03:09:03+11:00"
       },
       "issues": [],
       "log": [
@@ -425,9 +425,9 @@
         "hardware": null
       },
       "last_commit": {
-        "hash": "15abe0d46f5710df6f565dbb3331033ff44380f0",
-        "message": "M3: job keys and the firesim wrapper (not yet installed)",
-        "date": "2026-11-22T02:42:53+11:00"
+        "hash": "d7d5eac7e8d0cbade72b95fd64d600323a26b90a",
+        "message": "Generic redesign: users run their own tools inside kotl run / kotl lease",
+        "date": "2026-11-22T03:09:03+11:00"
       },
       "issues": [],
       "log": [
@@ -449,7 +449,7 @@
         "unit": {
           "passed": 6,
           "failed": 0,
-          "ran_at": "2026-11-21T16:09:03Z"
+          "ran_at": "2026-11-23T06:18:44Z"
         },
         "hardware": null
       },
@@ -490,14 +490,14 @@
         "unit": {
           "passed": 37,
           "failed": 0,
-          "ran_at": "2026-11-21T16:09:03Z"
+          "ran_at": "2026-11-23T06:18:44Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "15abe0d46f5710df6f565dbb3331033ff44380f0",
-        "message": "M3: job keys and the firesim wrapper (not yet installed)",
-        "date": "2026-11-22T02:42:53+11:00"
+        "hash": "d7d5eac7e8d0cbade72b95fd64d600323a26b90a",
+        "message": "Generic redesign: users run their own tools inside kotl run / kotl lease",
+        "date": "2026-11-22T03:09:03+11:00"
       },
       "issues": [],
       "log": [
@@ -532,6 +532,10 @@
         {
           "date": "2026-11-22",
           "text": "Exit plan enforced (no time limit = refused; lease always idle-guarded via kotl-keys busy); KOTL RESULT marker read from any command's output; start prints board= and pc= for job.sh."
+        },
+        {
+          "date": "2026-11-23",
+          "text": "boards --json and history --json for kotl top."
         }
       ]
     },
@@ -548,14 +552,14 @@
         "unit": {
           "passed": 17,
           "failed": 0,
-          "ran_at": "2026-11-21T16:09:03Z"
+          "ran_at": "2026-11-23T06:18:44Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "15abe0d46f5710df6f565dbb3331033ff44380f0",
-        "message": "M3: job keys and the firesim wrapper (not yet installed)",
-        "date": "2026-11-22T02:42:53+11:00"
+        "hash": "d7d5eac7e8d0cbade72b95fd64d600323a26b90a",
+        "message": "Generic redesign: users run their own tools inside kotl run / kotl lease",
+        "date": "2026-11-22T03:09:03+11:00"
       },
       "issues": [],
       "log": [
@@ -605,7 +609,7 @@
         "unit": {
           "passed": 4,
           "failed": 0,
-          "ran_at": "2026-11-21T16:09:03Z"
+          "ran_at": "2026-11-23T06:18:44Z"
         },
         "hardware": null
       },
@@ -643,9 +647,9 @@
         "hardware": null
       },
       "last_commit": {
-        "hash": "15abe0d46f5710df6f565dbb3331033ff44380f0",
-        "message": "M3: job keys and the firesim wrapper (not yet installed)",
-        "date": "2026-11-22T02:42:53+11:00"
+        "hash": "d7d5eac7e8d0cbade72b95fd64d600323a26b90a",
+        "message": "Generic redesign: users run their own tools inside kotl run / kotl lease",
+        "date": "2026-11-22T03:09:03+11:00"
       },
       "issues": [],
       "log": [
@@ -688,7 +692,7 @@
         "unit": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-21T16:09:03Z"
+          "ran_at": "2026-11-23T06:18:44Z"
         },
         "hardware": null
       },
@@ -881,14 +885,14 @@
         "unit": {
           "passed": 21,
           "failed": 0,
-          "ran_at": "2026-11-21T16:09:03Z"
+          "ran_at": "2026-11-23T06:18:44Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "15abe0d46f5710df6f565dbb3331033ff44380f0",
-        "message": "M3: job keys and the firesim wrapper (not yet installed)",
-        "date": "2026-11-22T02:42:53+11:00"
+        "hash": "1c94bf86ab0e307e25b94e346b5f2da5647d9f01",
+        "message": "M3-SETUP: exact steps for this lab (venv vs conda, smoke config, checks)",
+        "date": "2026-11-23T17:12:59+11:00"
       },
       "issues": [
         "Soft lockdown: password logins to virtex-host bypass the queue until full lockdown (user's choice for now)."
@@ -969,6 +973,31 @@
         {
           "date": "2026-11-23",
           "text": "Planned (user goal): one command runs every --undo in reverse and removes the PC side; --purge also packages, data, accounts. Tested: install then uninstall leaves nothing."
+        }
+      ]
+    },
+    "top": {
+      "title": "kotl top (terminal UI)",
+      "status": "tested",
+      "milestone": "M3",
+      "now": "Code and unit tests done; ships with the next deploy/kotl/install.sh.",
+      "code": [
+        "kotl/cli/top.py"
+      ],
+      "tests": {
+        "unit": {
+          "passed": 5,
+          "failed": 0,
+          "ran_at": "2026-11-23T06:18:44Z"
+        },
+        "hardware": null
+      },
+      "last_commit": null,
+      "issues": [],
+      "log": [
+        {
+          "date": "2026-11-23",
+          "text": "New part (user request): kotl top, a curses view of boards, queue and your jobs, with l/c/r/f keys; launcher boards/history gained --json."
         }
       ]
     }
