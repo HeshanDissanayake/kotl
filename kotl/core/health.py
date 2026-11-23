@@ -45,7 +45,8 @@ def check_board(board, ssh=ssh_mod, here=None):
         return [f"unreachable: {e}"]
     if there != here:
         return [f"glibc differs: workstation {here}, PC {there}. FireSim drivers built on the "
-                f"workstation won't start on this PC; upgrade libc6 on the PC to match"]
+                f"workstation won't start on this PC: upgrade libc6 on the PC to match, or remove the bundled "
+                f"glibc after infrasetup (deploy/examples/firesim-smoke.sh --use-pc-glibc)"]
     return []
 
 

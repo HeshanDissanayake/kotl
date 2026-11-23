@@ -2,7 +2,7 @@
  "schema": 1,
  "title": "Kotl Architecture",
  "intro": "Teal is Kotl, our product. Purple is Slurm. Gray is everything else off the shelf, plus the hardware. The dot on each box is its build status; click a box for exactly what's happening.",
- "latest": "Latest: first health check. kotl compares glibc on the workstation and each PC and shows a warning if they differ (the cause of job 47's failure).",
+ "latest": "Latest: M3 done. A real Linux boot on the VCU118 (job 49) ran through kotl run with job keys and passed; the board was freed the moment FireSim finished.",
  "canvas": {
   "w": 1520,
   "h": 820

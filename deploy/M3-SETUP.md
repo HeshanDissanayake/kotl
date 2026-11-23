@@ -106,8 +106,11 @@ Expect three lines:
 In the same shell (still in `deploy/`):
 
 ```sh
-kotl run --eta 30m -- sh -c "firesim infrasetup -c config_runtime_kotl_smoke.yaml && firesim runworkload -c config_runtime_kotl_smoke.yaml"
+kotl run --eta 30m -- ~/working_dir/kotl/deploy/examples/firesim-smoke.sh --use-pc-glibc config_runtime_kotl_smoke.yaml
 ```
+
+`--use-pc-glibc` removes the glibc libraries FireSim bundled from the workstation, so the
+driver uses the PC's own (needed while their glibc versions differ; `kotl board check` says).
 
 What happens: `kotl: job N queued`, FireSim's infrasetup output (flashes the board), then
 runworkload boots Linux, which powers off. runworkload returns, and you see
