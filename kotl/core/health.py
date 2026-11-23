@@ -44,9 +44,15 @@ def check_board(board, ssh=ssh_mod, here=None):
     except ssh_mod.SSHError as e:
         return [f"unreachable: {e}"]
     if there != here:
+        base_here, base_there = here.split("-")[0], there.split("-")[0]
+        if base_here != base_there:
+            fix = (f"the PC has an older glibc release ({base_there} vs {base_here}), which a package update "
+                   f"can't close: remove the bundled glibc after infrasetup (deploy/examples/firesim-smoke.sh "
+                   f"--use-pc-glibc), or bring the PC to the workstation's OS release")
+        else:
+            fix = "upgrade libc6 on the PC to match, or remove the bundled glibc after infrasetup (--use-pc-glibc)"
         return [f"glibc differs: workstation {here}, PC {there}. FireSim drivers built on the "
-                f"workstation won't start on this PC: upgrade libc6 on the PC to match, or remove the bundled "
-                f"glibc after infrasetup (deploy/examples/firesim-smoke.sh --use-pc-glibc)"]
+                f"workstation won't start on this PC as they are: {fix}"]
     return []
 
 

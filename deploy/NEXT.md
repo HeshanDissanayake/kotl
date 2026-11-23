@@ -2,22 +2,13 @@
 
 This file always holds only the current steps. Copy commands from here.
 
-M3 is done: job 49 booted Linux on the VCU118 through Kotl and passed.
+Nothing right now. M3 is done and the health check is live (`kotl board list` shows its warnings).
 
-## 1. Install the health check (sudo on the workstation)
+About the glibc warning: the PC runs Ubuntu 22.04 (glibc 2.35), the workstation 24.04 (glibc 2.39).
+A package update on the PC can't close that gap. Keep using the workaround for FireSim runs:
 
 ```sh
-cd ~/working_dir/kotl
-sudo deploy/kotl/install.sh --board vcu118-pc1=vcu118@vcu118-pc1
-kotl board check
+kotl run --eta 30m -- ~/working_dir/kotl/deploy/examples/firesim-smoke.sh --use-pc-glibc <your runtime config>
 ```
 
-`kotl board check` warns that glibc differs between the workstation and the PC. Choose one:
-- keep working around it: run FireSim with `deploy/examples/firesim-smoke.sh --use-pc-glibc`
-  (or delete the bundled glibc yourself after infrasetup);
-- or upgrade the PC so the warning goes away:
-  `ssh -t virtex-host@192.168.1.2 'sudo apt-get update && sudo apt-get install --only-upgrade -y libc6 libc-bin'`
-
-## 2. Tell Claude
-
-When the install is done, so it can start M4.
+(or remove the bundled glibc yourself after infrasetup). Claude is working on M4.

@@ -1623,7 +1623,7 @@
        "c": "kotl board check"
       },
       {
-       "o": "vcu118-pc1: glibc differs: workstation 2.39-0ubuntu8.12, PC 2.39-0ubuntu8.9. FireSim drivers built on the workstation won't start on this PC; upgrade libc6 on the PC to match"
+       "o": "vcu118-pc1: glibc differs: workstation 2.39-0ubuntu8.12, PC 2.35-0ubuntu3.13. … the PC has an older glibc release (2.35 vs 2.39), which a package update can't close: remove the bundled glibc after infrasetup (--use-pc-glibc), or bring the PC to the workstation's OS release"
       },
       {
        "c": "kotl board list"

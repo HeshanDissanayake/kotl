@@ -45,6 +45,11 @@ def test_job_47_case_is_a_warning():
     assert len(w) == 1 and "workstation 2.39-0ubuntu8.12, PC 2.39-0ubuntu8.9" in w[0] and "upgrade libc6" in w[0]
 
 
+def test_older_glibc_release_needs_the_workaround():
+    w = health.check_board({"host": "pc"}, FakeSSH("ldd (Ubuntu GLIBC 2.35-0ubuntu3.13) 2.35\n"), here="2.39-0ubuntu8.12")
+    assert "older glibc release (2.35 vs 2.39)" in w[0] and "--use-pc-glibc" in w[0] and "upgrade libc6" not in w[0]
+
+
 def test_unreachable_is_a_warning():
     assert health.check_board({"host": "pc"}, FakeSSH(fail=True), here="x")[0].startswith("unreachable")
 

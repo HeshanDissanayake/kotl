@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "updated": "2026-11-23T08:20:13Z",
-  "repo_commit": "997a70079771128e7229376dccf0e7d315081b0b",
+  "updated": "2026-11-23T08:23:20Z",
+  "repo_commit": "136dba22aa7636c5599cf2ba9f6ea500f185db17",
   "watch": [
     "kotl/",
     "deploy/",
@@ -47,7 +47,7 @@
         "unit": {
           "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-23T08:20:13Z"
+          "ran_at": "2026-11-23T08:23:20Z"
         },
         "hardware": null
       },
@@ -81,7 +81,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-23T08:20:13Z"
+          "ran_at": "2026-11-23T08:23:20Z"
         },
         "hardware": null
       },
@@ -119,7 +119,7 @@
         "unit": {
           "passed": 6,
           "failed": 0,
-          "ran_at": "2026-11-23T08:20:13Z"
+          "ran_at": "2026-11-23T08:23:20Z"
         },
         "hardware": null
       },
@@ -160,7 +160,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-23T08:20:13Z"
+          "ran_at": "2026-11-23T08:23:20Z"
         },
         "hardware": null
       },
@@ -193,7 +193,7 @@
         "unit": {
           "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-23T08:20:13Z"
+          "ran_at": "2026-11-23T08:23:20Z"
         },
         "hardware": null
       },
@@ -235,7 +235,7 @@
         "unit": {
           "passed": 14,
           "failed": 0,
-          "ran_at": "2026-11-23T08:20:13Z"
+          "ran_at": "2026-11-23T08:23:20Z"
         },
         "hardware": null
       },
@@ -280,12 +280,12 @@
         "unit": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-23T08:20:13Z"
+          "ran_at": "2026-11-23T08:23:20Z"
         },
         "hardware": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-23T08:20:13Z"
+          "ran_at": "2026-11-23T08:23:20Z"
         }
       },
       "last_commit": {
@@ -325,12 +325,12 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-23T08:20:13Z"
+          "ran_at": "2026-11-23T08:23:20Z"
         },
         "hardware": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-23T08:20:13Z"
+          "ran_at": "2026-11-23T08:23:20Z"
         }
       },
       "last_commit": {
@@ -370,12 +370,12 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-23T08:20:13Z"
+          "ran_at": "2026-11-23T08:23:20Z"
         },
         "hardware": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-23T08:20:13Z"
+          "ran_at": "2026-11-23T08:23:20Z"
         }
       },
       "last_commit": {
@@ -452,7 +452,7 @@
         "unit": {
           "passed": 6,
           "failed": 0,
-          "ran_at": "2026-11-23T08:20:13Z"
+          "ran_at": "2026-11-23T08:23:20Z"
         },
         "hardware": null
       },
@@ -497,7 +497,7 @@
         "unit": {
           "passed": 37,
           "failed": 0,
-          "ran_at": "2026-11-23T08:20:13Z"
+          "ran_at": "2026-11-23T08:23:20Z"
         },
         "hardware": null
       },
@@ -559,7 +559,7 @@
         "unit": {
           "passed": 17,
           "failed": 0,
-          "ran_at": "2026-11-23T08:20:13Z"
+          "ran_at": "2026-11-23T08:23:20Z"
         },
         "hardware": null
       },
@@ -616,7 +616,7 @@
         "unit": {
           "passed": 4,
           "failed": 0,
-          "ran_at": "2026-11-23T08:20:13Z"
+          "ran_at": "2026-11-23T08:23:20Z"
         },
         "hardware": null
       },
@@ -697,16 +697,16 @@
       ],
       "tests": {
         "unit": {
-          "passed": 12,
+          "passed": 13,
           "failed": 0,
-          "ran_at": "2026-11-23T08:20:13Z"
+          "ran_at": "2026-11-23T08:23:20Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "a3c6b183f007cf2212f2b1da9be9e8b0951df823",
-        "message": "Health check: glibc on workstation vs each PC, and reachability",
-        "date": "2026-11-23T19:10:02+11:00"
+        "hash": "136dba22aa7636c5599cf2ba9f6ea500f185db17",
+        "message": "M3 done: real FireSim Linux boot on the VCU118 through kotl run (job 49)",
+        "date": "2026-11-23T19:20:13+11:00"
       },
       "issues": [],
       "log": [
@@ -725,6 +725,10 @@
         {
           "date": "2026-11-23",
           "text": "glibc warning now names both fixes: upgrade libc6 on the PC, or --use-pc-glibc."
+        },
+        {
+          "date": "2026-11-23",
+          "text": "First automatic run found PC glibc 2.35 vs workstation 2.39 (different Ubuntu releases). Warning now tells a release gap (workaround or OS upgrade) from a patch gap (upgrade libc6). Corrects the earlier guess that the 8.9 to 8.12 update was the cause."
         }
       ]
     },
@@ -900,21 +904,21 @@
         "unit": {
           "passed": 21,
           "failed": 0,
-          "ran_at": "2026-11-23T08:20:13Z"
+          "ran_at": "2026-11-23T08:23:20Z"
         },
         "hardware": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-23T08:20:13Z"
+          "ran_at": "2026-11-23T08:23:20Z"
         }
       },
       "last_commit": {
-        "hash": "8159f6174757c108e21c8cfa7b111c3192ea30c6",
-        "message": "NEXT.md for the user's current steps; M3-SETUP: build linux-poweroff first",
-        "date": "2026-11-23T17:33:17+11:00"
+        "hash": "136dba22aa7636c5599cf2ba9f6ea500f185db17",
+        "message": "M3 done: real FireSim Linux boot on the VCU118 through kotl run (job 49)",
+        "date": "2026-11-23T19:20:13+11:00"
       },
       "issues": [
-        "glibc differs between the workstation and the PC: FireSim users need --use-pc-glibc (or upgrade libc6 on the PC). kotl board check reports it."
+        "The PC runs glibc 2.35 (Ubuntu 22.04), the workstation 2.39 (24.04): FireSim runs need --use-pc-glibc (or the same removal by hand). kotl board check reports it."
       ],
       "log": [
         {
@@ -1023,7 +1027,7 @@
         "unit": {
           "passed": 6,
           "failed": 0,
-          "ran_at": "2026-11-23T08:20:13Z"
+          "ran_at": "2026-11-23T08:23:20Z"
         },
         "hardware": null
       },
