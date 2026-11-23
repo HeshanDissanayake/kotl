@@ -6,9 +6,10 @@
 #   kotl-keys remove JOB [soft|full]      take the key out and stop the simulations;
 #                                         full lockdown also ends every process of this account
 #   kotl-keys list                        jobs whose keys are in
-#   kotl-keys busy                        "busy: NAME, NAME" if processes of this account run here
-#                                         (other than this check), else "idle": the lease idle guard
-#                                         and the health check's "unleased work" warning
+#   kotl-keys busy                        "busy: NAME, NAME" if remote work of this account runs here
+#                                         (SSH sessions and what they started, FireSim screens and
+#                                         drivers; not a local desktop login), else "idle": the lease
+#                                         idle guard and the health check's "unleased work" warning
 #
 # Only lines ending in "kotl-job-<JOB>" are ever touched; every other key stays.
 set -eu
@@ -55,9 +56,15 @@ case "${1:-}" in
     fi
     ;;
   busy)
+    # Remote work only: processes in this account's SSH sessions, plus FireSim's screen
+    # sessions, tmux servers and drivers (they outlive the ssh that started them). The PC's own desktop
+    # login, if it runs as this account, isn't counted. This check itself isn't either.
     mysid=$(ps -o sid= -p $$ | tr -d ' ')
-    names=$(ps -u "$ME" -o sid=,comm= | awk -v s="$mysid" '$1 != s && $2 != "systemd" && $2 != "(sd-pam)" {print $2}' \
-            | sort | uniq -c | awk '{print $2 ($1 > 1 ? " x" $1 : "")}' | paste -sd, - | sed 's/,/, /g')
+    sshsids=$(ps -u "$ME" -o sid=,comm= | awk '$2 == "sshd" {print $1}' | sort -u | tr '\n' ' ')
+    names=$(ps -u "$ME" -o sid=,comm=,args= | awk -v me="$mysid" -v ss=" $sshsids" '
+        $1 == me { next }
+        index(ss, " " $1 " ") || $2 == "screen" || $2 == "SCREEN" || $2 ~ /^tmux/ || $2 ~ /^FireSim-/ || $0 ~ /FireSim-/ { print $2 }' \
+      | sort | uniq -c | awk '{print $2 ($1 > 1 ? " x" $1 : "")}' | paste -sd, - | sed 's/,/, /g')
     if [ -n "$names" ]; then echo "busy: $names"; else echo idle; fi
     ;;
   list)

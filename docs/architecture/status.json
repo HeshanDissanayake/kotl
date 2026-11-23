@@ -564,6 +564,10 @@
         {
           "date": "2026-11-23",
           "text": "launch notify / notices; health uses the admin and PC account from kotl.conf; kotl becomes a Slurm admin (reservations)."
+        },
+        {
+          "date": "2026-11-23",
+          "text": "Lease idle guard relies on kotl-keys busy, now remote work only (was always busy because of the PC's desktop session)."
         }
       ]
     },
@@ -768,6 +772,10 @@
         {
           "date": "2026-11-23",
           "text": "The unleased-work warning names what runs (kotl-keys busy lists process names)."
+        },
+        {
+          "date": "2026-11-23",
+          "text": "Found: virtex-host is the PC's 61-day desktop login, so 'anything running' was always true (and a lease's idle guard could never trip). kotl-keys busy now counts remote work only: SSH sessions and what they started, screen, tmux, FireSim drivers."
         }
       ]
     },
