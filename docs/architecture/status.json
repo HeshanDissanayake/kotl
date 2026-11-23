@@ -26,6 +26,7 @@
     "M3": "Job keys on the real board; FireSim runs through kotl run",
     "M4": "Health check, ETA notices, interactive sessions",
     "M5": "Kotl plugin for Claude Code",
+    "P": "Product: Kotl sets up PCs itself, one-command install and full uninstall",
     "Later": "After the first release"
   },
   "features": {
@@ -920,6 +921,50 @@
         {
           "date": "2026-11-22",
           "text": "job.sh gives the command an ssh-agent with only the job key, plus KOTL_JOB/KOTL_BOARD/KOTL_PC; kotl-keys busy for the lease idle guard."
+        }
+      ]
+    },
+    "pc_onboard": {
+      "status": "planned",
+      "milestone": "P",
+      "now": "",
+      "tests": {
+        "unit": null,
+        "hardware": null
+      },
+      "last_commit": null,
+      "issues": [],
+      "drawn": false,
+      "title": "PC onboarding (kotl admin pc add/remove)",
+      "code": [
+        "kotl/admin/"
+      ],
+      "log": [
+        {
+          "date": "2026-11-23",
+          "text": "Planned (user goal): Kotl installs and removes its PC side itself (account, key, kotl-keys, sudoers), via kotl/ssh.py, asking the admin's PC password once; replaces the manual scp/ssh steps."
+        }
+      ]
+    },
+    "uninstall": {
+      "status": "planned",
+      "milestone": "P",
+      "now": "",
+      "tests": {
+        "unit": null,
+        "hardware": null
+      },
+      "last_commit": null,
+      "issues": [],
+      "drawn": false,
+      "title": "Full uninstall",
+      "code": [
+        "deploy/uninstall.sh"
+      ],
+      "log": [
+        {
+          "date": "2026-11-23",
+          "text": "Planned (user goal): one command runs every --undo in reverse and removes the PC side; --purge also packages, data, accounts. Tested: install then uninstall leaves nothing."
         }
       ]
     }

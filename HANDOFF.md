@@ -116,6 +116,11 @@ docs/architecture/
 - The skill (kotl commands, expect scripts with timeouts, fetch-then-read-status workflow) and hooks (suggest `kotl run` around board commands, show the queue at session start).
 - Done when: a fresh Claude Code session on a user's PC can submit, wait, fetch and report a FireSim job using only the plugin.
 
+**P: Product** (user goal, 2026-11-23)
+- PC onboarding: `kotl admin pc add NAME ADDRESS` / `pc remove` installs and removes Kotl's PC side (kotl account, key, `kotl-keys`, sudoers) through `kotl/ssh.py`, asking for the admin's PC password once. It replaces the manual scp/ssh steps in the run sheets.
+- Full uninstall: `deploy/uninstall.sh [--purge]` runs every `--undo` in reverse order and removes each PC's side. Tested: install, then uninstall, leaves nothing.
+- Keep every new part uninstallable: whatever a script adds, its `--undo` removes.
+
 **Later:** power monitor, usage dashboard, program/reset adapter, board-tests adapter, more boards. **Parked:** same-design board pick.
 
 ## 6. Keeping the view in sync
