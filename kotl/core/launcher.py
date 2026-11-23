@@ -219,7 +219,7 @@ class Launcher:
         try:
             out = self.ssh.run(b["host"], ["sudo", "-n", "-u", self.cfg.get("pc_account"), KEYS_HELPER, "busy"],
                                timeout=30)
-            return out.strip() != "idle"
+            return out.strip().startswith("busy")
         except ssh_mod.SSHError:
             return True
 

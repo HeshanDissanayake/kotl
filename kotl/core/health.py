@@ -96,10 +96,14 @@ def check_board(board, ssh=ssh_mod, here=None):
 
 
 def pc_busy(board, account, ssh=ssh_mod):
+    """'' when nothing of the account runs on the PC, else what runs ('screen, sshd x2'), or 'busy'."""
     try:
-        return ssh.run(board["host"], ["sudo", "-n", "-u", account, KEYS, "busy"], timeout=30).strip() == "busy"
+        out = ssh.run(board["host"], ["sudo", "-n", "-u", account, KEYS, "busy"], timeout=30).strip()
     except ssh_mod.SSHError:
-        return False
+        return ""
+    if not out.startswith("busy"):
+        return ""
+    return out.split(":", 1)[1].strip() if ":" in out else "busy"
 
 
 def run(registry, ssh=ssh_mod, slurm=slurm_mod, admin="", account="virtex-host", now=time.time, here=None):
@@ -124,8 +128,9 @@ def run(registry, ssh=ssh_mod, slurm=slurm_mod, admin="", account="virtex-host",
         g = glibc_warning(here, glibc_version(p.get("glibc", ""))) if "error" not in p else None
         if g:
             warnings.append(g)
-        if not fails and b["state"] == "idle" and not b["job_id"] and pc_busy(b, account, ssh):
-            warnings.append(f"something runs as {account} on the PC with no Kotl job holding the board")
+        running = pc_busy(b, account, ssh) if not fails and b["state"] == "idle" and not b["job_id"] else ""
+        if running:
+            warnings.append(f"something runs as {account} on the PC with no Kotl job holding the board: {running}")
 
         hold = f"kotl-down-{name}"
         if fails:

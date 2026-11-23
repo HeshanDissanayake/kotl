@@ -83,6 +83,13 @@ def test_screen_shows_board_warnings():
     assert "! glibc differs: workstation A, PC B" in "\n".join(top.render(snap, width=100, now=NOW))
 
 
+def test_long_warnings_wrap_instead_of_being_cut():
+    long = "glibc differs: " + "word " * 40 + "END"
+    snap = dict(SNAP, boards=[dict(SNAP["boards"][0], warnings=json.dumps([long]))])
+    lines = top.render(snap, width=60, now=NOW)
+    assert any("END" in l for l in lines) and all(len(l) <= 60 for l in lines)
+
+
 def test_screen_shows_unread_notices():
     snap = dict(SNAP, notices=[{"at": NOW, "text": "job 41 passed its ETA (30m); nothing is stopped."}])
     text = "\n".join(top.render(snap, width=100, now=NOW))

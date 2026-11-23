@@ -34,7 +34,7 @@ class FakePC:
         if argv[:2] == ["sh", "-c"]:
             return "".join(f"{k}={v}\n" for k, v in self.state.items())
         if argv[-1] == "busy":
-            return "busy\n" if self.busy else "idle\n"
+            return "busy: screen, FireSim-xilinx_vcu118\n" if self.busy else "idle\n"
         if argv[-1] == health.RELOAD:
             self.reloads += 1
             if self.reload_fixes:
@@ -128,7 +128,7 @@ def test_glibc_and_unleased_work_are_warnings(reg):
     found = run(reg, pc, holds)["vcu118-pc1"]
     assert reg.board("vcu118-pc1")["state"] == "idle"
     assert any("older glibc release (2.35 vs 2.39)" in f and "--use-pc-glibc" in f for f in found)
-    assert any("no Kotl job holding the board" in f for f in found)
+    assert any(f.endswith("no Kotl job holding the board: screen, FireSim-xilinx_vcu118") for f in found)
 
 
 def test_patch_gap_suggests_upgrade():

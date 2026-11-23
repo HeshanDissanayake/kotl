@@ -41,6 +41,12 @@ def snapshot():
             "notices": launch_json("notices", "--unread")}
 
 
+def wrap(text, width, first, rest):
+    """Wrap a long line to the screen instead of cutting it off."""
+    import textwrap
+    return textwrap.wrap(text, max(20, width - 1), initial_indent=first, subsequent_indent=rest) or [first]
+
+
 def ago(seconds):
     seconds = int(max(0, seconds))
     return f"{seconds // 3600}h{seconds % 3600 // 60:02d}m" if seconds >= 3600 else f"{seconds // 60}m"
@@ -62,7 +68,7 @@ def render(snap, width=80, selected=0, now=None):
                    f"used {r.get('used', '-'):>8}  ETA {r.get('eta', '-')}"
         lines.append(row)
         for w in json.loads(b.get("warnings") or "[]"):
-            lines.append(f"    ! {w}")
+            lines += wrap(w, width, "    ! ", "      ")
     lines += ["", " QUEUE"]
     pending = [r for r in snap["queue"] if r["state"] == "PENDING"]
     if not pending:

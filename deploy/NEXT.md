@@ -16,6 +16,18 @@ Your own `ssh` login shows up too (sshd, bash, ps). Anything else, such as `scre
 
 M4 is installed and the health check runs by itself every 5 minutes. Three live tests are left.
 
+## 0b. Update: the warning names what runs (sudo on the PC and the workstation)
+
+```sh
+cd ~/working_dir/kotl
+scp deploy/pc/setup.sh deploy/pc/kotl-keys virtex-host@192.168.1.2:/tmp/
+ssh -t virtex-host@192.168.1.2 "sudo bash /tmp/setup.sh --keys-helper /tmp/kotl-keys && rm /tmp/setup.sh /tmp/kotl-keys"
+sudo deploy/kotl/install.sh --board vcu118-pc1=vcu118@vcu118-pc1
+```
+
+After the next health run, `kotl board list` ends the warning with what runs, e.g.
+`…holding the board: bash, screen, sshd x2`. `kotl top` now wraps long warnings.
+
 ## 1. Say "ok PC" so Claude may run these two itself
 
 - **ETA notice:** `kotl run --eta 1m -- sleep 100`. It passes its 1-minute ETA, and the

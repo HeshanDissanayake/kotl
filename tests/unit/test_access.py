@@ -155,4 +155,7 @@ def test_kotl_keys_refuses_bad_input(tmp_path, args):
 def test_kotl_keys_busy_answers(tmp_path):
     (tmp_path / ".ssh").mkdir()
     r = keys(tmp_path, "busy")
-    assert r.returncode == 0 and r.stdout.strip() in ("busy", "idle")
+    out = r.stdout.strip()
+    assert r.returncode == 0 and (out == "idle" or out.startswith("busy: "))
+    if out != "idle":
+        assert "kotl-keys" not in out and " ps" not in out           # this check itself isn't counted
