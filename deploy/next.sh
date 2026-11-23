@@ -24,17 +24,16 @@ step() {
 
 log "=== next.sh started by $(id -un) (deploy/next.sh $(git rev-parse --short HEAD 2>/dev/null))"
 
-if ask "1. Publish the Kotl plugins at /opt/kotl (sudo: re-runs the Kotl install)"; then
+if ask "1. Update Kotl and the plugins at /opt/kotl (sudo)"; then
   step "sudo deploy/kotl/install.sh --board vcu118-pc1=vcu118@vcu118-pc1"
 fi
 
-if ask "2. Install the plugins (kotl, kotl-band) in your own Claude Code (no sudo)"; then
-  step "claude plugin marketplace add /opt/kotl" &&
-  step "claude plugin install kotl@kotl" &&
-  step "claude plugin install kotl-band@kotl"
+if ask "2. Check this terminal can reach Kotl (needs the kotl-users group)"; then
+  step "id -nG | tr ' ' '\\n' | grep -x kotl-users || echo 'NOT in kotl-users here: restart tmux (tmux kill-server) or log in again, then rerun this step'" &&
+  step "kotl board list"
 fi
 
 log "=== next.sh finished"
 echo
 echo "Done. Everything is in .kotl/next.log, and Claude sees it with your next message."
-echo "Then start a NEW Claude Code session and try it (deploy/NEXT.md step 3)."
+echo "Then start a NEW Claude Code session in a fresh terminal and try it (deploy/NEXT.md step 3)."

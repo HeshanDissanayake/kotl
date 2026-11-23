@@ -153,10 +153,18 @@ def status_json():
     import json
     import pwd
 
+    problems = []
+
     def lj(*args):
-        rc, out, _ = launch(*args, "--json", capture=True)
+        rc, out, err = launch(*args, "--json", capture=True)
+        if rc != 0:
+            if "password is required" in err:
+                problems.append("this terminal can't reach Kotl: not in kotl-users yet (log in again, or restart tmux)")
+            else:
+                problems.append((err.strip().splitlines() or [f"launch {args[0]} failed"])[-1])
+            return []
         try:
-            return json.loads(out or b"[]") if rc == 0 else []
+            return json.loads(out or b"[]")
         except ValueError:
             return []
     try:
@@ -164,8 +172,10 @@ def status_json():
     except slurm.SlurmError:
         queue = []
     mine = [j for j in lj("history", "--limit", "10") if not j.get("result")]
-    return {"user": pwd.getpwuid(os.getuid()).pw_name, "boards": lj("boards"), "queue": queue,
-            "running_mine": mine, "unread": len(lj("notices", "--unread"))}
+    boards = lj("boards")
+    unread = len(lj("notices", "--unread"))
+    return {"user": pwd.getpwuid(os.getuid()).pw_name, "boards": boards, "queue": queue,
+            "running_mine": mine, "unread": unread, "problem": problems[0] if problems else None}
 
 
 def cmd_status(a):

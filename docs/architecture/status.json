@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "updated": "2026-11-23T10:25:36Z",
-  "repo_commit": "c4de6d6fadccb544e7d7ce0e0fa8f25f071c8ab6",
+  "updated": "2026-11-23T10:31:18Z",
+  "repo_commit": "bfecd9eae33e573a5f321e4da9546dfd886dd0b1",
   "watch": [
     "deploy/",
     "kotl/",
@@ -49,7 +49,7 @@
         "unit": {
           "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-23T10:25:36Z"
+          "ran_at": "2026-11-23T10:31:00Z"
         },
         "hardware": null
       },
@@ -87,7 +87,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-23T10:25:36Z"
+          "ran_at": "2026-11-23T10:31:00Z"
         },
         "hardware": null
       },
@@ -125,7 +125,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-23T10:25:36Z"
+          "ran_at": "2026-11-23T10:31:00Z"
         },
         "hardware": null
       },
@@ -170,7 +170,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-23T10:25:36Z"
+          "ran_at": "2026-11-23T10:31:00Z"
         },
         "hardware": null
       },
@@ -203,7 +203,7 @@
         "unit": {
           "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-23T10:25:36Z"
+          "ran_at": "2026-11-23T10:31:00Z"
         },
         "hardware": null
       },
@@ -245,7 +245,7 @@
         "unit": {
           "passed": 14,
           "failed": 0,
-          "ran_at": "2026-11-23T10:25:36Z"
+          "ran_at": "2026-11-23T10:31:00Z"
         },
         "hardware": null
       },
@@ -290,12 +290,12 @@
         "unit": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-23T10:25:36Z"
+          "ran_at": "2026-11-23T10:31:00Z"
         },
         "hardware": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-23T10:25:36Z"
+          "ran_at": "2026-11-23T10:31:00Z"
         }
       },
       "last_commit": {
@@ -335,12 +335,12 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-23T10:25:36Z"
+          "ran_at": "2026-11-23T10:31:00Z"
         },
         "hardware": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-23T10:25:36Z"
+          "ran_at": "2026-11-23T10:31:00Z"
         }
       },
       "last_commit": {
@@ -380,12 +380,12 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-23T10:25:36Z"
+          "ran_at": "2026-11-23T10:31:00Z"
         },
         "hardware": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-23T10:25:36Z"
+          "ran_at": "2026-11-23T10:31:00Z"
         }
       },
       "last_commit": {
@@ -462,7 +462,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-23T10:25:36Z"
+          "ran_at": "2026-11-23T10:31:00Z"
         },
         "hardware": null
       },
@@ -515,14 +515,14 @@
         "unit": {
           "passed": 37,
           "failed": 0,
-          "ran_at": "2026-11-23T10:25:36Z"
+          "ran_at": "2026-11-23T10:31:00Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "c4de6d6fadccb544e7d7ce0e0fa8f25f071c8ab6",
-        "message": "M5: the Kotl plugin for Claude Code (not yet installed)",
-        "date": "2026-11-23T21:20:18+11:00"
+        "hash": "bfecd9eae33e573a5f321e4da9546dfd886dd0b1",
+        "message": "kotl-band: a live Kotl line above the Claude Code prompt (a mod)",
+        "date": "2026-11-23T21:25:36+11:00"
       },
       "issues": [],
       "log": [
@@ -583,16 +583,16 @@
       ],
       "tests": {
         "unit": {
-          "passed": 18,
+          "passed": 19,
           "failed": 0,
-          "ran_at": "2026-11-23T10:25:36Z"
+          "ran_at": "2026-11-23T10:31:00Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "c4de6d6fadccb544e7d7ce0e0fa8f25f071c8ab6",
-        "message": "M5: the Kotl plugin for Claude Code (not yet installed)",
-        "date": "2026-11-23T21:20:18+11:00"
+        "hash": "bfecd9eae33e573a5f321e4da9546dfd886dd0b1",
+        "message": "kotl-band: a live Kotl line above the Claude Code prompt (a mod)",
+        "date": "2026-11-23T21:25:36+11:00"
       },
       "issues": [],
       "log": [
@@ -635,6 +635,10 @@
         {
           "date": "2026-11-23",
           "text": "kotl status --json for status displays (boards, Kotl queue, your running jobs, unread count)."
+        },
+        {
+          "date": "2026-11-23",
+          "text": "kotl status --json: 'problem' says why Kotl can't be reached (e.g. not in kotl-users)."
         }
       ]
     },
@@ -650,7 +654,7 @@
         "unit": {
           "passed": 4,
           "failed": 0,
-          "ran_at": "2026-11-23T10:25:36Z"
+          "ran_at": "2026-11-23T10:31:00Z"
         },
         "hardware": null
       },
@@ -735,7 +739,7 @@
         "unit": {
           "passed": 18,
           "failed": 0,
-          "ran_at": "2026-11-23T10:25:36Z"
+          "ran_at": "2026-11-23T10:31:00Z"
         },
         "hardware": null
       },
@@ -815,7 +819,7 @@
         "unit": {
           "passed": 6,
           "failed": 0,
-          "ran_at": "2026-11-23T10:25:36Z"
+          "ran_at": "2026-11-23T10:31:00Z"
         },
         "hardware": null
       },
@@ -852,7 +856,7 @@
         "unit": {
           "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-23T10:25:36Z"
+          "ran_at": "2026-11-23T10:31:00Z"
         },
         "hardware": null
       },
@@ -891,14 +895,14 @@
         "unit": {
           "passed": 16,
           "failed": 0,
-          "ran_at": "2026-11-23T10:25:36Z"
+          "ran_at": "2026-11-23T10:31:00Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "c4de6d6fadccb544e7d7ce0e0fa8f25f071c8ab6",
-        "message": "M5: the Kotl plugin for Claude Code (not yet installed)",
-        "date": "2026-11-23T21:20:18+11:00"
+        "hash": "bfecd9eae33e573a5f321e4da9546dfd886dd0b1",
+        "message": "kotl-band: a live Kotl line above the Claude Code prompt (a mod)",
+        "date": "2026-11-23T21:25:36+11:00"
       },
       "issues": [],
       "log": [
@@ -913,6 +917,10 @@
         {
           "date": "2026-11-23",
           "text": "kotl-band (user request): a Claude Code mod drawing a live Kotl line above the prompt from kotl status --json every 30 s; /kotl, /kotl hide|show. 3 tests (claude plugin test); validate passes."
+        },
+        {
+          "date": "2026-11-23",
+          "text": "First fresh session: both plugins loaded (debug log: kotl-band admitted; skill used), but the user's tmux lacked kotl-users, so the band had almost nothing. kotl status --json now carries 'problem', and the band shows it in warning colour."
         }
       ]
     },
@@ -1024,12 +1032,12 @@
         "unit": {
           "passed": 21,
           "failed": 0,
-          "ran_at": "2026-11-23T10:25:36Z"
+          "ran_at": "2026-11-23T10:31:00Z"
         },
         "hardware": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-23T10:25:36Z"
+          "ran_at": "2026-11-23T10:31:00Z"
         }
       },
       "last_commit": {
@@ -1147,7 +1155,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-23T10:25:36Z"
+          "ran_at": "2026-11-23T10:31:00Z"
         },
         "hardware": null
       },

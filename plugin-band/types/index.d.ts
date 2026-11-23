@@ -7,6 +7,7 @@ export type KotlSnapshot = {
   queue: KotlQueued[]
   running_mine: KotlJob[]
   unread: number
+  problem?: string | null
   at: number
 }
 

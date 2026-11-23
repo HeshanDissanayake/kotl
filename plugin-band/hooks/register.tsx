@@ -75,6 +75,7 @@ export const register: Register = on => {
     const err = await read($, error)
     const { Box, Text } = $.ui.resolve(e)
     if (!s) return err ? <Box><Text dimColor>{err}</Text></Box> : next(e)
+    if (s.problem) return <Box><Text color="claude" weight="bold">Kotl </Text><Text color="warning">{s.problem}</Text></Box>
 
     const byJob = new Map(s.queue.map(q => [q.job, q]))
     const waiting = s.queue.filter(q => q.state === 'PENDING')

@@ -1,30 +1,35 @@
 # Next: what Claude needs from you
 
 This file always holds only the current steps. **To run them: `bash ~/working_dir/kotl/deploy/next.sh`**
-(it asks before each step and logs everything to `.kotl/next.log`; Claude sees the log with your
-next message). deploy/M5-SETUP.md has the full procedure.
+(it asks before each step and logs everything to `.kotl/next.log`). deploy/M5-SETUP.md has the
+full procedure.
 
-## 1. Publish the plugin (sudo)
+Why: your new Claude Code session loaded both plugins, but its terminal isn't in `kotl-users`
+(your tmux server started before M1 added you), so `sudo` to kotl asked for a password and the
+Kotl line had almost nothing to show.
 
-Re-runs the Kotl install, which now also copies the plugin to `/opt/kotl/plugin` with a marketplace
-file at `/opt/kotl`, readable by every user on the workstation.
+## 0. A fresh terminal (by hand, not in the script)
 
-## 2. Install them in your Claude Code (no sudo)
+Detach from tmux and run `tmux kill-server` (this closes ALL your tmux windows), or log out and
+back in. New shells then have the `kotl-users` group.
 
-`claude plugin marketplace add /opt/kotl`, `claude plugin install kotl@kotl`, and the optional
-`claude plugin install kotl-band@kotl` (the live Kotl line above the prompt; `/kotl hide` hides it).
+## 1. Update Kotl and the plugins (sudo)
+
+The Kotl line now says plainly when a terminal can't reach Kotl, instead of staying almost empty.
+
+## 2. Check the terminal
+
+`id -nG` must list `kotl-users`, and `kotl board list` must work without a password.
 
 ## 3. Try it in a NEW Claude Code session
 
-Open a new terminal, start `claude` anywhere (not this session), and ask:
+Start `claude` in the fresh terminal. A line starting with **Kotl** should sit above the prompt
+(`vcu118-pc1 idle · nobody waiting`). Then ask:
 
     run hostname on the FPGA board through kotl and tell me the result
 
-The Kotl line should sit above the prompt. It should: show the Kotl queue at the start, run `kotl run --eta ... -- hostname`, and report the
-result (vcu118-pc1's job, `succeeded`, the PC's hostname). Then ask it:
+and then
 
     run firesim runworkload -c config_runtime.yaml
 
-and check that it asks you first and suggests `kotl run`. Answer no.
-
-Tell Claude how it went (the log shows steps 1 and 2; step 3 happens in the other session).
+which should make Claude Code ask you first and suggest `kotl run`. Answer no.

@@ -65,3 +65,19 @@ test('without Kotl the band says so instead of guessing', async ($, on) => {
   expect((await ui.find({ type: 'Text', text: /not reachable/ }))).toBeTruthy()
   await ui.unmount()
 })
+
+
+test('a terminal that can\'t reach Kotl is told why', async ($, on) => {
+  on('command.register', () => ({ value: { command: 'kotl' } }))
+  on('clock.every', () => ({ value: undefined }))
+  on('clock.now', () => ({ value: 1_000 }))
+  const s = { ...SNAP, boards: [], problem: "this terminal can't reach Kotl: not in kotl-users yet (log in again, or restart tmux)" }
+  on('process.run', () => ({ value: { exitCode: 0, stdout: JSON.stringify(s), stderr: '' } }))
+  on('session.start', (_, e) => ({ cwd: e.cwd }))
+
+  await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+  await $.command.run({ command: 'kotl', args: '' })
+  const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect((await ui.find({ type: 'Text', text: /not in kotl-users/ }))).toBeTruthy()
+  await ui.unmount()
+})

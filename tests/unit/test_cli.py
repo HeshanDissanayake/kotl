@@ -86,3 +86,11 @@ def test_status_json_for_displays(fs, monkeypatch, capsys):
     assert [q["job"] for q in s["queue"]] == ["41"]                # only Kotl's jobs
     assert [j["job_id"] for j in s["running_mine"]] == [41] and s["unread"] == 1
     assert s["boards"][0]["state"] == "busy"
+
+
+def test_status_json_says_why_it_cant_reach_kotl(fs, monkeypatch, capsys):
+    import json as _json
+    monkeypatch.setattr(cli, "launch", lambda *a, **k: (1, b"", "sudo: a password is required\n"))
+    assert cli.main(["status", "--json"]) == 0
+    s = _json.loads(capsys.readouterr().out)
+    assert s["boards"] == [] and "not in kotl-users" in s["problem"]
