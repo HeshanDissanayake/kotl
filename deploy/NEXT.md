@@ -1,7 +1,8 @@
 # Next: what Claude needs from you
 
 This file always holds only the current steps. **To run them: `bash ~/working_dir/kotl/deploy/next.sh`**
-(it asks before each step). This file explains them.
+(it asks before each step and logs everything to `.kotl/next.log`; Claude sees the log with your
+next message). This file explains them.
 
 ## 0. What runs as virtex-host on the PC? (read-only)
 

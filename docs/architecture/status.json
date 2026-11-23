@@ -66,6 +66,10 @@
         {
           "date": "2026-11-22",
           "text": "Fixed test_agent_cannot_claim_tested: it now clears the feature's results instead of assuming none exist."
+        },
+        {
+          "date": "2026-11-23",
+          "text": "tools/next_log_hook.sh: a Claude Code UserPromptSubmit hook (local settings) shows Claude what's new in .kotl/next.log, which deploy/next.sh now writes."
         }
       ],
       "drawn": false

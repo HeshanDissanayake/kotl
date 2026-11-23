@@ -2,3 +2,4 @@
 __pycache__/
 .venv/
 kotl-handoff.zip
+.claude/settings.local.json
