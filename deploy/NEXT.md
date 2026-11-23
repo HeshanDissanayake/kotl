@@ -19,8 +19,6 @@ The `ls` must list `poweroffnode.ext2`. The last command prints `kotl: job N que
 
 ## 2. Tell Claude
 
-- the job number `N`
-- `ok PC` if Claude may run the job-key test and the M2 integration tests. They hold the board
-  for a few minutes in total and add and remove job keys on the PC.
+- the job number `N` (Claude checks it and turns M3 green)
 
-No sudo is needed for any of this.
+No sudo is needed.
