@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "updated": "2026-11-23T09:10:01Z",
-  "repo_commit": "42e81e40a7afb1a6fe0945141b8cabfef737be75",
+  "updated": "2026-11-23T09:19:24Z",
+  "repo_commit": "dfa5dfd0fb2d0c571293391c2d5a0d4685e0fff7",
   "watch": [
     "kotl/",
     "deploy/",
@@ -48,7 +48,7 @@
         "unit": {
           "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-23T09:09:55Z"
+          "ran_at": "2026-11-23T09:16:53Z"
         },
         "hardware": null
       },
@@ -86,7 +86,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-23T09:09:55Z"
+          "ran_at": "2026-11-23T09:16:53Z"
         },
         "hardware": null
       },
@@ -124,7 +124,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-23T09:09:55Z"
+          "ran_at": "2026-11-23T09:16:53Z"
         },
         "hardware": null
       },
@@ -169,7 +169,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-23T09:09:55Z"
+          "ran_at": "2026-11-23T09:16:53Z"
         },
         "hardware": null
       },
@@ -202,7 +202,7 @@
         "unit": {
           "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-23T09:09:55Z"
+          "ran_at": "2026-11-23T09:16:53Z"
         },
         "hardware": null
       },
@@ -244,7 +244,7 @@
         "unit": {
           "passed": 14,
           "failed": 0,
-          "ran_at": "2026-11-23T09:09:55Z"
+          "ran_at": "2026-11-23T09:16:53Z"
         },
         "hardware": null
       },
@@ -289,12 +289,12 @@
         "unit": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-23T09:09:55Z"
+          "ran_at": "2026-11-23T09:16:53Z"
         },
         "hardware": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-23T09:09:55Z"
+          "ran_at": "2026-11-23T09:16:53Z"
         }
       },
       "last_commit": {
@@ -334,12 +334,12 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-23T09:09:55Z"
+          "ran_at": "2026-11-23T09:16:53Z"
         },
         "hardware": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-23T09:09:55Z"
+          "ran_at": "2026-11-23T09:16:53Z"
         }
       },
       "last_commit": {
@@ -379,12 +379,12 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-23T09:09:55Z"
+          "ran_at": "2026-11-23T09:16:53Z"
         },
         "hardware": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-23T09:09:55Z"
+          "ran_at": "2026-11-23T09:16:53Z"
         }
       },
       "last_commit": {
@@ -461,7 +461,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-23T09:09:55Z"
+          "ran_at": "2026-11-23T09:16:53Z"
         },
         "hardware": null
       },
@@ -514,7 +514,7 @@
         "unit": {
           "passed": 37,
           "failed": 0,
-          "ran_at": "2026-11-23T09:09:55Z"
+          "ran_at": "2026-11-23T09:16:53Z"
         },
         "hardware": null
       },
@@ -584,14 +584,14 @@
         "unit": {
           "passed": 17,
           "failed": 0,
-          "ran_at": "2026-11-23T09:09:55Z"
+          "ran_at": "2026-11-23T09:16:53Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "5ff8c227887dd97f2d2e5c168b7db85813687b46",
-        "message": "Health names what runs as the PC account; kotl top wraps long warnings",
-        "date": "2026-11-23T20:00:23+11:00"
+        "hash": "893c2fe84b383252565d62143f4e2c1f400a504e",
+        "message": "kotl top: don't crash where the cursor can't be hidden; cap process lists at 8",
+        "date": "2026-11-23T20:10:01+11:00"
       },
       "issues": [],
       "log": [
@@ -641,7 +641,7 @@
         "unit": {
           "passed": 4,
           "failed": 0,
-          "ran_at": "2026-11-23T09:09:55Z"
+          "ran_at": "2026-11-23T09:16:53Z"
         },
         "hardware": null
       },
@@ -713,9 +713,9 @@
     },
     "health": {
       "title": "Health check",
-      "status": "in_progress",
+      "status": "tested",
       "milestone": "M4",
-      "now": "Live: Slurm runs it every 5 min; driver-failure test passed (XDMA unloaded, one reload, board stayed up); drain holds the license. The down path (reload fails) is unit-tested only.",
+      "now": "Live: runs every 5 min; driver-failure test passed (one reload, board stayed up); drain holds the license; warnings count remote work only.",
       "code": [
         "deploy/M4-SETUP.md",
         "deploy/health.sh",
@@ -726,14 +726,14 @@
         "unit": {
           "passed": 18,
           "failed": 0,
-          "ran_at": "2026-11-23T09:09:55Z"
+          "ran_at": "2026-11-23T09:16:53Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "5ff8c227887dd97f2d2e5c168b7db85813687b46",
-        "message": "Health names what runs as the PC account; kotl top wraps long warnings",
-        "date": "2026-11-23T20:00:23+11:00"
+        "hash": "893c2fe84b383252565d62143f4e2c1f400a504e",
+        "message": "kotl top: don't crash where the cursor can't be hidden; cap process lists at 8",
+        "date": "2026-11-23T20:10:01+11:00"
       },
       "issues": [
         "Something on the PC unloaded XDMA between 19:55 and 20:05 on 2026-11-23, outside Kotl: watch for it."
@@ -786,14 +786,18 @@
         {
           "date": "2026-11-23",
           "text": "Driver-failure test (user, 20:07): XDMA unloaded on the PC; the 20:10 check reloaded it once and the board stayed up. Note: the 20:05 check also needed a reload, before the test: something on the PC unloaded XDMA between 19:55 and 20:05."
+        },
+        {
+          "date": "2026-11-23",
+          "text": "After the kotl-keys update the desktop-login warning is gone: only remote work counts."
         }
       ]
     },
     "notifier": {
       "title": "ETA notifier",
-      "status": "in_progress",
+      "status": "tested",
       "milestone": "M4",
-      "now": "Live: the timer runs every minute without errors. Still to prove: an actual ETA notice.",
+      "now": "Live: ETA notice delivered (job 52); timer every minute.",
       "code": [
         "deploy/systemd/",
         "kotl/core/notifier.py"
@@ -802,7 +806,7 @@
         "unit": {
           "passed": 6,
           "failed": 0,
-          "ran_at": "2026-11-23T09:09:55Z"
+          "ran_at": "2026-11-23T09:16:53Z"
         },
         "hardware": null
       },
@@ -820,14 +824,18 @@
         {
           "date": "2026-11-23",
           "text": "Notifier: ETA, 2x ETA (owner + admin), start slips of 15 min+; per-user inbox (kotl notices, kotl top, kotl status); systemd timer every minute."
+        },
+        {
+          "date": "2026-11-23",
+          "text": "Live: job 52 (ETA 1m, ran 150 s) got 'passed its ETA' within the next pass. A job past its ETA for under a minute may get no notice (one pass a minute)."
         }
       ]
     },
     "attach": {
       "title": "Console attach",
-      "status": "in_progress",
+      "status": "tested",
       "milestone": "M4",
-      "now": "Code and unit tests done. Still to prove: opening a real console during a lease.",
+      "now": "Live: kotl attach opened the PC with only the job key (job 53), found no fsim0, listed screens.",
       "code": [
         "kotl/core/attach.py"
       ],
@@ -835,7 +843,7 @@
         "unit": {
           "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-23T09:09:55Z"
+          "ran_at": "2026-11-23T09:16:53Z"
         },
         "hardware": null
       },
@@ -853,6 +861,10 @@
         {
           "date": "2026-11-23",
           "text": "kotl attach JOB: ssh with only the job key, screen -x fsim0; 'a' in kotl top."
+        },
+        {
+          "date": "2026-11-23",
+          "text": "Live (job 53): attach with only the lease's key; no fsim0 running, so it listed the PC's screens; lease released."
         }
       ]
     },
@@ -985,12 +997,12 @@
         "unit": {
           "passed": 21,
           "failed": 0,
-          "ran_at": "2026-11-23T09:09:55Z"
+          "ran_at": "2026-11-23T09:16:53Z"
         },
         "hardware": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-23T09:09:55Z"
+          "ran_at": "2026-11-23T09:16:53Z"
         }
       },
       "last_commit": {
@@ -1108,14 +1120,14 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-23T09:09:55Z"
+          "ran_at": "2026-11-23T09:16:53Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "5ff8c227887dd97f2d2e5c168b7db85813687b46",
-        "message": "Health names what runs as the PC account; kotl top wraps long warnings",
-        "date": "2026-11-23T20:00:23+11:00"
+        "hash": "893c2fe84b383252565d62143f4e2c1f400a504e",
+        "message": "kotl top: don't crash where the cursor can't be hidden; cap process lists at 8",
+        "date": "2026-11-23T20:10:01+11:00"
       },
       "issues": [],
       "log": [

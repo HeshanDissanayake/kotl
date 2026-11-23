@@ -24,11 +24,7 @@ step() {
 
 log "=== next.sh started by $(id -un) (deploy/next.sh $(git rev-parse --short HEAD 2>/dev/null))"
 
-if ask "1. Update kotl-keys on the PC (sudo there), then Kotl on the workstation (sudo here)"; then
-  step "scp deploy/pc/setup.sh deploy/pc/kotl-keys $PC:/tmp/" &&
-  step "ssh -t $PC 'sudo bash /tmp/setup.sh --keys-helper /tmp/kotl-keys && rm /tmp/setup.sh /tmp/kotl-keys'" &&
-  step "sudo deploy/kotl/install.sh --board vcu118-pc1=vcu118@vcu118-pc1"
-fi
+echo "Nothing to run right now (see deploy/NEXT.md)."
 
 log "=== next.sh finished"
 echo

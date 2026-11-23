@@ -2,7 +2,7 @@
  "schema": 1,
  "title": "Kotl Architecture",
  "intro": "Teal is Kotl, our product. Purple is Slurm. Gray is everything else off the shelf, plus the hardware. The dot on each box is its build status; click a box for exactly what's happening.",
- "latest": "Latest: M4 code. Health check takes broken boards down (one driver reload first) and holds their license; the notifier sends ETA and start-time notices; kotl attach opens FireSim's console.",
+ "latest": "Latest: M4 done. Health check live (driver reload proven, license holds), ETA notices delivered, kotl attach works with the job key.",
  "canvas": {
   "w": 1520,
   "h": 820
