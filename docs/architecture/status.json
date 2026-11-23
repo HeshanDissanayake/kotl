@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "updated": "2026-11-23T06:18:44Z",
-  "repo_commit": "1c94bf86ab0e307e25b94e346b5f2da5647d9f01",
+  "updated": "2026-11-23T07:57:59Z",
+  "repo_commit": "a12eaf672d5d4f8c5634ee7caa95aff894cfd8a4",
   "watch": [
     "kotl/",
     "deploy/",
@@ -46,7 +46,7 @@
         "unit": {
           "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-23T06:18:44Z"
+          "ran_at": "2026-11-23T07:57:59Z"
         },
         "hardware": null
       },
@@ -80,7 +80,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-23T06:18:44Z"
+          "ran_at": "2026-11-23T07:57:59Z"
         },
         "hardware": null
       },
@@ -118,7 +118,7 @@
         "unit": {
           "passed": 6,
           "failed": 0,
-          "ran_at": "2026-11-23T06:18:44Z"
+          "ran_at": "2026-11-23T07:57:59Z"
         },
         "hardware": null
       },
@@ -159,7 +159,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-23T06:18:44Z"
+          "ran_at": "2026-11-23T07:57:59Z"
         },
         "hardware": null
       },
@@ -192,7 +192,7 @@
         "unit": {
           "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-23T06:18:44Z"
+          "ran_at": "2026-11-23T07:57:59Z"
         },
         "hardware": null
       },
@@ -234,7 +234,7 @@
         "unit": {
           "passed": 14,
           "failed": 0,
-          "ran_at": "2026-11-23T06:18:44Z"
+          "ran_at": "2026-11-23T07:57:59Z"
         },
         "hardware": null
       },
@@ -279,12 +279,12 @@
         "unit": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-23T06:18:44Z"
+          "ran_at": "2026-11-23T07:57:59Z"
         },
         "hardware": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-23T06:18:44Z"
+          "ran_at": "2026-11-23T07:57:59Z"
         }
       },
       "last_commit": {
@@ -324,12 +324,12 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-23T06:18:44Z"
+          "ran_at": "2026-11-23T07:57:59Z"
         },
         "hardware": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-23T06:18:44Z"
+          "ran_at": "2026-11-23T07:57:59Z"
         }
       },
       "last_commit": {
@@ -369,12 +369,12 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-23T06:18:44Z"
+          "ran_at": "2026-11-23T07:57:59Z"
         },
         "hardware": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-23T06:18:44Z"
+          "ran_at": "2026-11-23T07:57:59Z"
         }
       },
       "last_commit": {
@@ -451,7 +451,7 @@
         "unit": {
           "passed": 6,
           "failed": 0,
-          "ran_at": "2026-11-23T06:18:44Z"
+          "ran_at": "2026-11-23T07:57:59Z"
         },
         "hardware": null
       },
@@ -492,14 +492,14 @@
         "unit": {
           "passed": 37,
           "failed": 0,
-          "ran_at": "2026-11-23T06:18:44Z"
+          "ran_at": "2026-11-23T07:57:59Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "d7d5eac7e8d0cbade72b95fd64d600323a26b90a",
-        "message": "Generic redesign: users run their own tools inside kotl run / kotl lease",
-        "date": "2026-11-22T03:09:03+11:00"
+        "hash": "84ed3f433c4f6313b9b9f9a1505148b49cbedd3e",
+        "message": "kotl top: live terminal view of boards, queue and your jobs",
+        "date": "2026-11-23T17:18:45+11:00"
       },
       "issues": [],
       "log": [
@@ -554,14 +554,14 @@
         "unit": {
           "passed": 17,
           "failed": 0,
-          "ran_at": "2026-11-23T06:18:44Z"
+          "ran_at": "2026-11-23T07:57:59Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "d7d5eac7e8d0cbade72b95fd64d600323a26b90a",
-        "message": "Generic redesign: users run their own tools inside kotl run / kotl lease",
-        "date": "2026-11-22T03:09:03+11:00"
+        "hash": "84ed3f433c4f6313b9b9f9a1505148b49cbedd3e",
+        "message": "kotl top: live terminal view of boards, queue and your jobs",
+        "date": "2026-11-23T17:18:45+11:00"
       },
       "issues": [],
       "log": [
@@ -611,7 +611,7 @@
         "unit": {
           "passed": 4,
           "failed": 0,
-          "ran_at": "2026-11-23T06:18:44Z"
+          "ran_at": "2026-11-23T07:57:59Z"
         },
         "hardware": null
       },
@@ -694,7 +694,7 @@
         "unit": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-23T06:18:44Z"
+          "ran_at": "2026-11-23T07:57:59Z"
         },
         "hardware": null
       },
@@ -875,9 +875,9 @@
     },
     "access": {
       "title": "PC access (job keys)",
-      "status": "in_progress",
+      "status": "tested",
       "milestone": "M3",
-      "now": "Code and unit tests done; waiting for the admin to install (deploy/M3-SETUP.md), then the board tests.",
+      "now": "Job keys proven on the real PC: they work during a lease and are refused after it. FireSim smoke run still to come.",
       "code": [
         "deploy/M3-SETUP.md",
         "deploy/pc/kotl-keys",
@@ -887,14 +887,18 @@
         "unit": {
           "passed": 21,
           "failed": 0,
-          "ran_at": "2026-11-23T06:18:44Z"
+          "ran_at": "2026-11-23T07:57:59Z"
         },
-        "hardware": null
+        "hardware": {
+          "passed": 1,
+          "failed": 0,
+          "ran_at": "2026-11-23T07:57:59Z"
+        }
       },
       "last_commit": {
-        "hash": "1c94bf86ab0e307e25b94e346b5f2da5647d9f01",
-        "message": "M3-SETUP: exact steps for this lab (venv vs conda, smoke config, checks)",
-        "date": "2026-11-23T17:12:59+11:00"
+        "hash": "8159f6174757c108e21c8cfa7b111c3192ea30c6",
+        "message": "NEXT.md for the user's current steps; M3-SETUP: build linux-poweroff first",
+        "date": "2026-11-23T17:33:17+11:00"
       },
       "issues": [
         "Soft lockdown: password logins to virtex-host bypass the queue until full lockdown (user's choice for now)."
@@ -935,6 +939,10 @@
         {
           "date": "2026-11-23",
           "text": "Job 36: the user's own FireSim logged in with the job key and copied the driver to the PC; it stopped on a missing workload image (linux-poweroff not built). Kotl freed the board. kotl top checked in a pseudo-terminal."
+        },
+        {
+          "date": "2026-11-23",
+          "text": "Board test (user OK): job key logs in during a lease, refused after release. M2 integration 7/7 again, now adding and removing keys on the PC."
         }
       ]
     },
@@ -994,11 +1002,15 @@
         "unit": {
           "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-23T06:18:44Z"
+          "ran_at": "2026-11-23T07:57:59Z"
         },
         "hardware": null
       },
-      "last_commit": null,
+      "last_commit": {
+        "hash": "84ed3f433c4f6313b9b9f9a1505148b49cbedd3e",
+        "message": "kotl top: live terminal view of boards, queue and your jobs",
+        "date": "2026-11-23T17:18:45+11:00"
+      },
       "issues": [],
       "log": [
         {
