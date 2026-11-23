@@ -715,7 +715,7 @@
       "title": "Health check",
       "status": "in_progress",
       "milestone": "M4",
-      "now": "Live: Slurm runs it every 5 min (card, driver, glibc, unleased work); drain holds the license. Still to prove: a real driver failure (reload, down/up).",
+      "now": "Live: Slurm runs it every 5 min; driver-failure test passed (XDMA unloaded, one reload, board stayed up); drain holds the license. The down path (reload fails) is unit-tested only.",
       "code": [
         "deploy/M4-SETUP.md",
         "deploy/health.sh",
@@ -735,7 +735,9 @@
         "message": "Health names what runs as the PC account; kotl top wraps long warnings",
         "date": "2026-11-23T20:00:23+11:00"
       },
-      "issues": [],
+      "issues": [
+        "Something on the PC unloaded XDMA between 19:55 and 20:05 on 2026-11-23, outside Kotl: watch for it."
+      ],
       "log": [
         {
           "date": "2026-11-22",
@@ -780,6 +782,10 @@
         {
           "date": "2026-11-23",
           "text": "Process lists in the warning are capped at 8 names (and N more)."
+        },
+        {
+          "date": "2026-11-23",
+          "text": "Driver-failure test (user, 20:07): XDMA unloaded on the PC; the 20:10 check reloaded it once and the board stayed up. Note: the 20:05 check also needed a reload, before the test: something on the PC unloaded XDMA between 19:55 and 20:05."
         }
       ]
     },
