@@ -166,3 +166,12 @@ def test_only_kotl_or_admin_runs_checks(tmp_path, monkeypatch):
 def test_health_sh_always_exits_0():
     r = subprocess.run(["sh", str(Path(__file__).resolve().parents[2] / "deploy/health.sh")])
     assert r.returncode == 0
+
+
+def test_long_process_lists_are_capped():
+    class Many(FakePC):
+        def run(self, host, argv, timeout=60, check=True):
+            if argv[-1] == "busy":
+                return "busy: " + ", ".join(f"p{i}" for i in range(20)) + "\n"
+            return super().run(host, argv, timeout, check)
+    assert health.pc_busy({"host": "pc"}, "virtex-host", Many()) == "p0, p1, p2, p3, p4, p5, p6, p7 and 12 more"

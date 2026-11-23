@@ -118,7 +118,10 @@ def action(key, job):
 
 
 def loop(scr):
-    curses.curs_set(0)
+    try:
+        curses.curs_set(0)      # some terminals can't hide the cursor; that's fine
+    except curses.error:
+        pass
     scr.timeout(int(REFRESH * 1000))
     selected, note, snap = 0, "", snapshot()
     last = time.time()

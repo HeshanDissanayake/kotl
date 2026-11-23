@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "updated": "2026-11-23T09:00:23Z",
-  "repo_commit": "5f125fb41f97a98744ba9788555b107f076886f5",
+  "updated": "2026-11-23T09:10:01Z",
+  "repo_commit": "42e81e40a7afb1a6fe0945141b8cabfef737be75",
   "watch": [
     "kotl/",
     "deploy/",
@@ -48,14 +48,14 @@
         "unit": {
           "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-23T09:00:10Z"
+          "ran_at": "2026-11-23T09:09:55Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "9eaa0aa27b6e80d37b6298c1e334fe30a08b98e6",
-        "message": "Add Kotl handoff: design view, status tooling, pre-commit check",
-        "date": "2026-11-21T23:57:47+11:00"
+        "hash": "48fea272733b4dd67e0b073279dbd29ea6c40e0b",
+        "message": "next.sh logs everything to .kotl/next.log; a local hook shows Claude what's new",
+        "date": "2026-11-23T20:05:43+11:00"
       },
       "issues": [],
       "log": [
@@ -86,7 +86,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-23T09:00:10Z"
+          "ran_at": "2026-11-23T09:09:55Z"
         },
         "hardware": null
       },
@@ -124,7 +124,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-23T09:00:10Z"
+          "ran_at": "2026-11-23T09:09:55Z"
         },
         "hardware": null
       },
@@ -169,7 +169,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-23T09:00:10Z"
+          "ran_at": "2026-11-23T09:09:55Z"
         },
         "hardware": null
       },
@@ -202,7 +202,7 @@
         "unit": {
           "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-23T09:00:10Z"
+          "ran_at": "2026-11-23T09:09:55Z"
         },
         "hardware": null
       },
@@ -244,7 +244,7 @@
         "unit": {
           "passed": 14,
           "failed": 0,
-          "ran_at": "2026-11-23T09:00:10Z"
+          "ran_at": "2026-11-23T09:09:55Z"
         },
         "hardware": null
       },
@@ -289,12 +289,12 @@
         "unit": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-23T09:00:10Z"
+          "ran_at": "2026-11-23T09:09:55Z"
         },
         "hardware": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-23T09:00:10Z"
+          "ran_at": "2026-11-23T09:09:55Z"
         }
       },
       "last_commit": {
@@ -334,12 +334,12 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-23T09:00:10Z"
+          "ran_at": "2026-11-23T09:09:55Z"
         },
         "hardware": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-23T09:00:10Z"
+          "ran_at": "2026-11-23T09:09:55Z"
         }
       },
       "last_commit": {
@@ -379,18 +379,18 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-23T09:00:10Z"
+          "ran_at": "2026-11-23T09:09:55Z"
         },
         "hardware": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-23T09:00:10Z"
+          "ran_at": "2026-11-23T09:09:55Z"
         }
       },
       "last_commit": {
-        "hash": "7c3773b547e4d240bd2e4a525a02d56ba9a0ee65",
-        "message": "M4: health check takes broken boards down, notifier, kotl attach (not yet installed)",
-        "date": "2026-11-23T19:30:06+11:00"
+        "hash": "42e81e40a7afb1a6fe0945141b8cabfef737be75",
+        "message": "kotl-keys busy: count remote work only, not the PC's desktop login",
+        "date": "2026-11-23T20:08:29+11:00"
       },
       "issues": [],
       "log": [
@@ -437,9 +437,9 @@
         "hardware": null
       },
       "last_commit": {
-        "hash": "7c3773b547e4d240bd2e4a525a02d56ba9a0ee65",
-        "message": "M4: health check takes broken boards down, notifier, kotl attach (not yet installed)",
-        "date": "2026-11-23T19:30:06+11:00"
+        "hash": "42e81e40a7afb1a6fe0945141b8cabfef737be75",
+        "message": "kotl-keys busy: count remote work only, not the PC's desktop login",
+        "date": "2026-11-23T20:08:29+11:00"
       },
       "issues": [],
       "log": [
@@ -461,7 +461,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-23T09:00:10Z"
+          "ran_at": "2026-11-23T09:09:55Z"
         },
         "hardware": null
       },
@@ -514,14 +514,14 @@
         "unit": {
           "passed": 37,
           "failed": 0,
-          "ran_at": "2026-11-23T09:00:10Z"
+          "ran_at": "2026-11-23T09:09:55Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "7c3773b547e4d240bd2e4a525a02d56ba9a0ee65",
-        "message": "M4: health check takes broken boards down, notifier, kotl attach (not yet installed)",
-        "date": "2026-11-23T19:30:06+11:00"
+        "hash": "5ff8c227887dd97f2d2e5c168b7db85813687b46",
+        "message": "Health names what runs as the PC account; kotl top wraps long warnings",
+        "date": "2026-11-23T20:00:23+11:00"
       },
       "issues": [],
       "log": [
@@ -584,14 +584,14 @@
         "unit": {
           "passed": 17,
           "failed": 0,
-          "ran_at": "2026-11-23T09:00:10Z"
+          "ran_at": "2026-11-23T09:09:55Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "7c3773b547e4d240bd2e4a525a02d56ba9a0ee65",
-        "message": "M4: health check takes broken boards down, notifier, kotl attach (not yet installed)",
-        "date": "2026-11-23T19:30:06+11:00"
+        "hash": "5ff8c227887dd97f2d2e5c168b7db85813687b46",
+        "message": "Health names what runs as the PC account; kotl top wraps long warnings",
+        "date": "2026-11-23T20:00:23+11:00"
       },
       "issues": [],
       "log": [
@@ -641,7 +641,7 @@
         "unit": {
           "passed": 4,
           "failed": 0,
-          "ran_at": "2026-11-23T09:00:10Z"
+          "ran_at": "2026-11-23T09:09:55Z"
         },
         "hardware": null
       },
@@ -724,16 +724,16 @@
       ],
       "tests": {
         "unit": {
-          "passed": 17,
+          "passed": 18,
           "failed": 0,
-          "ran_at": "2026-11-23T09:00:10Z"
+          "ran_at": "2026-11-23T09:09:55Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "65e9fe3e5447e83bfc57ac00aeb3d38934ddb713",
-        "message": "Fix: health.sh and epilog.sh had no PATH under Slurm, so they did nothing",
-        "date": "2026-11-23T19:39:26+11:00"
+        "hash": "5ff8c227887dd97f2d2e5c168b7db85813687b46",
+        "message": "Health names what runs as the PC account; kotl top wraps long warnings",
+        "date": "2026-11-23T20:00:23+11:00"
       },
       "issues": [],
       "log": [
@@ -776,6 +776,10 @@
         {
           "date": "2026-11-23",
           "text": "Found: virtex-host is the PC's 61-day desktop login, so 'anything running' was always true (and a lease's idle guard could never trip). kotl-keys busy now counts remote work only: SSH sessions and what they started, screen, tmux, FireSim drivers."
+        },
+        {
+          "date": "2026-11-23",
+          "text": "Process lists in the warning are capped at 8 names (and N more)."
         }
       ]
     },
@@ -792,7 +796,7 @@
         "unit": {
           "passed": 6,
           "failed": 0,
-          "ran_at": "2026-11-23T09:00:10Z"
+          "ran_at": "2026-11-23T09:09:55Z"
         },
         "hardware": null
       },
@@ -825,7 +829,7 @@
         "unit": {
           "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-23T09:00:10Z"
+          "ran_at": "2026-11-23T09:09:55Z"
         },
         "hardware": null
       },
@@ -975,18 +979,18 @@
         "unit": {
           "passed": 21,
           "failed": 0,
-          "ran_at": "2026-11-23T09:00:10Z"
+          "ran_at": "2026-11-23T09:09:55Z"
         },
         "hardware": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-23T09:00:10Z"
+          "ran_at": "2026-11-23T09:09:55Z"
         }
       },
       "last_commit": {
-        "hash": "7c3773b547e4d240bd2e4a525a02d56ba9a0ee65",
-        "message": "M4: health check takes broken boards down, notifier, kotl attach (not yet installed)",
-        "date": "2026-11-23T19:30:06+11:00"
+        "hash": "42e81e40a7afb1a6fe0945141b8cabfef737be75",
+        "message": "kotl-keys busy: count remote work only, not the PC's desktop login",
+        "date": "2026-11-23T20:08:29+11:00"
       },
       "issues": [
         "The PC runs glibc 2.35 (Ubuntu 22.04), the workstation 2.39 (24.04): FireSim runs need --use-pc-glibc (or the same removal by hand). kotl board check reports it."
@@ -1098,14 +1102,14 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-23T09:00:10Z"
+          "ran_at": "2026-11-23T09:09:55Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "7c3773b547e4d240bd2e4a525a02d56ba9a0ee65",
-        "message": "M4: health check takes broken boards down, notifier, kotl attach (not yet installed)",
-        "date": "2026-11-23T19:30:06+11:00"
+        "hash": "5ff8c227887dd97f2d2e5c168b7db85813687b46",
+        "message": "Health names what runs as the PC account; kotl top wraps long warnings",
+        "date": "2026-11-23T20:00:23+11:00"
       },
       "issues": [],
       "log": [
@@ -1120,6 +1124,10 @@
         {
           "date": "2026-11-23",
           "text": "Long warnings wrap instead of being cut at the screen edge."
+        },
+        {
+          "date": "2026-11-23",
+          "text": "Fix: no crash on terminals that can't hide the cursor."
         }
       ]
     }

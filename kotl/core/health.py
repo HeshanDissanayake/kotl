@@ -103,7 +103,10 @@ def pc_busy(board, account, ssh=ssh_mod):
         return ""
     if not out.startswith("busy"):
         return ""
-    return out.split(":", 1)[1].strip() if ":" in out else "busy"
+    names = [n.strip() for n in out.split(":", 1)[1].split(",")] if ":" in out else []
+    if len(names) > 8:
+        return ", ".join(names[:8]) + f" and {len(names) - 8} more"
+    return ", ".join(names) or "busy"
 
 
 def run(registry, ssh=ssh_mod, slurm=slurm_mod, admin="", account="virtex-host", now=time.time, here=None):
