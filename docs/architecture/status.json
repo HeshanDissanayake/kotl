@@ -921,6 +921,10 @@
         {
           "date": "2026-11-22",
           "text": "job.sh gives the command an ssh-agent with only the job key, plus KOTL_JOB/KOTL_BOARD/KOTL_PC; kotl-keys busy for the lease idle guard."
+        },
+        {
+          "date": "2026-11-23",
+          "text": "M3-SETUP.md rewritten with exact steps (venv vs conda python, smoke config from config_runtime.yaml). Jobs 30 and 34 failed in the user's environment; Kotl freed the board correctly both times."
         }
       ]
     },
