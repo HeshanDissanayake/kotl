@@ -10,7 +10,8 @@
   ],
   "shared": [
     "deploy/NEXT.md",
-    "deploy/examples/"
+    "deploy/examples/",
+    "deploy/next.sh"
   ],
   "statuses": {
     "planned": "Not started",
