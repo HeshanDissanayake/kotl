@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "updated": "2026-11-23T09:19:24Z",
-  "repo_commit": "dfa5dfd0fb2d0c571293391c2d5a0d4685e0fff7",
+  "updated": "2026-11-23T10:20:18Z",
+  "repo_commit": "2edb34c03c7633087efc9327cad286d6619bbb31",
   "watch": [
     "kotl/",
     "deploy/",
@@ -48,7 +48,7 @@
         "unit": {
           "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-23T09:16:53Z"
+          "ran_at": "2026-11-23T10:20:02Z"
         },
         "hardware": null
       },
@@ -86,7 +86,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-23T09:16:53Z"
+          "ran_at": "2026-11-23T10:20:02Z"
         },
         "hardware": null
       },
@@ -124,7 +124,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-23T09:16:53Z"
+          "ran_at": "2026-11-23T10:20:02Z"
         },
         "hardware": null
       },
@@ -169,7 +169,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-23T09:16:53Z"
+          "ran_at": "2026-11-23T10:20:02Z"
         },
         "hardware": null
       },
@@ -202,7 +202,7 @@
         "unit": {
           "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-23T09:16:53Z"
+          "ran_at": "2026-11-23T10:20:02Z"
         },
         "hardware": null
       },
@@ -244,7 +244,7 @@
         "unit": {
           "passed": 14,
           "failed": 0,
-          "ran_at": "2026-11-23T09:16:53Z"
+          "ran_at": "2026-11-23T10:20:02Z"
         },
         "hardware": null
       },
@@ -289,12 +289,12 @@
         "unit": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-23T09:16:53Z"
+          "ran_at": "2026-11-23T10:20:02Z"
         },
         "hardware": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-23T09:16:53Z"
+          "ran_at": "2026-11-23T10:20:02Z"
         }
       },
       "last_commit": {
@@ -334,12 +334,12 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-23T09:16:53Z"
+          "ran_at": "2026-11-23T10:20:02Z"
         },
         "hardware": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-23T09:16:53Z"
+          "ran_at": "2026-11-23T10:20:02Z"
         }
       },
       "last_commit": {
@@ -379,12 +379,12 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-23T09:16:53Z"
+          "ran_at": "2026-11-23T10:20:02Z"
         },
         "hardware": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-23T09:16:53Z"
+          "ran_at": "2026-11-23T10:20:02Z"
         }
       },
       "last_commit": {
@@ -461,7 +461,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-23T09:16:53Z"
+          "ran_at": "2026-11-23T10:20:02Z"
         },
         "hardware": null
       },
@@ -514,7 +514,7 @@
         "unit": {
           "passed": 37,
           "failed": 0,
-          "ran_at": "2026-11-23T09:16:53Z"
+          "ran_at": "2026-11-23T10:20:02Z"
         },
         "hardware": null
       },
@@ -584,7 +584,7 @@
         "unit": {
           "passed": 17,
           "failed": 0,
-          "ran_at": "2026-11-23T09:16:53Z"
+          "ran_at": "2026-11-23T10:20:02Z"
         },
         "hardware": null
       },
@@ -626,6 +626,10 @@
         {
           "date": "2026-11-22",
           "text": "Generic: no firesim wrapper or PATH snippet. kotl lease prints how to use the job key."
+        },
+        {
+          "date": "2026-11-23",
+          "text": "kotl notices --peek (no mark-read) for the plugin's session start."
         }
       ]
     },
@@ -641,7 +645,7 @@
         "unit": {
           "passed": 4,
           "failed": 0,
-          "ran_at": "2026-11-23T09:16:53Z"
+          "ran_at": "2026-11-23T10:20:02Z"
         },
         "hardware": null
       },
@@ -726,7 +730,7 @@
         "unit": {
           "passed": 18,
           "failed": 0,
-          "ran_at": "2026-11-23T09:16:53Z"
+          "ran_at": "2026-11-23T10:20:02Z"
         },
         "hardware": null
       },
@@ -806,7 +810,7 @@
         "unit": {
           "passed": 6,
           "failed": 0,
-          "ran_at": "2026-11-23T09:16:53Z"
+          "ran_at": "2026-11-23T10:20:02Z"
         },
         "hardware": null
       },
@@ -843,7 +847,7 @@
         "unit": {
           "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-23T09:16:53Z"
+          "ran_at": "2026-11-23T10:20:02Z"
         },
         "hardware": null
       },
@@ -870,14 +874,19 @@
     },
     "plugin": {
       "title": "Kotl plugin for Claude Code",
-      "status": "planned",
+      "status": "in_progress",
       "milestone": "M5",
-      "now": "",
+      "now": "Code, unit tests and claude plugin validate done; waiting for the install and a fresh-session test.",
       "code": [
+        "deploy/M5-SETUP.md",
         "plugin/"
       ],
       "tests": {
-        "unit": null,
+        "unit": {
+          "passed": 14,
+          "failed": 0,
+          "ran_at": "2026-11-23T10:20:02Z"
+        },
         "hardware": null
       },
       "last_commit": null,
@@ -886,6 +895,10 @@
         {
           "date": "2026-11-22",
           "text": "Design: hooks check the firesim wrapper and the template instead of blocking raw firesim."
+        },
+        {
+          "date": "2026-11-23",
+          "text": "Classic plugin (skill + command hooks), repo is a marketplace; install.sh publishes it at /opt/kotl for everyone. kotl-cmd.sh runs kotl locally or over ssh ($KOTL_SSH). 14 tests; claude plugin validate passes."
         }
       ]
     },
@@ -997,12 +1010,12 @@
         "unit": {
           "passed": 21,
           "failed": 0,
-          "ran_at": "2026-11-23T09:16:53Z"
+          "ran_at": "2026-11-23T10:20:02Z"
         },
         "hardware": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-23T09:16:53Z"
+          "ran_at": "2026-11-23T10:20:02Z"
         }
       },
       "last_commit": {
@@ -1120,7 +1133,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-23T09:16:53Z"
+          "ran_at": "2026-11-23T10:20:02Z"
         },
         "hardware": null
       },

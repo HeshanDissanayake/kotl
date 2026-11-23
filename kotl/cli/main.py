@@ -8,7 +8,7 @@
   kotl cancel JOB                      cancel your job (Slurm allows only the owner or root)
   kotl history | logs JOB [-f] | fetch JOB [--to DIR]
   kotl attach [JOB]                    FireSim's console on your job's PC (Ctrl-a d detaches)
-  kotl notices [--all]                 ETA, start-time and board notices for you
+  kotl notices [--all] [--peek]        ETA, start-time and board notices for you (--peek: don't mark read)
   kotl board list | add NAME TYPE HOST | drain NAME | resume NAME | check    (changes: admin only)
 
 The ETA is required. It's the queue's estimate and never kills a job; --max (default 2x ETA)
@@ -242,7 +242,8 @@ def main(argv=None):
     sub.add_parser("top", help="live view of boards, queue and your jobs")
     sub.add_parser("cancel").add_argument("job", type=int)
     sub.add_parser("attach").add_argument("job", nargs="?", type=int)
-    sub.add_parser("notices").add_argument("--all", action="store_true")
+    nt = sub.add_parser("notices"); nt.add_argument("--all", action="store_true")
+    nt.add_argument("--peek", action="store_true", help="show unread notices without marking them read")
     sub.add_parser("history").add_argument("--limit", type=int, default=20)
     lg = sub.add_parser("logs"); lg.add_argument("job", type=int); lg.add_argument("-f", "--follow", action="store_true")
     fe = sub.add_parser("fetch"); fe.add_argument("job", type=int); fe.add_argument("--to", default="kotl-results")
@@ -270,7 +271,7 @@ def main(argv=None):
     if a.cmd == "attach":
         return cmd_attach(a)
     if a.cmd == "notices":
-        return launch("notices", *([] if a.all else ["--unread"]), "--read")
+        return launch("notices", *([] if a.all else ["--unread"]), *([] if a.peek else ["--read"]))
     if a.cmd == "history":
         return launch("history", "--limit", a.limit)
     if a.cmd == "logs":

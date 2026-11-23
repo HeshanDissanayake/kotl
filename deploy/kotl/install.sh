@@ -5,7 +5,8 @@
 #       copies kotl/ to /opt/kotl/lib, installs /opt/kotl/launch, /opt/kotl/job.sh,
 #       /opt/kotl/epilog.sh, the kotl command (/opt/kotl/bin/kotl, linked from /usr/local/bin),
 #       an SSH client entry per board (/etc/ssh/ssh_config.d/kotl.conf: your job key during a lease),
-#       the notifier's systemd timer (every minute), adds each board to the registry, and makes
+#       the Claude Code plugin (/opt/kotl/plugin, a marketplace at /opt/kotl: users add it with
+#       /plugin marketplace add /opt/kotl), the notifier's systemd timer (every minute), adds each board to the registry, and makes
 #       kotl a Slurm admin (its guards cancel hung jobs; its health check holds a down board's
 #       license with a reservation). Re-run after every update of the repo.
 #   kotl/install.sh --undo     removes the code (the registry and results stay)
@@ -57,6 +58,18 @@ install_all() {
   put_file /opt/kotl/health.sh 755 root:root <"$DEPLOY_DIR/health.sh"
   run ln -sfn /opt/kotl/bin/kotl /usr/local/bin/kotl
 
+  # the Claude Code plugin, readable by everyone, as a marketplace at /opt/kotl
+  local plug
+  plug=$(p /opt/kotl/plugin)
+  rm -rf "$plug"
+  cp -r "$REPO/plugin" "$plug"
+  find "$plug" -type d -exec chmod 755 {} +
+  find "$plug" -type f -exec chmod 644 {} +
+  find "$plug" -name '*.sh' -exec chmod 755 {} +
+  if [ "$KOTL_DRY_RUN" != 1 ]; then chown -R root:root "$plug"; fi
+  say "copied plugin/ to /opt/kotl/plugin"
+  put_file /opt/kotl/.claude-plugin/marketplace.json 644 root:root <"$REPO/.claude-plugin/marketplace.json"
+
   # kotl cancels hung jobs (guards) and holds a down board's license (reservations): Slurm admin
   if [ "$KOTL_DRY_RUN" = 1 ] || [ -z "$(sacctmgr -n -P show user kotl format=user 2>/dev/null)" ]; then
     run sacctmgr -i add user name=kotl account=kotl adminlevel=Admin
@@ -88,8 +101,10 @@ install_all() {
 undo_all() {
   local lib
   lib=$(p /opt/kotl/lib)
-  [ "$KOTL_DRY_RUN" = 1 ] || rm -rf "$lib"
+  rm -rf "$lib"     # under the dry-run folder in a dry run
   say "removed /opt/kotl/lib"
+  rm -rf "$(p /opt/kotl/plugin)"     # under the dry-run folder in a dry run
+  remove_file /opt/kotl/.claude-plugin/marketplace.json
   remove_file /opt/kotl/launch
   remove_file /opt/kotl/bin/kotl
   remove_file /etc/ssh/ssh_config.d/kotl.conf

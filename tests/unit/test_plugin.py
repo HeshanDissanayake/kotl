@@ -1,0 +1,100 @@
+"""The Kotl plugin for Claude Code: manifest, marketplace, skill, and its hook scripts."""
+import json
+import os
+import subprocess
+from pathlib import Path
+
+import pytest
+
+pytestmark = pytest.mark.feature("plugin")
+ROOT = Path(__file__).resolve().parents[2]
+PLUGIN = ROOT / "plugin"
+
+
+def sh(script, stdin="", env=None, path_dirs=()):
+    e = {"PATH": ":".join([*map(str, path_dirs), "/usr/bin", "/bin"]), **(env or {})}
+    return subprocess.run(["sh", str(PLUGIN / "hooks" / script)], input=stdin, capture_output=True, text=True, env=e)
+
+
+def fake(dirpath, name, body):
+    dirpath.mkdir(exist_ok=True)
+    f = dirpath / name
+    f.write_text("#!/bin/sh\n" + body)
+    f.chmod(0o755)
+    return dirpath
+
+
+def test_manifest_marketplace_and_skill():
+    m = json.loads((PLUGIN / ".claude-plugin/plugin.json").read_text())
+    assert m["name"] == "kotl" and m["version"]
+    mk = json.loads((ROOT / ".claude-plugin/marketplace.json").read_text())
+    entry = [p for p in mk["plugins"] if p["name"] == "kotl"][0]
+    assert (ROOT / entry["source"] / ".claude-plugin/plugin.json").exists()
+    skill = (PLUGIN / "skills/kotl/SKILL.md").read_text()
+    front = skill.split("---")[1]
+    assert "name: kotl" in front and "description:" in front
+    for must in ("kotl run --eta", "kotl lease", "kotl release", "KOTL RESULT: PASS", "kotl fetch", "status.json"):
+        assert must in skill
+
+
+def test_hooks_json_points_at_real_scripts():
+    hooks = json.loads((PLUGIN / "hooks/hooks.json").read_text())["hooks"]
+    assert set(hooks) == {"SessionStart", "PreToolUse"}
+    for event in hooks.values():
+        for group in event:
+            for h in group["hooks"]:
+                script = h["command"].split("/hooks/")[1].rstrip('"')
+                assert (PLUGIN / "hooks" / script).exists(), script
+
+
+@pytest.mark.parametrize("command,asks", [
+    ("cd deploy && firesim runworkload -c x.yaml", True),
+    ("firesim infrasetup", True),
+    ("firesim kill -c a.yaml", True),
+    ('kotl run --eta 30m -- sh -c "firesim infrasetup -c X && firesim runworkload -c X"', False),
+    ("ssh $KOTL_PC hostname; firesim runworkload  # inside a lease, KOTL_JOB=$KOTL_JOB", False),
+    ("firesim buildbitstream", False),
+    ("ls -la", False),
+])
+def test_pre_bash_asks_only_for_board_commands_outside_kotl(command, asks):
+    r = sh("pre-bash.sh", json.dumps({"tool_name": "Bash", "tool_input": {"command": command}}))
+    assert r.returncode == 0
+    if asks:
+        out = json.loads(r.stdout)["hookSpecificOutput"]
+        assert out["permissionDecision"] == "ask" and "kotl run --eta" in out["permissionDecisionReason"]
+    else:
+        assert r.stdout.strip() == ""
+
+
+def test_pre_bash_ignores_garbage():
+    assert sh("pre-bash.sh", "not json").returncode == 0
+
+
+def test_kotl_cmd_local_then_ssh_then_nothing(tmp_path):
+    local = fake(tmp_path / "local", "kotl", 'echo "local kotl: $*"\n')
+    assert sh("kotl-cmd.sh", path_dirs=[local]).stdout.strip() == "local kotl:"
+    remote = fake(tmp_path / "remote", "ssh", 'echo "ssh: $*"\n')
+    env = {"KOTL_SSH": "comparch"}
+    r = subprocess.run(["sh", str(PLUGIN / "hooks/kotl-cmd.sh"), "logs", "41", "it's"],
+                       capture_output=True, text=True, env={"PATH": f"{remote}:/usr/bin:/bin", **env})
+    assert r.stdout.strip() == "ssh: -o BatchMode=yes -o ConnectTimeout=5 comparch kotl 'logs' '41' 'it'\\''s'"
+    r = subprocess.run(["sh", str(PLUGIN / "hooks/kotl-cmd.sh"), "status"], capture_output=True, text=True,
+                       env={"PATH": "/usr/bin:/bin"})
+    assert r.returncode == 127
+
+
+def test_session_start_shows_queue_and_unread_notices(tmp_path):
+    k = fake(tmp_path / "bin", "kotl", '''case "$1" in
+  status) echo "vcu118-pc1   idle"; echo "kotl: 1 unread notice: kotl notices" ;;
+  notices) [ "$2" = "--peek" ] && echo "* 11-23 20:15  job 52 passed its ETA (1m)" ;;
+esac
+''')
+    r = sh("session-start.sh", path_dirs=[k])
+    assert r.returncode == 0
+    assert "Kotl (the lab's FPGA board queue) right now:" in r.stdout and "vcu118-pc1   idle" in r.stdout
+    assert "job 52 passed its ETA" in r.stdout and "not marked read" in r.stdout
+
+
+def test_session_start_is_quiet_without_kotl():
+    r = sh("session-start.sh")
+    assert r.returncode == 0 and r.stdout == ""

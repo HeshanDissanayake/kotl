@@ -3,6 +3,7 @@
 Files land under a temporary KOTL_ROOT, and commands are printed as 'would run: ...'.
 The real install is checked by deploy/verify-m1.sh after the admin runs the scripts.
 """
+import json
 import os
 import subprocess
 from pathlib import Path
@@ -314,3 +315,14 @@ def test_slurm_hooks_work_without_path(script, tmp_path):
     assert text.index("PATH=") < text.index("runuser")
     r = subprocess.run(["/bin/sh", str(DEPLOY / script)], env={}, capture_output=True)
     assert r.returncode == 0
+
+
+@pytest.mark.feature("plugin")
+def test_install_publishes_the_plugin(tmp_path):
+    dry("kotl/install.sh", root=tmp_path)
+    assert (tmp_path / "opt/kotl/plugin/skills/kotl/SKILL.md").exists()
+    assert os.access(tmp_path / "opt/kotl/plugin/hooks/pre-bash.sh", os.X_OK)
+    mk = json.loads((tmp_path / "opt/kotl/.claude-plugin/marketplace.json").read_text())
+    assert mk["plugins"][0]["source"] == "./plugin"
+    dry("kotl/install.sh", "--undo", root=tmp_path)
+    assert not (tmp_path / "opt/kotl/plugin").exists()

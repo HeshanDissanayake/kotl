@@ -2,7 +2,7 @@
  "schema": 1,
  "title": "Kotl Architecture",
  "intro": "Teal is Kotl, our product. Purple is Slurm. Gray is everything else off the shelf, plus the hardware. The dot on each box is its build status; click a box for exactly what's happening.",
- "latest": "Latest: M4 done. Health check live (driver reload proven, license holds), ETA notices delivered, kotl attach works with the job key.",
+ "latest": "Latest: M5 code. The Kotl plugin for Claude Code: a skill, a session-start hook (queue and notices), and a question before FireSim board commands outside Kotl.",
  "canvas": {
   "w": 1520,
   "h": 820
@@ -1413,18 +1413,43 @@
    "kind": "Kotl · on each user's PC",
    "kindClass": "ko",
    "title": "Kotl plugin for Claude Code",
-   "what": "Part of Kotl, installed in every user's Claude Code. It makes the right path the easy one.",
+   "what": "Kotl's plugin for Claude Code. Every user installs it once; Claude then knows how to use the board queue, and sees the queue and your notices when a session starts.",
    "bullets": [
-    "<b>Skill:</b> teaches Claude <code>kotl run</code> / <code>kotl lease</code> with an ETA and an exit plan, and to write expect scripts that always have a timeout.",
-    "<b>Hook before a tool runs:</b> suggests wrapping board commands (firesim runworkload, …) in <code>kotl run</code>.",
-    "<b>Hook at session start:</b> shows the queue, your jobs and their start estimates.",
-    "Shows over-ETA and start-time notices; fetches results when a job ends."
+    "<b>Skill:</b> <code>kotl run</code> (preferred) and <code>kotl lease</code> with an ETA and an exit plan; FireSim through Kotl, with an honest <code>KOTL RESULT</code> and the glibc workaround; fetch, then read <code>status.json</code> first.",
+    "<b>SessionStart hook:</b> the queue, the boards and your unread notices (shown, not marked read).",
+    "<b>PreToolUse hook (Bash):</b> asks before <code>firesim infrasetup/runworkload/kill</code> runs outside <code>kotl run</code>/<code>lease</code>, and says how to run it through the queue. A suggestion with a question, not a block.",
+    "<b>Anywhere:</b> on the workstation it runs <code>kotl</code>; on a user's own PC it runs <code>ssh $KOTL_SSH kotl …</code> (set <code>KOTL_SSH</code> in <code>~/.claude/settings.json</code> under <code>env</code>)."
    ],
    "files": [
     "skill",
-    "hooks"
+    "hooks",
+    "marketplace"
    ],
-   "note": "Convenience only. The SSH lockdown and the end step are the real enforcement."
+   "note": "Convenience only. The SSH lockdown and the end step are the real enforcement.",
+   "term": [
+    {
+     "host": "you@ws · once",
+     "lines": [
+      {
+       "c": "claude plugin marketplace add /opt/kotl"
+      },
+      {
+       "c": "claude plugin install kotl@kotl"
+      }
+     ]
+    },
+    {
+     "host": "you, in Claude Code",
+     "lines": [
+      {
+       "k": "# then just ask, e.g."
+      },
+      {
+       "o": "> run hostname on the FPGA board through kotl and tell me the result"
+      }
+     ]
+    }
+   ]
   },
   "cli": {
    "kind": "Kotl · core · Slurm ①",
@@ -2153,6 +2178,7 @@
     "<code>/etc/systemd/system/kotl-notifier.{service,timer}</code>: runs the notifier every minute, as kotl <i>(new · M4)</i>",
     "<code>/opt/kotl/</code>: Kotl's code. M1: no-op <code>epilog.sh</code>, <code>health.sh</code>. M2: <code>lib/kotl/</code> (the package, root-owned), <code>launch</code>, <code>job.sh</code>, real <code>epilog.sh</code>, <code>bin/kotl</code>. M3: <code>bin/firesim</code>, adapters <i>(new · M1–M3)</i>",
     "<code>/usr/local/bin/kotl</code>: link to <code>/opt/kotl/bin/kotl</code>, so everyone has the command <i>(new · M2, deploy/kotl/install.sh)</i>",
+    "<code>/opt/kotl/plugin/</code> + <code>/opt/kotl/.claude-plugin/marketplace.json</code>: the Claude Code plugin, readable by everyone <i>(new · M5)</i>",
     "<b>Slurm:</b> the <code>kotl</code> account becomes an operator, so its guards can cancel a hung job <i>(M2)</i>",
     "<code>/var/lib/kotl/</code>: board registry kotl.db (owner kotl; folder M1, database M2) <i>(new · M1)</i>",
     "<code>/srv/kotl/</code>: jobs/ and out/&lt;user&gt;/&lt;job&gt;/, owner-only, deleted after 30 days (folders M1) <i>(new · M1)</i>",
@@ -2206,7 +2232,7 @@
    "bullets": [
     "<b>Their Chipyard and FireSim:</b> read only. Kotl copies <code>config_runtime.yaml</code> into <code>/srv/kotl/jobs/&lt;job&gt;/</code> and changes the copy.",
     "<b>Their home folder:</b> nothing, unless they run <code>kotl fetch</code> (downloads results).",
-    "<b>Their own PC:</b> only the Claude Code plugin, if they install it (M5)."
+    "<b>Their own PC:</b> only the Claude Code plugin, if they install it (M5); it reaches the workstation with <code>ssh $KOTL_SSH kotl …</code>."
    ],
    "files": [
     "workloadjson",
@@ -2375,17 +2401,17 @@
   },
   "hooks": {
    "name": "hooks.json",
-   "path": "kotl-plugin/hooks/",
+   "path": "plugin/hooks/",
    "ext": "json",
-   "desc": "Blocks raw FireSim commands; shows the queue when a session starts (sketch)",
-   "body": "{\n  \"hooks\": {\n    \"PreToolUse\": [\n      { \"matcher\": \"Bash\",\n        \"hooks\": [ { \"type\": \"command\",\n                     \"command\": \"${CLAUDE_PLUGIN_ROOT}/hooks/block-raw-firesim.sh\" } ] }\n    ],\n    \"SessionStart\": [\n      { \"hooks\": [ { \"type\": \"command\",\n                     \"command\": \"${CLAUDE_PLUGIN_ROOT}/hooks/queue-status.sh\" } ] }\n    ]\n  }\n}"
+   "desc": "SessionStart: queue, boards, unread notices. PreToolUse (Bash): asks before FireSim board commands outside kotl run",
+   "body": "{\n  \"hooks\": {\n    \"SessionStart\": [\n      {\n        \"hooks\": [\n          { \"type\": \"command\", \"command\": \"sh \\\"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh\\\"\", \"timeout\": 30 }\n        ]\n      }\n    ],\n    \"PreToolUse\": [\n      {\n        \"matcher\": \"Bash\",\n        \"hooks\": [\n          { \"type\": \"command\", \"command\": \"sh \\\"${CLAUDE_PLUGIN_ROOT}/hooks/pre-bash.sh\\\"\", \"timeout\": 10 }\n        ]\n      }\n    ]\n  }\n}"
   },
   "skill": {
    "name": "SKILL.md",
-   "path": "kotl-plugin/skills/kotl/",
+   "path": "plugin/skills/kotl/ (installed as /opt/kotl/plugin)",
    "ext": "md",
-   "desc": "Teaches Claude how to use Kotl",
-   "body": "---\nname: kotl\ndescription: Use the lab's FPGA boards through Kotl: hold a board with kotl run or kotl lease, then fetch results.\n---\n# Kotl\n- Every board use goes through kotl, with an ETA and an exit plan.\n- One run: kotl run --eta <est> -- <command>   (ends when the command exits; --max caps it)\n  FireSim: kotl run --eta 1h -- sh -c \"firesim infrasetup -c X && firesim runworkload -c X\"\n- By hand: kotl lease --eta <est>, then ssh <board>; always kotl release when done.\n- Workloads should power off by themselves; otherwise --max ends the job.\n- When a job ends: kotl fetch <job>, then read status.json first."
+   "desc": "Teaches Claude kotl run / lease with an ETA and an exit plan, FireSim through Kotl, and the fetch-then-read-status workflow",
+   "body": "---\nname: kotl\ndescription: Use the lab's FPGA boards (VCU118) through Kotl, the lab's board queue. Use whenever a task runs anything on an FPGA board or its PC (FireSim infrasetup/runworkload, a bitstream, a driver test, ssh to an FPGA PC), or when the person asks about the board queue, their Kotl jobs, results, logs or notices.\n---\n\n# Kotl: the lab's FPGA board queue\n\nThe FPGA boards are shared. Kotl queues every use of a board through Slurm, gives the job SSH\naccess to the board's PC only while it runs, and frees the board the moment the job ends.\n**Never use a board outside Kotl** (no plain `firesim infrasetup`/`runworkload`, no direct ssh to\nan FPGA PC without a lease): it can break someone else's run.\n\n## Where to run `kotl`\n\n- On the workstation (`command -v kotl` finds it): run `kotl ...` directly.\n- On a user's own PC: run it over ssh, `ssh \"$KOTL_SSH\" 'cd <folder> && kotl ...'`.\n  `KOTL_SSH` is the workstation's ssh name (set in `~/.claude/settings.json` under `env`). If it\n  is unset, ask the person for it. Files and folders must exist on the workstation.\n\n## Every job needs an ETA and an exit plan\n\n- `--eta` is required: your honest estimate. It only orders the queue; it never kills the job.\n- `--max` (default 2x ETA) stops a hung job. Set it when a run might legitimately take longer.\n- The job must end by itself: a command that exits, or a lease that is released.\n\n## Run a command on a board: `kotl run` (preferred)\n\nThe board is held while the command runs and freed the moment it exits.\n\n```sh\nkotl run --eta 30m -- <command>\n```\n\n- Inside the job, the command has `KOTL_JOB`, `KOTL_BOARD`, `KOTL_PC` (user@address of the board's\n  PC) and an ssh-agent holding only the job key: `ssh \"$KOTL_PC\" ...` works, FireSim's own ssh too.\n- Exit code 0 = `succeeded`. A line `KOTL RESULT: PASS` or `KOTL RESULT: FAIL` in the output sets\n  `passed`/`failed` instead. Print one when the exit code alone can't tell (see FireSim below).\n- `kotl run` waits and streams the output. For a long run, add `--no-wait` (it prints the job\n  number), then follow with `kotl logs JOB -f` or check `kotl status`. Run long waits in the\n  background rather than blocking the conversation.\n\n### FireSim\n\nRun FireSim from the person's own Chipyard, with their environment active (`source env.sh` and\n`sourceme-manager.sh --skip-ssh-setup` in the same shell), from `sims/firesim/deploy`:\n\n```sh\nkotl run --eta 30m -- sh -c \"firesim infrasetup -c CFG && firesim runworkload -c CFG\"\n```\n\n- The workload must power off by itself (FireMarshal `run`/`command`, or a script ending in\n  `poweroff`); otherwise `runworkload` waits until `--max` stops the job.\n- `runworkload` reports \"completed\" even when the driver failed to start: check the uartlog in\n  `results-workload/<newest>/*/uartlog` and print `KOTL RESULT: PASS` only if it shows the real\n  end (e.g. `reboot: Power down`). The lab's `deploy/examples/firesim-smoke.sh` does this.\n- If `kotl board list` warns that glibc differs between the workstation and the PC, FireSim's\n  bundled glibc must be removed on the PC after infrasetup: use\n  `deploy/examples/firesim-smoke.sh --use-pc-glibc CFG`, or\n  `ssh \"$KOTL_PC\" \"cd <sim dir>/sim_slot_0 && rm -f libc.so.6 libm.so.6 libpthread.so.0 libdl.so.2 librt.so.1\"`\n  between the two commands.\n\n## Work by hand: `kotl lease`\n\n```sh\nkotl lease --eta 1h        # waits for a board, then prints how to reach it\nssh <board>                # e.g. ssh vcu118-pc1: uses the lease's job key\nkotl attach                # FireSim's console (Ctrl-a d detaches)\nkotl release               # ALWAYS release when done\n```\n\nA lease ends on `kotl release`, after 30 minutes with nothing of yours running on the PC, or at\n`--max`. If you start a lease for the person, release it when the work is done.\n\n## Check, follow, fetch\n\n| Need | Command |\n| --- | --- |\n| queue, boards, unread notices | `kotl status` (live view for a person: `kotl top`) |\n| your past jobs and results | `kotl history` |\n| output of a job | `kotl logs JOB` (`-f` follows a running one) |\n| everything a job left | `kotl fetch JOB` -> `kotl-results/JOB/` with `status.json`, `output.log`, `launcher.log`, `outputs/` |\n| cancel your job | `kotl cancel JOB` |\n| notices (ETA passed, start slipped, board down/up) | `kotl notices` (marks them read) |\n\nAfter a job ends: fetch it, read `status.json` first (`result`, `rc`, `reason`), then\n`output.log`, then `launcher.log` (what Kotl did: key added/removed, guards, end). Report the\nresult, how long it took against the ETA, and anything odd.\n\n## Results\n\n`passed` / `failed` (KOTL RESULT line), `succeeded` / `failed` (exit code), `over_max` (the --max\nguard stopped it), `idle` (a lease with nothing running), `released`, `cancelled`, `killed`\n(ended by Slurm's backup), `no_access` (the board's PC couldn't be reached).\n\n## Don'ts\n\n- Don't run FireSim or touch an FPGA PC outside a Kotl job or lease.\n- Don't cancel other people's jobs (Kotl won't let you anyway).\n- Don't leave a lease running: release it.\n- Don't guess an ETA of hours for a minutes-long run: ETAs order the queue for everyone."
   },
   "epilog": {
    "name": "epilog.sh",
@@ -2463,6 +2489,13 @@
    "ext": "sudo",
    "desc": "kotl may run only kotl-xdma-reload, as root, with no arguments",
    "body": "# managed by kotl (deploy/pc/setup.sh)\nkotl ALL=(root) NOPASSWD: /usr/local/bin/kotl-xdma-reload \"\""
+  },
+  "marketplace": {
+   "name": "marketplace.json",
+   "path": "/opt/kotl/.claude-plugin/ (from the repo's .claude-plugin/)",
+   "ext": "json",
+   "desc": "Makes /opt/kotl a plugin marketplace everyone on the workstation can add",
+   "body": "{\n  \"name\": \"kotl\",\n  \"owner\": {\n    \"name\": \"Kotl\"\n  },\n  \"plugins\": [\n    {\n      \"name\": \"kotl\",\n      \"source\": \"./plugin\",\n      \"description\": \"Use the lab's FPGA boards through Kotl from Claude Code.\"\n    }\n  ],\n  \"description\": \"The lab's Kotl plugin: use the FPGA board queue from Claude Code.\"\n}"
   }
  }
 }
