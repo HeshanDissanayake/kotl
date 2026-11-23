@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "updated": "2026-11-23T10:35:32Z",
-  "repo_commit": "d1196f7507ba6b7036aa5fb5598dd8f2f98d5185",
+  "updated": "2026-11-23T10:44:51Z",
+  "repo_commit": "5fb3c76a217b28d09c36727d1a4f251e5f37b202",
   "watch": [
     "deploy/",
     "kotl/",
@@ -49,7 +49,7 @@
         "unit": {
           "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-23T10:35:32Z"
+          "ran_at": "2026-11-23T10:44:51Z"
         },
         "hardware": null
       },
@@ -87,7 +87,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-23T10:35:32Z"
+          "ran_at": "2026-11-23T10:44:51Z"
         },
         "hardware": null
       },
@@ -125,7 +125,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-23T10:35:32Z"
+          "ran_at": "2026-11-23T10:44:51Z"
         },
         "hardware": null
       },
@@ -170,7 +170,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-23T10:35:32Z"
+          "ran_at": "2026-11-23T10:44:51Z"
         },
         "hardware": null
       },
@@ -203,7 +203,7 @@
         "unit": {
           "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-23T10:35:32Z"
+          "ran_at": "2026-11-23T10:44:51Z"
         },
         "hardware": null
       },
@@ -245,7 +245,7 @@
         "unit": {
           "passed": 14,
           "failed": 0,
-          "ran_at": "2026-11-23T10:35:32Z"
+          "ran_at": "2026-11-23T10:44:51Z"
         },
         "hardware": null
       },
@@ -290,12 +290,12 @@
         "unit": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-23T10:35:32Z"
+          "ran_at": "2026-11-23T10:44:51Z"
         },
         "hardware": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-23T10:35:32Z"
+          "ran_at": "2026-11-23T10:44:51Z"
         }
       },
       "last_commit": {
@@ -335,12 +335,12 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-23T10:35:32Z"
+          "ran_at": "2026-11-23T10:44:51Z"
         },
         "hardware": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-23T10:35:32Z"
+          "ran_at": "2026-11-23T10:44:51Z"
         }
       },
       "last_commit": {
@@ -380,12 +380,12 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-23T10:35:32Z"
+          "ran_at": "2026-11-23T10:44:51Z"
         },
         "hardware": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-23T10:35:32Z"
+          "ran_at": "2026-11-23T10:44:51Z"
         }
       },
       "last_commit": {
@@ -462,7 +462,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-23T10:35:32Z"
+          "ran_at": "2026-11-23T10:44:51Z"
         },
         "hardware": null
       },
@@ -515,7 +515,7 @@
         "unit": {
           "passed": 37,
           "failed": 0,
-          "ran_at": "2026-11-23T10:35:32Z"
+          "ran_at": "2026-11-23T10:44:51Z"
         },
         "hardware": null
       },
@@ -585,7 +585,7 @@
         "unit": {
           "passed": 19,
           "failed": 0,
-          "ran_at": "2026-11-23T10:35:32Z"
+          "ran_at": "2026-11-23T10:44:51Z"
         },
         "hardware": null
       },
@@ -654,7 +654,7 @@
         "unit": {
           "passed": 4,
           "failed": 0,
-          "ran_at": "2026-11-23T10:35:32Z"
+          "ran_at": "2026-11-23T10:44:51Z"
         },
         "hardware": null
       },
@@ -737,9 +737,9 @@
       ],
       "tests": {
         "unit": {
-          "passed": 18,
+          "passed": 20,
           "failed": 0,
-          "ran_at": "2026-11-23T10:35:32Z"
+          "ran_at": "2026-11-23T10:44:51Z"
         },
         "hardware": null
       },
@@ -749,7 +749,7 @@
         "date": "2026-11-23T20:10:01+11:00"
       },
       "issues": [
-        "Something on the PC unloaded XDMA between 19:55 and 20:05 on 2026-11-23, outside Kotl: watch for it."
+        "The PC's XDMA may still be loaded without poll_mode=1 from the earlier reloads: check and reload it once (deploy/next.sh)."
       ],
       "log": [
         {
@@ -803,6 +803,10 @@
         {
           "date": "2026-11-23",
           "text": "After the kotl-keys update the desktop-login warning is gone: only remote work counts."
+        },
+        {
+          "date": "2026-11-23",
+          "text": "Bug found from job 54 (xdma_id != -1): FireSim's infrasetup unloads XDMA, flashes, then loads it with poll_mode=1 only if not loaded. The health check reloaded with a plain modprobe (no poll_mode) and also while a job held the board. Fixed: reload only on idle boards, the way FireSim loads it. The 20:05 'missing XDMA' was most likely a FireSim run between its unload and load."
         }
       ]
     },
@@ -819,7 +823,7 @@
         "unit": {
           "passed": 6,
           "failed": 0,
-          "ran_at": "2026-11-23T10:35:32Z"
+          "ran_at": "2026-11-23T10:44:51Z"
         },
         "hardware": null
       },
@@ -856,7 +860,7 @@
         "unit": {
           "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-23T10:35:32Z"
+          "ran_at": "2026-11-23T10:44:51Z"
         },
         "hardware": null
       },
@@ -895,14 +899,14 @@
         "unit": {
           "passed": 16,
           "failed": 0,
-          "ran_at": "2026-11-23T10:35:32Z"
+          "ran_at": "2026-11-23T10:44:51Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "d1196f7507ba6b7036aa5fb5598dd8f2f98d5185",
-        "message": "kotl-band: say plainly when a terminal can't reach Kotl (not in kotl-users)",
-        "date": "2026-11-23T21:31:18+11:00"
+        "hash": "5fb3c76a217b28d09c36727d1a4f251e5f37b202",
+        "message": "kotl-band: tested on all four surfaces; NEXT.md: restart the VS Code server too",
+        "date": "2026-11-23T21:37:44+11:00"
       },
       "issues": [],
       "log": [
@@ -1040,12 +1044,12 @@
         "unit": {
           "passed": 21,
           "failed": 0,
-          "ran_at": "2026-11-23T10:35:32Z"
+          "ran_at": "2026-11-23T10:44:51Z"
         },
         "hardware": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-23T10:35:32Z"
+          "ran_at": "2026-11-23T10:44:51Z"
         }
       },
       "last_commit": {
@@ -1163,7 +1167,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-23T10:35:32Z"
+          "ran_at": "2026-11-23T10:44:51Z"
         },
         "hardware": null
       },

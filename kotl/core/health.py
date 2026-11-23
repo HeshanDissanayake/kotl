@@ -5,10 +5,11 @@ Each run asks the PC, in one ssh call: is it reachable, is the Xilinx card on PC
 driver loaded, which glibc does it have.
 
   failures  unreachable, no Xilinx card, no XDMA driver
-            -> one driver reload is tried (kotl-xdma-reload, via sudo on the PC); if it still
-               fails and the board is idle, it goes DOWN: a Slurm reservation holds its license
-               so queued jobs wait, and the admin gets a notice. A busy board is left alone
-               until its job ends.
+            -> on an IDLE board only, one driver reload is tried (kotl-xdma-reload, via sudo on
+               the PC, loading it as FireSim does); if it still fails, the board goes DOWN: a Slurm
+               reservation holds its license so queued jobs wait, and the admin gets a notice.
+               A board a job holds is never touched: FireSim unloads and reloads XDMA itself
+               during infrasetup, so a missing driver there is normal for a moment.
   warnings  glibc differs from the workstation's (FireSim's bundled libc won't start there);
             something runs as the PC account on an idle board (soft lockdown: warn only)
             -> shown on the board (kotl board list, kotl top); the board stays in the pool.
@@ -118,7 +119,10 @@ def run(registry, ssh=ssh_mod, slurm=slurm_mod, admin="", account="virtex-host",
         p = probe(b, ssh)
         fails = failures_of(p)
         notes = []
-        if ("error" not in p and any(f.startswith("XDMA") for f in fails)
+        # FireSim unloads and reloads XDMA itself during infrasetup: never touch the driver while
+        # a job holds the board, or the reload lands in the middle of someone's setup
+        held = b["state"] != "idle" or b["job_id"]
+        if ("error" not in p and any(f.startswith("XDMA") for f in fails) and not held
                 and registry.once(f"reload:{name}")):
             try:
                 ssh.run(b["host"], ["sudo", "-n", RELOAD], timeout=120)

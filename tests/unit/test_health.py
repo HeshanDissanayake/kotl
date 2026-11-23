@@ -111,6 +111,16 @@ def test_unreachable_goes_down_and_comes_back(reg):
     assert [n["text"] for n in reg.notices("boss")][0] == "vcu118-pc1 is back UP: its checks pass again"
 
 
+def test_no_reload_while_a_job_holds_the_board(reg):
+    # FireSim's infrasetup unloads XDMA, flashes, then loads it with poll_mode=1 only if it
+    # isn't loaded: a reload from the health check in between would leave the wrong driver
+    reg.claim(41, "vcu118")
+    pc, holds = FakePC(xdma=""), FakeHolds()
+    found = run(reg, pc, holds)["vcu118-pc1"]
+    assert pc.reloads == 0 and reg.board("vcu118-pc1")["state"] == "busy"
+    assert any("goes down when job 41 ends" in f for f in found)
+
+
 def test_busy_board_is_never_taken_from_a_job(reg):
     reg.claim(41, "vcu118")
     pc, holds = FakePC(card=""), FakeHolds()

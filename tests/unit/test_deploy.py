@@ -328,3 +328,11 @@ def test_install_publishes_the_plugin(tmp_path):
     assert not list((tmp_path / "opt/kotl/plugin-band").rglob("*.test.tsx"))
     dry("kotl/install.sh", "--undo", root=tmp_path)
     assert not (tmp_path / "opt/kotl/plugin").exists()
+
+
+@pytest.mark.feature("health")
+def test_xdma_reload_loads_it_the_way_firesim_does():
+    text = (DEPLOY / "pc/kotl-xdma-reload").read_text()
+    assert 'insmod "$KO" poll_mode=1' in text and "modprobe xdma poll_mode=1" in text
+    assert "/lib/modules/$(uname -r)/extra/xdma.ko" in text
+    assert "modprobe xdma\n" not in text                     # never a plain modprobe (no poll_mode)

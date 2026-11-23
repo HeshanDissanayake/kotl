@@ -1626,7 +1626,7 @@
    "what": "A Kotl script that Slurm runs every 5 minutes. It checks each board over the kotl SSH path.",
    "bullets": [
     "<b>Every 5 minutes, one ssh call per PC:</b> reachable, Xilinx card on PCI, XDMA driver loaded, glibc version.",
-    "<b>Driver missing:</b> one reload (<code>kotl-xdma-reload</code>, root on the PC through one sudoers line), then check again.",
+    "<b>Driver missing on an idle board:</b> one reload (<code>kotl-xdma-reload</code>, root on the PC through one sudoers line), loading XDMA exactly as FireSim does (<code>xdma.ko poll_mode=1</code>), then check again. A board a job holds is never touched: FireSim unloads and reloads XDMA itself during infrasetup.",
     "<b>Still failing and idle:</b> the board goes <b>down</b>; a Slurm reservation holds its license so queued jobs wait instead of failing; the admin gets a notice. A busy board is never taken from its job: it goes down when the job ends.",
     "<b>Recovery:</b> when the checks pass again the board goes back to idle, the hold is released, and the admin is told.",
     "<b>Warnings</b> (the board stays in the pool): glibc differs from the workstation's (FireSim's bundled libc won't start), or something runs as the PC account on an idle board (soft lockdown).",
@@ -2487,8 +2487,8 @@
    "name": "kotl-xdma-reload",
    "path": "/usr/local/bin/ (on each FPGA PC)",
    "ext": "sh",
-   "desc": "The health check's one driver reload; kotl may run it as root, with no arguments",
-   "body": "#!/bin/sh\n# managed by kotl (deploy/pc/setup.sh). Installed on each FPGA PC as /usr/local/bin/kotl-xdma-reload.\n# Kotl's health check runs it (as root, through one sudoers line, with no arguments) when the\n# XDMA driver isn't loaded: one attempt to reload it. It changes nothing else.\nset -eu\nmodprobe -r xdma 2>/dev/null || true\nmodprobe xdma\nlsmod | grep -q '^xdma '\necho \"kotl-xdma-reload: xdma loaded\""
+   "desc": "The health check's one driver reload on an idle board, loading XDMA exactly as FireSim does (poll_mode=1)",
+   "body": "#!/bin/sh\n# managed by kotl (deploy/pc/setup.sh). Installed on each FPGA PC as /usr/local/bin/kotl-xdma-reload.\n# Kotl's health check runs it (as root, through one sudoers line, with no arguments) when the\n# XDMA driver isn't loaded on an IDLE board: one attempt to reload it. It changes nothing else.\n#\n# It loads the driver exactly as FireSim's own infrasetup does (the same module, poll_mode=1):\n# FireSim skips its own load when xdma is already loaded, so a driver loaded any other way\n# (e.g. a plain `modprobe xdma`) would be the one FireSim runs on, and its simulation driver\n# then can't find the card (\"xdma_id != -1\").\nset -eu\nKO=\"/lib/modules/$(uname -r)/extra/xdma.ko\"\nrmmod xdma 2>/dev/null || true\nif [ -f \"$KO\" ]; then\n  insmod \"$KO\" poll_mode=1\nelse\n  modprobe xdma poll_mode=1\nfi\nlsmod | grep -q '^xdma '\necho \"kotl-xdma-reload: xdma loaded (poll_mode=$(cat /sys/module/xdma/parameters/poll_mode 2>/dev/null || echo ?))\""
   },
   "pcdriversudo": {
    "name": "kotl-driver",

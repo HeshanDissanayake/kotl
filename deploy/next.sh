@@ -24,12 +24,22 @@ step() {
 
 log "=== next.sh started by $(id -un) (deploy/next.sh $(git rev-parse --short HEAD 2>/dev/null))"
 
-if ask "1. Update Kotl and the plugins at /opt/kotl (sudo)"; then
+if ask "1. Update kotl-xdma-reload on the PC (sudo there) and Kotl here (sudo)"; then
+  step "scp deploy/pc/setup.sh deploy/pc/kotl-keys deploy/pc/kotl-xdma-reload $PC:/tmp/" &&
+  step "ssh -t $PC 'sudo bash /tmp/setup.sh --keys-helper /tmp/kotl-keys --driver-helper /tmp/kotl-xdma-reload && rm /tmp/setup.sh /tmp/kotl-keys /tmp/kotl-xdma-reload'" &&
   step "sudo deploy/kotl/install.sh --board vcu118-pc1=vcu118@vcu118-pc1"
 fi
 
-if ask "2. Check this terminal can reach Kotl (needs the kotl-users group)"; then
-  step "id -nG | tr ' ' '\\n' | grep -x kotl-users || echo 'NOT in kotl-users here: restart tmux (tmux kill-server) or log in again, then rerun this step'" &&
+if ask "2. Show how XDMA is loaded on the PC now (read-only)"; then
+  step "ssh $PC 'lsmod | grep ^xdma; echo poll_mode=\$(cat /sys/module/xdma/parameters/poll_mode 2>/dev/null || echo not-loaded)'"
+fi
+
+if ask "3. Reload XDMA the way FireSim does (sudo on the PC; ONLY if nobody is running FireSim)"; then
+  step "ssh -t $PC 'sudo /usr/local/bin/kotl-xdma-reload'"
+fi
+
+if ask "4. Check this terminal can reach Kotl (needs the kotl-users group)"; then
+  step "id -nG | tr ' ' '\\n' | grep -x kotl-users || echo 'NOT in kotl-users here: restart tmux (tmux kill-server) or log in again'" &&
   step "kotl board list"
 fi
 

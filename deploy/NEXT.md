@@ -1,39 +1,22 @@
 # Next: what Claude needs from you
 
 This file always holds only the current steps. **To run them: `bash ~/working_dir/kotl/deploy/next.sh`**
-(it asks before each step and logs everything to `.kotl/next.log`). deploy/M5-SETUP.md has the
-full procedure.
+(it asks before each step and logs everything to `.kotl/next.log`).
 
-Why: your new Claude Code session loaded both plugins, but its terminal isn't in `kotl-users`
-(your tmux server started before M1 added you), so `sudo` to kotl asked for a password and the
-Kotl line had almost nothing to show.
+## Why
 
-## 0. A fresh terminal (by hand, not in the script)
+Job 54 failed with `xdma_id != -1`. FireSim's infrasetup unloads the XDMA driver, flashes the FPGA,
+then loads it with `poll_mode=1`, but only if it isn't loaded already. Kotl's health check
+reloaded it with a plain `modprobe` (no `poll_mode`), and even while a job held the board. Fixed:
+it now reloads only on an idle board, exactly as FireSim does. The PC may still have the driver
+loaded the wrong way from earlier, so check it once and reload it.
 
-Detach from tmux and run `tmux kill-server` (this closes ALL your tmux windows), or log out and
-back in. New shells then have the `kotl-users` group.
+## Steps (in next.sh)
 
-Same for VS Code: its server on the workstation also started before M1. In VS Code run
-**Remote-SSH: Kill VS Code Server on Host**, then reconnect. The Kotl band then shows in the
-Claude panel too.
+1. Update `kotl-xdma-reload` on the PC (sudo there) and Kotl on the workstation (sudo).
+2. Show how XDMA is loaded now: `poll_mode=1` is right; `poll_mode=0` or none is the problem.
+3. If it isn't `poll_mode=1`: reload it with the fixed helper. Only when nobody runs FireSim.
+4. Check the terminal can reach Kotl (`kotl-users`; restart tmux or log in again if not).
 
-## 1. Update Kotl and the plugins (sudo)
-
-The Kotl line now says plainly when a terminal can't reach Kotl, instead of staying almost empty.
-
-## 2. Check the terminal
-
-`id -nG` must list `kotl-users`, and `kotl board list` must work without a password.
-
-## 3. Try it in a NEW Claude Code session
-
-Start `claude` in the fresh terminal. A line starting with **Kotl** should sit above the prompt
-(`vcu118-pc1 idle · nobody waiting`). Then ask:
-
-    run hostname on the FPGA board through kotl and tell me the result
-
-and then
-
-    run firesim runworkload -c config_runtime.yaml
-
-which should make Claude Code ask you first and suggest `kotl run`. Answer no.
+Also: in your other Claude sessions, deactivate Kotl's test venv (`deactivate`) before running
+FireSim. Jobs 55 to 58 failed because that venv's Python hid Chipyard's.

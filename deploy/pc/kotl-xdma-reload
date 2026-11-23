@@ -1,9 +1,19 @@
 #!/bin/sh
 # managed by kotl (deploy/pc/setup.sh). Installed on each FPGA PC as /usr/local/bin/kotl-xdma-reload.
 # Kotl's health check runs it (as root, through one sudoers line, with no arguments) when the
-# XDMA driver isn't loaded: one attempt to reload it. It changes nothing else.
+# XDMA driver isn't loaded on an IDLE board: one attempt to reload it. It changes nothing else.
+#
+# It loads the driver exactly as FireSim's own infrasetup does (the same module, poll_mode=1):
+# FireSim skips its own load when xdma is already loaded, so a driver loaded any other way
+# (e.g. a plain `modprobe xdma`) would be the one FireSim runs on, and its simulation driver
+# then can't find the card ("xdma_id != -1").
 set -eu
-modprobe -r xdma 2>/dev/null || true
-modprobe xdma
+KO="/lib/modules/$(uname -r)/extra/xdma.ko"
+rmmod xdma 2>/dev/null || true
+if [ -f "$KO" ]; then
+  insmod "$KO" poll_mode=1
+else
+  modprobe xdma poll_mode=1
+fi
 lsmod | grep -q '^xdma '
-echo "kotl-xdma-reload: xdma loaded"
+echo "kotl-xdma-reload: xdma loaded (poll_mode=$(cat /sys/module/xdma/parameters/poll_mode 2>/dev/null || echo ?))"
