@@ -2,6 +2,18 @@
 
 This file always holds only the current steps. Copy commands from here.
 
+## 0. What runs as virtex-host on the PC? (read-only)
+
+The health check warns "something runs as virtex-host on the PC with no Kotl job holding the
+board". This shows what it is:
+
+```sh
+ssh virtex-host@192.168.1.2 'ps -u virtex-host -o pid,etime,cmd --sort=start_time'
+```
+
+Your own `ssh` login shows up too (sshd, bash, ps). Anything else, such as `screen`,
+`FireSim-xilinx_vcu118`, or a VS Code server, is what the warning means.
+
 M4 is installed and the health check runs by itself every 5 minutes. Three live tests are left.
 
 ## 1. Say "ok PC" so Claude may run these two itself
