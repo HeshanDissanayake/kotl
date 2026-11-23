@@ -76,3 +76,8 @@ def test_launcher_json_for_top(tmp_path, monkeypatch, capsys):
     assert json.loads(capsys.readouterr().out)[0]["name"] == "vcu118-pc1"
     assert launch_main(["history", "--json"]) == 0
     assert json.loads(capsys.readouterr().out) == []
+
+
+def test_screen_shows_board_warnings():
+    snap = dict(SNAP, boards=[dict(SNAP["boards"][0], warnings='["glibc differs: workstation A, PC B"]')])
+    assert "! glibc differs: workstation A, PC B" in "\n".join(top.render(snap, width=100, now=NOW))

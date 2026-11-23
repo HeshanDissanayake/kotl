@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "updated": "2026-11-23T07:57:59Z",
-  "repo_commit": "a12eaf672d5d4f8c5634ee7caa95aff894cfd8a4",
+  "updated": "2026-11-23T08:10:02Z",
+  "repo_commit": "21472593f44fedd74fa8054e87652abe60a11239",
   "watch": [
     "kotl/",
     "deploy/",
@@ -47,7 +47,7 @@
         "unit": {
           "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-23T07:57:59Z"
+          "ran_at": "2026-11-23T08:09:42Z"
         },
         "hardware": null
       },
@@ -81,7 +81,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-23T07:57:59Z"
+          "ran_at": "2026-11-23T08:09:42Z"
         },
         "hardware": null
       },
@@ -119,7 +119,7 @@
         "unit": {
           "passed": 6,
           "failed": 0,
-          "ran_at": "2026-11-23T07:57:59Z"
+          "ran_at": "2026-11-23T08:09:42Z"
         },
         "hardware": null
       },
@@ -160,7 +160,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-23T07:57:59Z"
+          "ran_at": "2026-11-23T08:09:42Z"
         },
         "hardware": null
       },
@@ -193,7 +193,7 @@
         "unit": {
           "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-23T07:57:59Z"
+          "ran_at": "2026-11-23T08:09:42Z"
         },
         "hardware": null
       },
@@ -235,7 +235,7 @@
         "unit": {
           "passed": 14,
           "failed": 0,
-          "ran_at": "2026-11-23T07:57:59Z"
+          "ran_at": "2026-11-23T08:09:42Z"
         },
         "hardware": null
       },
@@ -280,12 +280,12 @@
         "unit": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-23T07:57:59Z"
+          "ran_at": "2026-11-23T08:09:42Z"
         },
         "hardware": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-23T07:57:59Z"
+          "ran_at": "2026-11-23T08:09:42Z"
         }
       },
       "last_commit": {
@@ -325,12 +325,12 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-23T07:57:59Z"
+          "ran_at": "2026-11-23T08:09:42Z"
         },
         "hardware": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-23T07:57:59Z"
+          "ran_at": "2026-11-23T08:09:42Z"
         }
       },
       "last_commit": {
@@ -370,12 +370,12 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-23T07:57:59Z"
+          "ran_at": "2026-11-23T08:09:42Z"
         },
         "hardware": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-23T07:57:59Z"
+          "ran_at": "2026-11-23T08:09:42Z"
         }
       },
       "last_commit": {
@@ -452,7 +452,7 @@
         "unit": {
           "passed": 6,
           "failed": 0,
-          "ran_at": "2026-11-23T07:57:59Z"
+          "ran_at": "2026-11-23T08:09:42Z"
         },
         "hardware": null
       },
@@ -474,6 +474,10 @@
         {
           "date": "2026-11-22",
           "text": "jobs.pc_address column (migrates the M2 database in place)."
+        },
+        {
+          "date": "2026-11-23",
+          "text": "boards.warnings column (migrates in place)."
         }
       ]
     },
@@ -493,7 +497,7 @@
         "unit": {
           "passed": 37,
           "failed": 0,
-          "ran_at": "2026-11-23T07:57:59Z"
+          "ran_at": "2026-11-23T08:09:42Z"
         },
         "hardware": null
       },
@@ -555,7 +559,7 @@
         "unit": {
           "passed": 17,
           "failed": 0,
-          "ran_at": "2026-11-23T07:57:59Z"
+          "ran_at": "2026-11-23T08:09:42Z"
         },
         "hardware": null
       },
@@ -612,7 +616,7 @@
         "unit": {
           "passed": 4,
           "failed": 0,
-          "ran_at": "2026-11-23T07:57:59Z"
+          "ran_at": "2026-11-23T08:09:42Z"
         },
         "hardware": null
       },
@@ -684,18 +688,18 @@
     },
     "health": {
       "title": "Health check",
-      "status": "planned",
+      "status": "in_progress",
       "milestone": "M4",
-      "now": "",
+      "now": "First checks built (reachable, glibc match), warnings on boards; the rest is M4.",
       "code": [
-        "kotl/core/health.py",
-        "deploy/health.sh"
+        "deploy/health.sh",
+        "kotl/core/health.py"
       ],
       "tests": {
         "unit": {
-          "passed": 1,
+          "passed": 12,
           "failed": 0,
-          "ran_at": "2026-11-23T07:57:59Z"
+          "ran_at": "2026-11-23T08:09:42Z"
         },
         "hardware": null
       },
@@ -713,6 +717,10 @@
         {
           "date": "2026-11-22",
           "text": "deploy/health.sh: no-op placeholder so Slurm's health hook exists in M1."
+        },
+        {
+          "date": "2026-11-23",
+          "text": "User request after job 47: glibc check (workstation vs PC) and reachability, stored as board warnings; launch health / kotl board check; health.sh runs it every 5 min and always exits 0."
         }
       ]
     },
@@ -888,12 +896,12 @@
         "unit": {
           "passed": 21,
           "failed": 0,
-          "ran_at": "2026-11-23T07:57:59Z"
+          "ran_at": "2026-11-23T08:09:42Z"
         },
         "hardware": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-23T07:57:59Z"
+          "ran_at": "2026-11-23T08:09:42Z"
         }
       },
       "last_commit": {
@@ -1005,9 +1013,9 @@
       ],
       "tests": {
         "unit": {
-          "passed": 5,
+          "passed": 6,
           "failed": 0,
-          "ran_at": "2026-11-23T07:57:59Z"
+          "ran_at": "2026-11-23T08:09:42Z"
         },
         "hardware": null
       },
@@ -1021,6 +1029,10 @@
         {
           "date": "2026-11-23",
           "text": "New part (user request): kotl top, a curses view of boards, queue and your jobs, with l/c/r/f keys; launcher boards/history gained --json."
+        },
+        {
+          "date": "2026-11-23",
+          "text": "Shows board health warnings."
         }
       ]
     }

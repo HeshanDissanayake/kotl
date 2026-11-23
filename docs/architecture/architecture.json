@@ -2,7 +2,7 @@
  "schema": 1,
  "title": "Kotl Architecture",
  "intro": "Teal is Kotl, our product. Purple is Slurm. Gray is everything else off the shelf, plus the hardware. The dot on each box is its build status; click a box for exactly what's happening.",
- "latest": "Latest: kotl top, a live terminal view of the boards, the queue and your jobs.",
+ "latest": "Latest: first health check. kotl compares glibc on the workstation and each PC and shows a warning if they differ (the cause of job 47's failure).",
  "canvas": {
   "w": 1520,
   "h": 820
@@ -1605,16 +1605,40 @@
    "title": "Health check",
    "what": "A Kotl script that Slurm runs every 5 minutes. It checks each board over the kotl SSH path.",
    "bullets": [
-    "Ping, SSH as kotl, <code>lspci</code> shows the Xilinx card, XDMA driver loaded.",
-    "Flags leftover work on a board the registry says is idle.",
-    "<b>Lockdown mode</b> (<code>lockdown</code> in <code>/etc/kotl/kotl.conf</code>): in <b>soft</b>, work on a board with no lease (e.g. a password login) only warns the admin; in <b>full</b>, it marks the board for checking.",
-    "On failure: tries reloading the driver once. Still failing: marks the board down, holds back its Slurm slot, alerts the admin.",
-    "Puts the board back on its own when checks pass again."
+    "<b>Now (first checks):</b> kotl can log in to each PC, and the PC's glibc matches the workstation's. FireSim bundles the workstation's <code>libc.so.6</code> with its driver, so a mismatch stops the driver from starting (job 47: <code>undefined symbol … GLIBC_PRIVATE</code>).",
+    "A failed check is a <b>warning</b> on the board: <code>kotl board list</code>, <code>kotl status</code> and <code>kotl top</code> show it with the fix. The board stays in the pool.",
+    "<b>M4 adds:</b> <code>lspci</code> shows the Xilinx card, the XDMA driver loaded, leftover work on an idle board; one driver reload attempt; boards marked down and back; alerts to the admin.",
+    "health.sh always exits 0, so a PC problem never drains the workstation's own Slurm node."
    ],
    "files": [
     "healthsh",
     "healthconf",
     "kotlconf"
+   ],
+   "term": [
+    {
+     "host": "admin@ws",
+     "lines": [
+      {
+       "c": "kotl board check"
+      },
+      {
+       "o": "vcu118-pc1: glibc differs: workstation 2.39-0ubuntu8.12, PC 2.39-0ubuntu8.9. FireSim drivers built on the workstation won't start on this PC; upgrade libc6 on the PC to match"
+      },
+      {
+       "c": "kotl board list"
+      },
+      {
+       "o": "BOARD        TYPE    STATE           JOB  HOST         CHECKED"
+      },
+      {
+       "o": "vcu118-pc1   vcu118  idle              -  vcu118-pc1   2026-11-23 19:40"
+      },
+      {
+       "o": "  ! glibc differs: workstation 2.39-0ubuntu8.12, PC 2.39-0ubuntu8.9. …"
+      }
+     ]
+    }
    ]
   },
   "notifier": {
@@ -2274,8 +2298,8 @@
    "name": "health.sh",
    "path": "/opt/kotl/",
    "ext": "sh",
-   "desc": "Kotl's health check; Slurm runs it every 5 minutes (sketch)",
-   "body": "#!/bin/sh\n# Runs as root under Slurm. Checks each board over the kotl SSH path.\nfor board in $(kotl-registry boards); do\n  host=$(kotl-registry host \"$board\")\n  if sudo -u kotl ssh -o ConnectTimeout=5 \"$host\" 'lspci -d 10ee: | grep -q . && lsmod | grep -q xdma'; then\n    kotl-registry mark \"$board\" healthy\n  else\n    kotl-registry mark \"$board\" down   # also holds back its Slurm slot and alerts the admin\n  fi\ndone"
+   "desc": "Run by Slurm every 5 minutes: Kotl's checks as kotl; never fails, so it never drains the node",
+   "body": "#!/bin/sh\n# managed by kotl (deploy/kotl/install.sh)\n# Slurm runs this every 5 minutes (HealthCheckProgram= in slurm.conf), as root.\n# Kotl's checks run as kotl and only record warnings on the boards (kotl board list, kotl top).\n# It must always exit 0: a PC problem must never drain the workstation's own Slurm node.\n[ -x /opt/kotl/launch ] && timeout 120 runuser -u kotl -- /opt/kotl/launch health --quiet >/dev/null 2>&1\nexit 0"
   },
   "notifsvc": {
    "name": "kotl-notifier.service",

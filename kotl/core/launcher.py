@@ -11,7 +11,8 @@ or from the kotl CLI. Every subcommand checks who is asking:
   end JOB [--rc N | --signal] [--epilog]    the end step; safe to run twice
   watch JOB                  (kotl only) the guards: --max and --idle cancel the job
   logs JOB [-f]   fetch JOB   history   status JOB      read your own jobs
-  boards                     every board's state
+  boards                     every board's state (and health warnings)
+  health                     (kotl, root or admin) run the health checks on every board's PC
   board-add NAME TYPE HOST | board-drain NAME | board-resume NAME    admin only
 """
 import argparse
@@ -309,10 +310,18 @@ class Launcher:
         return "\n".join(lines)
 
     def boards_table(self):
-        lines = [f"{'BOARD':12} {'TYPE':7} {'STATE':12} {'JOB':>6}  HOST"]
+        lines = [f"{'BOARD':12} {'TYPE':7} {'STATE':12} {'JOB':>6}  {'HOST':12} CHECKED"]
         for b in self.reg.boards():
-            lines.append(f"{b['name']:12} {b['type']:7} {b['state']:12} {b['job_id'] or '-':>6}  {b['host']}")
+            lines.append(f"{b['name']:12} {b['type']:7} {b['state']:12} {b['job_id'] or '-':>6}  "
+                         f"{b['host']:12} {b.get('last_healthy') or '-'}")
+            for w in self.reg.warnings(b["name"]):
+                lines.append(f"  ! {w}")
         return "\n".join(lines)
+
+    def health(self):
+        from kotl.core import health
+        self.need_admin()
+        return health.run(self.reg, ssh=self.ssh)
 
     # --- admin
     def need_admin(self):
@@ -342,6 +351,7 @@ def main(argv=None):
     ba = sub.add_parser("board-add"); ba.add_argument("name"); ba.add_argument("type"); ba.add_argument("host")
     sub.add_parser("board-drain").add_argument("name")
     sub.add_parser("board-resume").add_argument("name")
+    sub.add_parser("health").add_argument("--quiet", action="store_true")
     a = ap.parse_args(argv)
     os.umask(0o077)   # everything the launcher writes is kotl's alone
 
@@ -381,6 +391,11 @@ def main(argv=None):
                 print(L.history(a.limit))
         elif a.cmd == "boards":
             print(json.dumps(L.reg.boards()) if a.json else L.boards_table())
+        elif a.cmd == "health":
+            found = L.health()
+            if not a.quiet:
+                for name, ws in found.items():
+                    print(f"{name}: " + ("ok" if not ws else "; ".join(ws)))
         elif a.cmd == "board-add":
             L.need_admin(); L.reg.add_board(a.name, a.host, a.type); print(L.boards_table())
         elif a.cmd == "board-drain":

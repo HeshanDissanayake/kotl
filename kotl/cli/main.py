@@ -7,7 +7,7 @@
   kotl top                             the same, live, with your jobs (l logs, c cancel, r release, f fetch)
   kotl cancel JOB                      cancel your job (Slurm allows only the owner or root)
   kotl history | logs JOB [-f] | fetch JOB [--to DIR]
-  kotl board list | add NAME TYPE HOST | drain NAME | resume NAME    (changes: admin only)
+  kotl board list | add NAME TYPE HOST | drain NAME | resume NAME | check    (changes: admin only)
 
 The ETA is required. It's the queue's estimate and never kills a job; --max (default 2x ETA)
 and --idle are hang guards that free the board.
@@ -183,6 +183,8 @@ def cmd_board(a):
         return launch("boards")
     if a.action == "add":
         return launch("board-add", a.name, a.type, a.host)
+    if a.action == "check":
+        return launch("health")
     return launch(f"board-{a.action}", a.name)
 
 
@@ -211,6 +213,7 @@ def main(argv=None):
     bs.add_parser("list")
     ba = bs.add_parser("add"); ba.add_argument("name"); ba.add_argument("type"); ba.add_argument("host")
     bs.add_parser("drain").add_argument("name"); bs.add_parser("resume").add_argument("name")
+    bs.add_parser("check", help="run the health checks now (admin)")
     a = ap.parse_args(argv)
     a.command = command
 

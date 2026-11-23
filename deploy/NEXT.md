@@ -9,6 +9,17 @@ Smoke job 47 ran through Kotl correctly, but FireSim's driver didn't start on th
 FireSim bundles the workstation's glibc (now 2.39-0ubuntu8.12, updated since 7 Nov), and the
 PC's own loader is older. The PC's glibc has to match the workstation's.
 
+## 0. Install the new health check (sudo on the workstation)
+
+```sh
+cd ~/working_dir/kotl
+sudo deploy/kotl/install.sh --board vcu118-pc1=vcu118@vcu118-pc1
+kotl board check          # expect a "glibc differs" warning for vcu118-pc1
+```
+
+From now on Slurm runs this check every 5 minutes, and `kotl board list` and `kotl top` show
+the warning until the versions match.
+
 ## 1. Compare glibc versions
 
 ```sh
@@ -26,7 +37,7 @@ ssh -t virtex-host@192.168.1.2 'sudo apt-get update && sudo apt-get install --on
 ```
 
 This is a normal Ubuntu security update, but it is still a change on the PC: do it when no one is
-running FireSim there.
+running FireSim there. Afterwards `kotl board check` should print `vcu118-pc1: ok`.
 
 ## 3. Smoke run again (in your FireSim shell)
 

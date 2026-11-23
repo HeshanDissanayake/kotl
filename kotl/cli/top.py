@@ -60,6 +60,8 @@ def render(snap, width=80, selected=0, now=None):
             row += f" job {b['job_id']:<6} {r.get('user', '?'):10} {r.get('name', 'kotl-?')[5:]:6} " \
                    f"used {r.get('used', '-'):>8}  ETA {r.get('eta', '-')}"
         lines.append(row)
+        for w in json.loads(b.get("warnings") or "[]"):
+            lines.append(f"    ! {w}")
     lines += ["", " QUEUE"]
     pending = [r for r in snap["queue"] if r["state"] == "PENDING"]
     if not pending:

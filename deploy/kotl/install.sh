@@ -53,6 +53,7 @@ install_all() {
   remove_file /etc/profile.d/kotl.sh
   put_file /opt/kotl/job.sh 755 root:root <"$DEPLOY_DIR/job.sh"
   put_file /opt/kotl/epilog.sh 755 root:root <"$DEPLOY_DIR/epilog.sh"
+  put_file /opt/kotl/health.sh 755 root:root <"$DEPLOY_DIR/health.sh"
   run ln -sfn /opt/kotl/bin/kotl /usr/local/bin/kotl
 
   # kotl may cancel jobs (only its guards do), so it is a Slurm operator

@@ -12,7 +12,7 @@ SCHEMA = """
 CREATE TABLE IF NOT EXISTS boards (
   name TEXT PRIMARY KEY, host TEXT NOT NULL, type TEXT NOT NULL,
   state TEXT NOT NULL DEFAULT 'idle', job_id INTEGER, bitstream TEXT,
-  driver_version TEXT, last_healthy TEXT, power_watts REAL
+  driver_version TEXT, last_healthy TEXT, power_watts REAL, warnings TEXT
 );
 CREATE TABLE IF NOT EXISTS jobs (
   job_id INTEGER PRIMARY KEY, user TEXT NOT NULL, mode TEXT NOT NULL, board TEXT,
@@ -36,6 +36,9 @@ class Registry:
         cols = {r["name"] for r in self.db.execute("PRAGMA table_info(jobs)")}
         if "pc_address" not in cols:   # added in M3
             self.db.execute("ALTER TABLE jobs ADD COLUMN pc_address TEXT")
+        bcols = {r["name"] for r in self.db.execute("PRAGMA table_info(boards)")}
+        if "warnings" not in bcols:    # added with the first health check
+            self.db.execute("ALTER TABLE boards ADD COLUMN warnings TEXT")
         if new:
             os.chmod(path, 0o600)
 
@@ -86,6 +89,19 @@ class Registry:
         self.db.execute("UPDATE boards SET state = CASE state WHEN 'draining' THEN 'maintenance' "
                         "ELSE 'idle' END, job_id=NULL WHERE job_id=?", (job_id,))
         self.db.execute("COMMIT")
+
+    def set_warnings(self, name, warnings, healthy_at=None):
+        """Health check results: a list of warnings ([] = healthy); healthy_at when it answered."""
+        import json
+        self.db.execute("UPDATE boards SET warnings=? WHERE name=?", (json.dumps(warnings), name))
+        if healthy_at is not None:
+            self.db.execute("UPDATE boards SET last_healthy=? WHERE name=?",
+                            (time.strftime("%Y-%m-%d %H:%M", time.localtime(healthy_at)), name))
+
+    def warnings(self, name):
+        import json
+        b = self.board(name)
+        return json.loads(b["warnings"]) if b and b.get("warnings") else []
 
     def drain(self, name):
         """Busy -> draining (freed into maintenance); idle -> maintenance at once."""
