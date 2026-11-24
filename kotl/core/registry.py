@@ -59,6 +59,15 @@ class Registry:
                         "ON CONFLICT(name) DO UPDATE SET host=excluded.host, type=excluded.type",
                         (name, host, type_, state))
 
+    def remove_board(self, name):
+        """Forget a board. Refused while a job holds it (its jobs' history stays)."""
+        b = self.board(name)
+        if not b:
+            raise RegistryError(f"no board {name}")
+        if b["job_id"] or b["state"] in ("busy", "draining"):
+            raise RegistryError(f"{name} is in use (job {b['job_id'] or '?'}); drain it and wait for the job to end")
+        self.db.execute("DELETE FROM boards WHERE name=? AND job_id IS NULL", (name,))
+
     def boards(self):
         return [dict(r) for r in self.db.execute("SELECT * FROM boards ORDER BY name")]
 

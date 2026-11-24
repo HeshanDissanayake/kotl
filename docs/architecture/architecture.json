@@ -2,7 +2,7 @@
  "schema": 1,
  "title": "Kotl Architecture",
  "intro": "Teal is Kotl, our product. Purple is Slurm. Gray is everything else off the shelf, plus the hardware. The dot on each box is its build status; click a box for exactly what's happening.",
- "latest": "Latest: a self-contained FireSim test package (no Chipyard needed) that any Kotl user, or their Claude, can run: kotl run --eta 15m -- <shared folder>/kotl-firesim-test/run.sh.",
+ "latest": "v1.0.0: Kotl sets up and removes FPGA PCs itself (deploy/kotl/pc.sh), updates everything in one go (deploy/kotl/update.sh), uninstalls completely (deploy/uninstall.sh), and tells users when their VS Code extension or plugins are out of date.",
  "canvas": {
   "w": 1520,
   "h": 820
@@ -1408,7 +1408,102 @@
     "Users keep <b>their own Chipyard and FireSim</b> and run them unchanged inside a generic lease: <code>kotl run -- &lt;command&gt;</code> ends when the command exits, <code>kotl lease</code> ends on release. Kotl enforces an <b>exit plan</b>, not FireSim.",
     "The core is a generic <b>board lease</b> (queue, claim, SSH access, end step). <b>Adapters</b> are admin board care, later: FireSim (flash, recover), program/reset, board tests."
    ],
-   "hint": "New to Kotl? Open <b>Guides</b> and start with <b>New user: start here</b>. The sidebar lists every part by group; click a group to see what's inside, and a part for what it does, its commands and its files. Build status and history sit in each part's disclosures; <b>Progress</b> shows them all by milestone."
+   "hint": "New to Kotl? Open <b>Guides</b> and start with <b>New user: start here</b>. The sidebar lists every part by group; click a group to see what's inside, and a part for what it does, its commands and its files. <b>Progress</b> shows every part by milestone.",
+   "tagline": "Kotl shares the lab's FPGA boards: every use goes through one queue, gets a board and SSH access only while it runs, and frees the board the moment it ends. Users keep their own tools; Kotl only decides who holds a board, and when.",
+   "features": [
+    {
+     "t": "One fair queue for every board",
+     "d": "Built on Slurm: one license per board, an ETA on every job to order the queue, <code>urgent</code> and <code>maint</code> priority for the admin. <code>kotl status</code> and <code>kotl top</code> show who holds each board and who waits."
+    },
+    {
+     "t": "Access only while your job runs",
+     "d": "Each job gets its own SSH key on the board's PC, added when it starts and removed at its end step. The epilog removes it again if anything is missed. Nothing else gives users a way in."
+    },
+    {
+     "t": "Every job has an exit plan",
+     "d": "<code>kotl run</code> frees the board when the command exits; <code>kotl lease</code> on release or after 30 idle minutes; <code>--max</code> (default 2× ETA) stops a hung job. The end step stops only what the job started, never work outside Kotl."
+    },
+    {
+     "t": "Boards that look after themselves",
+     "d": "A health check every 5 minutes. A board that fails is held out of the queue (a Slurm reservation) and repaired when it's safe, with notices to the admin. Drain and resume for maintenance."
+    },
+    {
+     "t": "Generic core, adapters for tools",
+     "d": "The core knows nothing about FireSim. The FireSim adapter adds its checks, the XDMA repair, its cleanup and the <code>fsim0</code> console. Another tool is another adapter."
+    },
+    {
+     "t": "Results and notices",
+     "d": "Every job's output, launcher log and status are kept: <code>kotl logs</code>, <code>kotl fetch</code>, <code>kotl history</code>. Notices when your ETA passes, your start slips, or a board goes down or comes back."
+    },
+    {
+     "t": "Built for Claude and VS Code",
+     "d": "Every Claude session on the workstation knows Kotl's rules. The plugin adds the skill, the queue at session start and a check before FireSim runs outside Kotl. VS Code shows Kotl in the status bar. Both say when Kotl was updated."
+    },
+    {
+     "t": "Installs, updates and removes cleanly",
+     "d": "<code>deploy/kotl/pc.sh add</code> sets up a new PC; <code>update.sh</code> updates the workstation and every PC; <code>uninstall.sh</code> removes it all, PCs included. Every step has an <code>--undo</code> and a <code>--dry-run</code>."
+    }
+   ],
+   "commands": [
+    {
+     "who": "Everyone",
+     "rows": [
+      [
+       "kotl run --eta 30m -- CMD",
+       "run CMD with a board; the board is freed when it exits"
+      ],
+      [
+       "kotl lease --eta 1h",
+       "hold a board for work by hand: ssh <board>, then kotl release"
+      ],
+      [
+       "kotl status · kotl top",
+       "the boards, the queue and your jobs (top is live)"
+      ],
+      [
+       "kotl logs JOB -f · kotl fetch JOB",
+       "follow a job, then get everything it left"
+      ],
+      [
+       "kotl attach",
+       "your job's console on the board's PC"
+      ],
+      [
+       "kotl notices",
+       "ETA, start-time and board notices"
+      ],
+      [
+       "kotl setup",
+       "add Kotl to your Claude Code and VS Code (again after an update)"
+      ]
+     ]
+    },
+    {
+     "who": "Admin",
+     "rows": [
+      [
+       "kotl board list · check · drain · resume",
+       "see, test and take boards out for maintenance"
+      ],
+      [
+       "bash deploy/kotl/pc.sh add NAME TYPE ADDRESS",
+       "set up a new FPGA PC and add its board"
+      ],
+      [
+       "bash deploy/kotl/pc.sh remove NAME",
+       "take a board out and clean its PC"
+      ],
+      [
+       "bash deploy/kotl/update.sh",
+       "update Kotl on the workstation and every PC"
+      ],
+      [
+       "bash deploy/uninstall.sh [--purge]",
+       "remove Kotl everywhere"
+      ]
+     ]
+    }
+   ]
   },
   "kotllens": {
    "kind": "Kotl · our product",
@@ -3214,5 +3309,6 @@
     "more"
    ]
   }
- ]
+ ],
+ "version": "1.0.0"
 }

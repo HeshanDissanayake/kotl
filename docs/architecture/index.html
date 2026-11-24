@@ -87,6 +87,12 @@ button:disabled { opacity: .4; cursor: default; background: var(--fill-2); }
 .toolbar { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 14px; padding: 10px 16px; border-bottom: 1px solid var(--sep); background: var(--window); }
 .titleblock { min-width: 0; }
 .titleblock h1 { font: 700 17px/1.2 var(--font); margin: 0; letter-spacing: -.01em; }
+.titleblock h1 .ver { font: 600 11px var(--font); color: var(--kotl); background: var(--fill-2); border-radius: 6px; padding: 2px 6px; margin-left: 8px; vertical-align: 2px; letter-spacing: 0; }
+.feat { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; padding: 9px 12px; border-top: 1px solid var(--sep); }
+.inset .feat:first-child { border-top: 0; }
+.feat .t { font-weight: 600; } .feat .d { font-size: 12.5px; color: var(--label-2); line-height: 1.45; }
+.feat.cmd code { font: 12.5px ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--label); overflow-wrap: anywhere; }
+.inset .ih + .feat { border-top: 0; }
 .titleblock .stamp { font-size: 12px; color: var(--label-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
 .icon { width: 30px; height: 28px; padding: 0; display: grid; place-items: center; background: transparent; }
 .icon:hover { background: var(--fill-2); }
@@ -826,7 +832,13 @@ function groupPanel(gid) {
 function overviewPanel() {
   const d = D.overview || {};
   let h = '<div class="eyebrow">Overview</div><h2>' + esc(A.title || "Architecture") + '</h2>';
-  h += '<p class="lead">' + esc(A.intro || "") + '</p>';
+  if (d.tagline) h += '<p class="lead">' + d.tagline + '</p>';
+  if (d.features && d.features.length) h += '<div class="sec">Key features</div><div class="inset">' +
+    d.features.map(f => '<div class="feat"><span class="t">' + esc(f.t) + '</span><span class="d">' + f.d + '</span></div>').join('') + '</div>';
+  if (d.commands && d.commands.length) h += '<div class="sec">The commands that matter</div>' +
+    d.commands.map(g => '<div class="inset"><div class="ih">' + esc(g.who) + '</div>' +
+      g.rows.map(r => '<div class="feat cmd"><code>' + esc(r[0]) + '</code><span class="d">' + esc(r[1]) + '</span></div>').join('') + '</div>').join('');
+  h += '<p class="note">' + esc(A.intro || "") + '</p>';
   h += '<div class="sec">The parts</div><div class="inset">' + GROUPS.map(g => {
     return '<button type="button" class="item" data-sel="g:' + g.id + '"><i class="sd" style="background:' + (g.id === "kotl" ? "var(--kotl)" : g.id === "slurm" ? "var(--slurm)" : "var(--label-3)") + ';border-radius:3px"></i><span class="t">' + esc(g.title) +
       ' <span style="font-weight:400;color:var(--label-2)">· ' + allKeys(g.id).length + '</span></span><span class="chev">›</span><span class="d">' + esc(strip(g.what)) + '</span></button>';
@@ -1007,6 +1019,7 @@ fetch("architecture.json", { cache: "no-store" })
     A = a; D = a.details || {}; F = a.files || {}; FLOWS = a.flows || {}; GROUPS = a.groups || [];
     document.title = a.title || "Architecture";
     $("title").textContent = a.title || "Architecture";
+    if (a.version) { const v = document.createElement("span"); v.className = "ver"; v.textContent = "v" + a.version; $("title").appendChild(v); }
     walkGroups(GROUPS, null);
     Object.values(GINDEX).forEach(({ g }) => { if (g.collapse) collapsed[g.id] = !!g.collapsed; });
     try { Object.assign(collapsed, JSON.parse(load("kotl-collapsed") || "{}")); } catch (e) {}

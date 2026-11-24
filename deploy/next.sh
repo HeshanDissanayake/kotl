@@ -24,11 +24,23 @@ step() {
 
 log "=== next.sh started by $(id -un) (deploy/next.sh $(git rev-parse --short HEAD 2>/dev/null))"
 
-if ask "1. Update Kotl everywhere with the new update script (sudo here, then sudo on the PC)"; then
+if ask "1. Update to Kotl 1.0.0 everywhere (sudo here, then the sudo password on the PC)"; then
   step "bash deploy/kotl/update.sh"
+fi
+
+if ask "2. Test PC onboarding on the board you have: re-add vcu118-pc1 (safe: it only re-applies)"; then
+  step "bash deploy/kotl/pc.sh add vcu118-pc1 vcu118 192.168.1.2"
+fi
+
+if ask "3. Preview a full uninstall (dry run: changes nothing)"; then
+  step "bash deploy/uninstall.sh --dry-run"
+fi
+
+if ask "4. Your VS Code extension: kotl setup (then reload the VS Code window)"; then
+  step "kotl version && kotl setup"
 fi
 
 log "=== next.sh finished"
 echo
 echo "Done. Everything is in .kotl/next.log, and Claude sees it with your next message."
-echo "From now on, this one script updates Kotl: bash deploy/kotl/update.sh"
+echo "Kotl 1.0.0. Updates from now on: bash deploy/kotl/update.sh"

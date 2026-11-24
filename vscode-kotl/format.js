@@ -104,7 +104,7 @@ function fromShared(doc, user, nowMs, maxAgeMs = 5000) {
   return {
     user, boards: doc.boards || [], queue, problem: null,
     running_mine: queue.filter(q => q.user === user && q.state === 'RUNNING').map(q => ({ job_id: Number(q.job) })),
-    unread: (doc.unread || {})[user] || 0,
+    unread: (doc.unread || {})[user] || 0, build: doc.build || '',
   };
 }
 

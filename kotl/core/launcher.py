@@ -16,7 +16,7 @@ or from the kotl CLI. Every subcommand checks who is asking:
   notify                     (kotl only) one pass of the ETA notifier
   daemon                     (kotl only) the Kotl daemon (kotld): runs forever, under systemd
   notices [--unread] [--read]    your notices; --read marks them read
-  board-add NAME TYPE HOST | board-drain NAME | board-resume NAME    admin only
+  board-add NAME TYPE HOST | board-remove NAME | board-drain NAME | board-resume NAME    admin only
 """
 import argparse
 import json
@@ -389,6 +389,7 @@ def main(argv=None):
     hi.add_argument("--json", action="store_true")
     sub.add_parser("boards").add_argument("--json", action="store_true")
     ba = sub.add_parser("board-add"); ba.add_argument("name"); ba.add_argument("type"); ba.add_argument("host")
+    sub.add_parser("board-remove").add_argument("name")
     sub.add_parser("board-drain").add_argument("name")
     sub.add_parser("board-resume").add_argument("name")
     sub.add_parser("health").add_argument("--quiet", action="store_true")
@@ -461,6 +462,11 @@ def main(argv=None):
                 L.reg.mark_read(L.who)
         elif a.cmd == "board-add":
             L.need_admin(); L.reg.add_board(a.name, a.host, a.type); print(L.boards_table())
+        elif a.cmd == "board-remove":
+            L.need_admin(); L.reg.remove_board(a.name)
+            L.slurm.release_hold(f"kotl-maint-{a.name}")
+            L.slurm.release_hold(f"kotl-down-{a.name}")
+            print(L.boards_table())
         elif a.cmd == "board-drain":
             L.need_admin(); L.reg.drain(a.name)
             b = L.reg.board(a.name)

@@ -2,7 +2,7 @@
   "name": "kotl-status",
   "displayName": "Kotl",
   "description": "The lab's FPGA board queue (Kotl) in the status bar: who holds each board, time against ETA, your jobs, notices.",
-  "version": "0.3.1",
+  "version": "1.0.0",
   "publisher": "kotl",
   "license": "UNLICENSED",
   "engines": {

@@ -136,3 +136,34 @@ def test_vscode_extension_packages(tmp_path):
     assert pkg["main"] == "./extension.js" and "onStartupFinished" in pkg["activationEvents"]
     src = (VSCODE / "extension.js").read_text()
     assert "'status', '--json'" in src and "scancel" not in src and "kotl run" not in src   # read-only
+
+
+def nudge_plugin(tmp_path, mine, current):
+    import shutil
+    plug = tmp_path / "plugin"
+    shutil.copytree(PLUGIN, plug)
+    if mine:
+        (plug / "BUILD").write_text(mine + "\n")
+    k = fake(tmp_path / "bin", "kotl", f'''case "$1" in
+  status) echo "vcu118-pc1   idle" ;;
+  version) echo "{current}" ;;
+esac
+''')
+    e = {"PATH": f"{k}:/usr/bin:/bin"}
+    return subprocess.run(["sh", str(plug / "hooks/session-start.sh")], capture_output=True, text=True, env=e)
+
+
+def test_session_start_says_when_kotl_was_updated(tmp_path):
+    r = nudge_plugin(tmp_path, "1.0.0+aaa", "1.0.0+bbb")
+    assert "Kotl was updated (1.0.0+bbb" in r.stdout and "kotl setup" in r.stdout
+    assert "Kotl was updated" not in nudge_plugin(tmp_path / "same", "1.0.0+bbb", "1.0.0+bbb").stdout
+    assert "Kotl was updated" not in nudge_plugin(tmp_path / "dev", "", "1.0.0+bbb").stdout   # a checkout
+
+
+def test_vscode_extension_carries_the_build(tmp_path):
+    import zipfile
+    r = subprocess.run(["python3", str(VSCODE / "build_vsix.py"), str(tmp_path), "1.0.0+abc"], capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr
+    assert zipfile.ZipFile(r.stdout.strip()).read("extension/BUILD") == b"1.0.0+abc\n"
+    src = (VSCODE / "extension.js").read_text()
+    assert "Kotl was updated" in src and "kotl setup" in src and "'kotl.nudged'" in src

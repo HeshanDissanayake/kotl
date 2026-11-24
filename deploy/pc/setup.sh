@@ -9,7 +9,8 @@
 #       as the board account (virtex-host). Can be combined with --key.
 #   sudo bash setup.sh --undo
 #       deletes the kotl account, kotl-keys, and every Kotl helper and sudoers line here
-#       (adapters' too, e.g. FireSim's kotl-xdma-reload)
+#       (adapters' too, e.g. FireSim's kotl-xdma-reload), and any leftover kotl-job keys in the
+#       board account (--account, default virtex-host)
 #
 # Generic: tool-specific parts come from each adapter's own PC setup (FireSim:
 # deploy/adapters/firesim/pc-setup.sh).
@@ -29,7 +30,7 @@ while [ $# -gt 0 ]; do
     --key) KEY=${2:-}; shift ;;
     --keys-helper) HELPER=${2:-}; shift ;;
     --account) ACCOUNT=${2:-}; shift ;;
-    -h|--help) sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help) sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) die "unknown option $1" ;;
   esac
   shift
@@ -37,6 +38,14 @@ done
 [ "$DRY" = 1 ] || [ "$(id -u)" = 0 ] || die "run as root (sudo bash $0 ...), or add --dry-run"
 
 if [ "$ACTION" = undo ]; then
+  # job keys a lost end step may have left in the board account (only Kotl's kotl-job-N lines)
+  home=$(getent passwd "$ACCOUNT" | cut -d: -f6)
+  ak="$home/.ssh/authorized_keys"
+  if [ -n "$home" ] && [ -f "$ak" ] && grep -q ' kotl-job-[0-9][0-9]*$' "$ak"; then
+    if [ "$DRY" = 1 ]; then say "would remove the kotl-job keys from $ak"; else
+      tmp=$(mktemp); grep -v ' kotl-job-[0-9][0-9]*$' "$ak" >"$tmp" || true
+      cat "$tmp" >"$ak"; rm -f "$tmp"; say "removed leftover kotl-job keys from $ak"; fi
+  fi
   # Kotl's own helpers and every adapter's (all named kotl-*), so a full uninstall leaves nothing
   for f in /usr/local/bin/kotl-* /etc/sudoers.d/kotl /etc/sudoers.d/kotl-*; do
     [ -e "$f" ] && run rm -f "$f"

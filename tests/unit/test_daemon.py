@@ -35,6 +35,7 @@ def test_status_task_writes_the_shared_file(cfg):
     assert [b["name"] for b in doc["boards"]] == ["vcu118-pc1"]
     assert [q["job"] for q in doc["queue"]] == ["41"]                  # only Kotl's jobs
     assert doc["unread"] == {"alice": 2}                                # counts only, never the text
+    assert "build" in doc                                               # what is installed, for the nudge
     assert "x" not in json.dumps(doc)
     assert oct(os.stat(cfg.status_file).st_mode & 0o777) == "0o644"
     assert doc["daemon"]["tasks"]["status"]["every"] == 1.0

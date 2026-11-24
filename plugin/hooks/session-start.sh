@@ -9,6 +9,14 @@ echo "never stop board work that isn't this person's Kotl job; report who runs i
 echo
 echo "Kotl right now:"
 echo "$status"
+# Kotl updated since this person's plugins were installed? (BUILD comes with the install)
+mine=$(cat "$HERE/../BUILD" 2>/dev/null)
+current=$(timeout 10 sh "$HERE/kotl-cmd.sh" version --build 2>/dev/null)
+if [ -n "$mine" ] && [ -n "$current" ] && [ "$mine" != "$current" ]; then
+  echo
+  echo "Kotl was updated ($current; this person's Kotl plugins are from $mine). Tell them once, early:"
+  echo "run 'kotl setup' (on their own PC: a new 'kotl client-bundle' and its install.sh), then start a new session."
+fi
 notices=$(timeout 10 sh "$HERE/kotl-cmd.sh" notices --peek 2>/dev/null)
 case "$notices" in
   ""|"(no notices)") ;;

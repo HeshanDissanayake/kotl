@@ -97,3 +97,13 @@ def test_status_json_says_why_it_cant_reach_kotl(fs, monkeypatch, capsys):
     assert cli.main(["status", "--json"]) == 0
     s = _json.loads(capsys.readouterr().out)
     assert s["boards"] == [] and "not in kotl-users" in s["problem"]
+
+
+def test_version_and_the_installed_build(fs, tmp_path, monkeypatch, capsys):
+    import kotl
+    monkeypatch.setenv("KOTL_BUILD_FILE", str(tmp_path / "BUILD"))
+    assert cli.main(["version"]) == 0 and capsys.readouterr().out.strip() == f"kotl {kotl.__version__} (not installed)"
+    (tmp_path / "BUILD").write_text("1.0.0+abc\n")
+    cli.main(["version", "--build"])
+    assert capsys.readouterr().out.strip() == "1.0.0+abc"
+    assert cli.from_shared({"build": "1.0.0+def", "queue": []}, "me")["build"] == "1.0.0+def"

@@ -6,13 +6,16 @@
   kotl status                          the queue, every board, and the Kotl daemon
   kotl daemon                          the Kotl daemon (kotld): running? its tasks
   kotl setup [--undo]                  install (or remove) Kotl in your Claude Code and VS Code
+                                       (re-run it when Kotl says it was updated)
   kotl client-bundle > kotl-client.tar the same for your own PC (then ./kotl-client/install.sh)
   kotl top                             the same, live, with your jobs (l logs, c cancel, r release, f fetch)
   kotl cancel JOB                      cancel your job (Slurm allows only the owner or root)
   kotl history | logs JOB [-f] | fetch JOB [--to DIR]
   kotl attach [JOB]                    your job's console on its PC (FireSim: fsim0; Ctrl-a d detaches)
   kotl notices [--all] [--peek]        ETA, start-time and board notices for you (--peek: don't mark read)
-  kotl board list | add NAME TYPE HOST | drain NAME | resume NAME | check    (changes: admin only)
+  kotl board list | add NAME TYPE HOST | remove NAME | drain NAME | resume NAME | check   (admin)
+                                       (a new PC: deploy/kotl/pc.sh add, which also sets up the PC)
+  kotl version [--build]               Kotl's version, and the installed build
 
 The ETA is required. It's the queue's estimate and never kills a job; --max (default 2x ETA)
 and --idle are hang guards that free the board.
@@ -158,7 +161,19 @@ def from_shared(doc, user):
             "running_mine": [{"job_id": int(q["job"]), "mode": q["name"].replace("kotl-", "")}
                              for q in queue if q["user"] == user and q["state"] == "RUNNING"],
             "unread": doc.get("unread", {}).get(user, 0), "problem": None,
-            "daemon": {"updated": doc.get("updated")}}
+            "daemon": {"updated": doc.get("updated")}, "build": doc.get("build") or kotl_build()}
+
+
+def kotl_build():
+    import kotl
+    return kotl.build()
+
+
+def cmd_version(a):
+    import kotl
+    b = kotl.build()
+    print(b if a.build else f"kotl {kotl.__version__}" + (f" (installed build {b})" if b else " (not installed)"))
+    return 0
 
 
 def status_json():
@@ -194,7 +209,7 @@ def status_json():
     unread = len(lj("notices", "--unread"))
     return {"user": pwd.getpwuid(os.getuid()).pw_name, "boards": boards, "queue": queue,
             "running_mine": mine, "unread": unread, "problem": problems[0] if problems else None,
-            "daemon": None}
+            "daemon": None, "build": kotl_build()}
 
 
 def daemon_line():
@@ -325,6 +340,7 @@ def main(argv=None):
     sub.add_parser("setup", help="install Kotl in your Claude Code and VS Code").add_argument("--undo", action="store_true")
     sub.add_parser("client-bundle", help="a tar with Kotl for your own PC")
     sub.add_parser("cancel").add_argument("job", type=int)
+    sub.add_parser("version", help="Kotl's version and installed build").add_argument("--build", action="store_true")
     sub.add_parser("attach").add_argument("job", nargs="?", type=int)
     nt = sub.add_parser("notices"); nt.add_argument("--all", action="store_true")
     nt.add_argument("--peek", action="store_true", help="show unread notices without marking them read")
@@ -334,6 +350,7 @@ def main(argv=None):
     b = sub.add_parser("board"); bs = b.add_subparsers(dest="action", required=True)
     bs.add_parser("list")
     ba = bs.add_parser("add"); ba.add_argument("name"); ba.add_argument("type"); ba.add_argument("host")
+    bs.add_parser("remove").add_argument("name")
     bs.add_parser("drain").add_argument("name"); bs.add_parser("resume").add_argument("name")
     bs.add_parser("check", help="run the health checks now (admin)")
     a = ap.parse_args(argv)
@@ -360,6 +377,8 @@ def main(argv=None):
         return top.main()
     if a.cmd == "cancel":
         return cmd_cancel(a)
+    if a.cmd == "version":
+        return cmd_version(a)
     if a.cmd == "attach":
         return cmd_attach(a)
     if a.cmd == "notices":

@@ -80,18 +80,31 @@ function activate(context) {
   item.show();
   context.subscriptions.push(item);
 
+  let mine = '';
+  try { mine = require('fs').readFileSync(require('path').join(context.extensionPath, 'BUILD'), 'utf8').trim(); } catch (e) { /* a dev copy */ }
+  const nudged = () => context.globalState.get('kotl.nudged');
+  const nudge = (current) => {
+    if (!mine || !current || current === mine || nudged() === current) return false;
+    context.globalState.update('kotl.nudged', current);
+    vscode.window.showInformationMessage(`Kotl was updated (${current}). Run "kotl setup" in a terminal, then reload the window, to get the new extension and Claude plugins.`, 'Run kotl setup')
+      .then(pick => pick && terminal('Kotl setup', 'kotl setup'));
+    return true;
+  };
+
   let timer = null;
   const refresh = async () => {
     const cfg = vscode.workspace.getConfiguration('kotl');
     const ssh = sshName();
     const s = await readSnapshot(ssh);
     lastSnap = s;
-    item.text = statusText(s);
+    const outdated = !!(mine && s && s.build && s.build !== mine);
+    item.text = statusText(s) + (outdated ? ' $(arrow-up)' : '');
+    if (outdated) nudge(s.build);
     panel.set(s);
-    const md = new vscode.MarkdownString(tooltip(s, Date.now()));
+    const md = new vscode.MarkdownString(tooltip(s, Date.now()) + (outdated ? `\n\n$(arrow-up) Kotl was updated (${s.build}; yours: ${mine}): run \`kotl setup\`, then reload.` : ''));
     md.supportThemeIcons = true;
     item.tooltip = md;
-    item.backgroundColor = s.problem || s.unread ? new vscode.ThemeColor('statusBarItem.warningBackground') : undefined;
+    item.backgroundColor = s.problem || s.unread || outdated ? new vscode.ThemeColor('statusBarItem.warningBackground') : undefined;
   };
   const schedule = () => {
     if (timer) clearInterval(timer);

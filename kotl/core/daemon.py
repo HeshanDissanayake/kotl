@@ -16,6 +16,7 @@ import os
 import sys
 import time
 
+import kotl
 from kotl import slurm as slurm_mod
 from kotl.core.config import Config
 from kotl.core.registry import Registry
@@ -43,6 +44,7 @@ class StatusTask(Task):
             queue, d.notes["status"] = [], f"squeue failed: {e}"
         doc = {
             "version": VERSION,
+            "build": kotl.build(),          # what is installed: displays compare it with their own copy
             "updated": d.clock(),
             "daemon": d.describe(),
             "boards": d.reg.boards(),

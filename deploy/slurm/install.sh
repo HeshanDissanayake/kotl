@@ -68,7 +68,10 @@ install_all() {
   make_dir /var/spool/slurmctld 755 slurm:slurm
   make_dir /var/spool/slurmd 755 root:root
   make_dir /var/log/slurm 755 slurm:slurm
-  render slurm.conf.in | put_file /etc/slurm/slurm.conf 644 root:root
+  # the license counts follow the boards (deploy/kotl/install.sh keeps them): keep the current line
+  local lic
+  lic=$(sed -n 's/^Licenses=//p' "$(p /etc/slurm/slurm.conf)" 2>/dev/null || true)
+  render slurm.conf.in | sed "s/^Licenses=.*/Licenses=${lic:-vcu118:1}/" | put_file /etc/slurm/slurm.conf 644 root:root
   render cgroup.conf.in | put_file /etc/slurm/cgroup.conf 644 root:root
   render slurmdbd.conf.in | put_file /etc/slurm/slurmdbd.conf 600 slurm:slurm
 

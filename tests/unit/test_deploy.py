@@ -17,7 +17,7 @@ SCRIPTS = {  # script -> feature it belongs to
     "slurm/install.sh": "queue", "epilog.sh": "starter", "health.sh": "health",
     "ssh/setup-kotl-key.sh": "key", "pc/setup.sh": "pc1", "adapters/firesim/check.sh": "fsmod",
     "kotl/install.sh": "launcher", "job.sh": "launcher",
-    "pc/kotl-keys": "access", "adapters/firesim/pc-setup.sh": "fsmod", "adapters/firesim/kotl-firesim-stop": "fsmod",
+    "pc/kotl-keys": "access", "kotl/pc.sh": "pc_onboard", "kotl/update.sh": "launcher", "uninstall.sh": "uninstall", "adapters/firesim/pc-setup.sh": "fsmod", "adapters/firesim/kotl-firesim-stop": "fsmod",
 }
 
 
@@ -414,34 +414,119 @@ def test_firesim_stop_stops_only_the_jobs_driver(tmp_path, stubborn):
     assert subprocess.run(["sh", helper, "6x"], capture_output=True, env=env).returncode == 2
 
 
-# ---- kotl/update.sh (launcher): the workstation, then every board's PC
-def update_dry(tmp_path, *args, adapters="firesim"):
-    (tmp_path / "etc/kotl").mkdir(parents=True)
+# ---- kotl/update.sh, kotl/pc.sh (pc_onboard), uninstall.sh (uninstall)
+def fake_etc(tmp_path, adapters="firesim"):
+    (tmp_path / "etc/kotl").mkdir(parents=True, exist_ok=True)
     (tmp_path / "etc/kotl/kotl.conf").write_text(f"pc_account = boardacct\nadapters = {adapters}\n")
-    (tmp_path / "etc/ssh/ssh_config.d").mkdir(parents=True)
+    (tmp_path / "etc/ssh/ssh_config.d").mkdir(parents=True, exist_ok=True)
     (tmp_path / "etc/ssh/ssh_config.d/kotl.conf").write_text(
-        "# managed by kotl\n\nHost b1\n  HostName 10.0.0.7\n  User boardacct\n")
+        "# managed by kotl\n\nHost b1\n  HostName 10.0.0.7\n  User boardacct\n\nHost b2\n  HostName 10.0.0.8\n")
+
+
+def as_admin(tmp_path, script, *args):
     env = dict(os.environ, KOTL_ROOT=str(tmp_path))
-    return subprocess.run(["bash", str(DEPLOY / "kotl/update.sh"), "--dry-run", *args],
-                          capture_output=True, text=True, env=env)
+    return subprocess.run(["bash", str(DEPLOY / script), "--dry-run", *args], capture_output=True, text=True, env=env)
 
 
 @pytest.mark.feature("launcher")
 def test_update_installs_the_workstation_then_each_pc(tmp_path):
-    r = update_dry(tmp_path)
+    fake_etc(tmp_path)
+    r = as_admin(tmp_path, "kotl/update.sh")
     assert r.returncode == 0, r.stdout + r.stderr
     out = r.stdout
     assert f"would run: sudo bash {DEPLOY}/kotl/install.sh\n" in out      # no options: keeps boards, adapters
-    assert "ssh boardacct@10.0.0.7" in out and "pc adapters/firesim" in out
+    assert "ssh -t boardacct@10.0.0.7" in out and "ssh -t boardacct@10.0.0.8" in out
     assert "pc/setup.sh --account boardacct --keys-helper $d/pc/kotl-keys" in out
     assert "sudo bash $d/adapters/firesim/pc-setup.sh" in out
     assert out.index("install.sh") < out.index("10.0.0.7") and "kotl setup" in out
-
-
-@pytest.mark.feature("launcher")
-def test_update_options(tmp_path):
-    r = update_dry(tmp_path, "--no-pc", adapters="")
+    r = as_admin(tmp_path, "kotl/update.sh", "--no-pc")
     assert r.returncode == 0 and "10.0.0.7" not in r.stdout
-    r = subprocess.run(["bash", str(DEPLOY / "kotl/update.sh"), "--dry-run", "--pc", "a@b;rm"],
-                       capture_output=True, text=True, env=dict(os.environ, KOTL_ROOT=str(tmp_path)))
-    assert r.returncode != 0 and "USER@ADDRESS" in r.stderr
+
+
+@pytest.mark.feature("pc_onboard")
+def test_pc_add_sets_up_the_pc_then_kotl(tmp_path):
+    fake_etc(tmp_path)
+    r = as_admin(tmp_path, "kotl/pc.sh", "add", "b3", "vcu118", "10.0.0.9")
+    assert r.returncode == 0, r.stdout + r.stderr
+    out = r.stdout
+    order = ["setup-kotl-key.sh --add b3=10.0.0.9", "ssh -t boardacct@10.0.0.9", "sudo -u kotl ssh b3 true",
+             "install.sh --board b3=vcu118@b3", "kotl board check"]
+    assert [out.index(x) for x in order] == sorted(out.index(x) for x in order)
+    assert "--key" in out and "adapters/firesim/pc-setup.sh" in out
+    r = as_admin(tmp_path, "kotl/pc.sh", "add", "b3", "vcu118", "10.0.0.9;rm")
+    assert r.returncode != 0 and "odd name" in r.stderr
+
+
+@pytest.mark.feature("pc_onboard")
+def test_pc_remove_takes_it_out_of_kotl_and_cleans_the_pc(tmp_path):
+    fake_etc(tmp_path)
+    r = as_admin(tmp_path, "kotl/pc.sh", "remove", "b2")
+    assert r.returncode == 0, r.stdout + r.stderr
+    out = r.stdout
+    order = ["launch board-remove b2", "adapters/firesim/pc-setup.sh --undo", "pc/setup.sh --undo --account boardacct",
+             "setup-kotl-key.sh --remove b2", f"sudo bash {DEPLOY}/kotl/install.sh\n"]
+    assert [out.index(x) for x in order] == sorted(out.index(x) for x in order)
+    assert "10.0.0.8" in out and "10.0.0.7" not in out
+    r = as_admin(tmp_path, "kotl/pc.sh", "remove", "b2", "--keep-pc")
+    assert "pc/setup.sh --undo" not in r.stdout
+    r = as_admin(tmp_path, "kotl/pc.sh", "update", "b9")
+    assert r.returncode != 0 and "no board b9" in r.stderr
+
+
+@pytest.mark.feature("pc_onboard")
+def test_kotl_ssh_entries_add_and_remove_one_pc(tmp_path):
+    dry("ssh/setup-kotl-key.sh", "--pc", "a=1.1.1.1", root=tmp_path)
+    dry("ssh/setup-kotl-key.sh", "--add", "b=2.2.2.2", root=tmp_path)
+    dry("ssh/setup-kotl-key.sh", "--add", "a=1.1.1.9", root=tmp_path)
+    cfg = (tmp_path / "home/kotl/.ssh/config").read_text()
+    assert "Host b\n  HostName 2.2.2.2" in cfg and "Host a\n  HostName 1.1.1.9" in cfg and "1.1.1.1" not in cfg
+    dry("ssh/setup-kotl-key.sh", "--remove", "a", root=tmp_path)
+    cfg = (tmp_path / "home/kotl/.ssh/config").read_text()
+    assert "Host a" not in cfg and "Host b" in cfg
+
+
+@pytest.mark.feature("pc_onboard")
+def test_install_counts_one_license_per_board(tmp_path):
+    dry("slurm/install.sh", root=tmp_path)
+    assert "Licenses=vcu118:1" in (tmp_path / "etc/slurm/slurm.conf").read_text()
+    r = dry("kotl/install.sh", "--board", "p1=vcu118@p1", "--board", "p2=vcu118@p2", "--board", "u=u250@u", root=tmp_path)
+    assert "Licenses=u250:1,vcu118:2" in (tmp_path / "etc/slurm/slurm.conf").read_text()
+    assert "would run: systemctl restart slurmctld" in r.stdout
+    client = (tmp_path / "etc/ssh/ssh_config.d/kotl.conf").read_text()
+    assert all(f"Host {n}\n" in client for n in ("p1", "p2", "u"))
+    dry("slurm/install.sh", root=tmp_path)                          # Slurm's re-install keeps the counts
+    assert "Licenses=u250:1,vcu118:2" in (tmp_path / "etc/slurm/slurm.conf").read_text()
+
+
+@pytest.mark.feature("pc_onboard")
+def test_pc_undo_clears_leftover_job_keys():
+    text = (DEPLOY / "pc/setup.sh").read_text()
+    assert "grep -v ' kotl-job-[0-9][0-9]*$'" in text
+
+
+@pytest.mark.feature("uninstall")
+def test_install_then_uninstall_leaves_nothing(tmp_path):
+    steps = [("accounts.sh", "install", "--admin", me()), ("slurm/install.sh",),
+             ("ssh/setup-kotl-key.sh", "--pc", "vcu118-pc1=192.168.1.2"),
+             ("kotl/install.sh", "--adapters", "firesim", "--board", "vcu118-pc1=vcu118@vcu118-pc1")]
+    for s in steps:
+        dry(s[0], *s[1:], root=tmp_path)
+    assert len([f for f in tmp_path.rglob("*") if f.is_file()]) > 30
+    for s in ([("kotl/install.sh", "--undo"), ("ssh/setup-kotl-key.sh", "--undo", "--purge"),
+               ("slurm/install.sh", "--undo", "--purge"), ("accounts.sh", "--undo", "--purge")]):
+        dry(s[0], *s[1:], root=tmp_path)
+    left = [str(f.relative_to(tmp_path)) for f in tmp_path.rglob("*") if f.is_file()]
+    assert left == []
+
+
+@pytest.mark.feature("uninstall")
+def test_uninstall_runs_every_undo_in_reverse(tmp_path):
+    fake_etc(tmp_path)
+    r = as_admin(tmp_path, "uninstall.sh", "--purge")
+    assert r.returncode == 0, r.stdout + r.stderr
+    out = r.stdout
+    order = ["pc/setup.sh --undo", "kotl/install.sh --undo", "setup-kotl-key.sh --undo --purge",
+             "slurm/install.sh --undo --purge", "accounts.sh --undo --purge"]
+    assert [out.index(x) for x in order] == sorted(out.index(x) for x in order)
+    r = as_admin(tmp_path, "uninstall.sh", "--keep-pcs")
+    assert "pc/setup.sh --undo" not in r.stdout and "--purge" not in r.stdout

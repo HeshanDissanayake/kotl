@@ -32,6 +32,55 @@ sys.exit(main())
 EOF
 }
 
+build_id() {   # VERSION+COMMIT, plus .dirty-HASH when the installed parts have uncommitted changes
+  local v c d="" parts=(kotl deploy plugin plugin-band vscode-kotl)
+  v=$(sed -n 's/^__version__ = "\(.*\)"/\1/p' "$REPO/kotl/__init__.py")
+  c=$(git -c safe.directory="$REPO" -C "$REPO" rev-parse --short HEAD 2>/dev/null) || c=nogit
+  if [ -n "$(git -c safe.directory="$REPO" -C "$REPO" status --porcelain -- "${parts[@]}" 2>/dev/null)" ]; then
+    d=$(git -c safe.directory="$REPO" -C "$REPO" diff HEAD -- "${parts[@]}" 2>/dev/null | sha256sum | cut -c1-6) || d=x
+  fi
+  printf '%s+%s%s' "${v:-0}" "$c" "${d:+.dirty-$d}"
+}
+
+# every board in the registry -> the users' SSH entries (/etc/ssh/ssh_config.d/kotl.conf) and
+# Slurm's license counts (one license per board, by type). Runs on every install, so adding or
+# removing a board (deploy/kotl/pc.sh) is just: change the registry, then re-run this.
+sync_boards() {
+  local rows account client name type host addr want have conf
+  account=$(get_conf /etc/kotl/kotl.conf pc_account); account=${account:-virtex-host}
+  if [ "$KOTL_DRY_RUN" = 1 ]; then
+    rows=$(for b in "${BOARDS[@]}"; do t=${b#*=}; printf '%s %s %s\n' "${b%%=*}" "${t%%@*}" "${t#*@}"; done)
+  else
+    rows=$(runuser -u kotl -- /opt/kotl/launch boards --json |
+      python3 -c 'import json,sys; [print(b["name"], b["type"], b["host"]) for b in json.load(sys.stdin)]') ||
+      die "couldn't read the boards from the registry"
+  fi
+  client="# $MARK (deploy/kotl/install.sh). During a lease, plain 'ssh <board>' uses your job key."$'\n'
+  while read -r name type host; do
+    [ -n "$name" ] || continue
+    if [ "$KOTL_DRY_RUN" = 1 ]; then addr="<address of $host>"; else
+      addr=$(runuser -u kotl -- ssh -G "$host" | sed -n 's/^hostname //p'); fi
+    client+=$'\n'"Host $name"$'\n'"  HostName $addr"$'\n'"  User $account"$'\n'"  IdentityFile /tmp/kotl-keys-%u/%n"$'\n'
+  done <<<"$rows"
+  if [ -n "$(printf '%s' "$rows" | tr -d '[:space:]')" ]; then
+    printf '%s' "$client" | put_file /etc/ssh/ssh_config.d/kotl.conf 644 root:root
+  elif [ "$KOTL_DRY_RUN" != 1 ]; then
+    remove_file /etc/ssh/ssh_config.d/kotl.conf
+  fi
+
+  # Slurm: one license per board, counted by type (e.g. vcu118:2); restart slurmctld if it changed
+  want=$(printf '%s\n' "$rows" | awk 'NF == 3 { n[$2]++ } END { for (t in n) print t ":" n[t] }' | sort | paste -sd, -)
+  conf=$(p /etc/slurm/slurm.conf)
+  have=$(sed -n 's/^Licenses=//p' "$conf" 2>/dev/null || true)
+  if [ -z "$want" ]; then
+    [ "$KOTL_DRY_RUN" = 1 ] || say "no boards in the registry; Slurm's licenses stay ${have:-unset}"
+  elif [ "$want" != "$have" ] && [ -f "$conf" ]; then
+    sed -i "s/^Licenses=.*/Licenses=$want/" "$conf"
+    say "Slurm licenses: ${have:-none} -> $want"
+    run systemctl restart slurmctld
+  fi
+}
+
 install_all() {
   if [ "$KOTL_DRY_RUN" != 1 ]; then
     getent passwd kotl >/dev/null || die "run M1 first (accounts.sh install)"
@@ -50,6 +99,12 @@ install_all() {
   find "$lib" -type f -exec chmod 644 {} +
   if [ "$KOTL_DRY_RUN" != 1 ]; then chown -R root:root "$lib"; fi
   say "copied kotl/ to /opt/kotl/lib/kotl"
+
+  # the build: VERSION+COMMIT (+ a hash of uncommitted changes); the plugins and the VS Code
+  # extension carry a copy, so they can tell a person when Kotl was updated after their kotl setup
+  BUILD=$(build_id)
+  rm -f "$(p /opt/kotl/BUILD)"     # one line, no room for the "managed by kotl" mark: replace it outright
+  printf '%s\n' "$BUILD" | put_file /opt/kotl/BUILD 644 root:root
 
   py_wrapper kotl.core.launcher | put_file /opt/kotl/launch 755 root:root
   make_dir /opt/kotl/bin 755 root:root
@@ -71,6 +126,7 @@ install_all() {
   find "$plug" -type f -exec chmod 644 {} +
   find "$plug" -name '*.sh' -exec chmod 755 {} +
   if [ "$KOTL_DRY_RUN" != 1 ]; then chown -R root:root "$plug"; fi
+  printf '%s\n' "$BUILD" >"$plug/BUILD"
   say "copied plugin/ to /opt/kotl/plugin"
   local band
   band=$(p /opt/kotl/plugin-band)
@@ -80,6 +136,7 @@ install_all() {
   find "$band" -type f -exec chmod 644 {} +
   find "$band" -name '*.test.tsx' -delete
   if [ "$KOTL_DRY_RUN" != 1 ]; then chown -R root:root "$band"; fi
+  printf '%s\n' "$BUILD" >"$band/BUILD"
   say "copied plugin-band/ to /opt/kotl/plugin-band"
   # JSON can't carry the "managed by kotl" mark, so replace it outright (no .kotl-orig backup)
   rm -f "$(p /opt/kotl/.claude-plugin/marketplace.json)" "$(p /opt/kotl/.claude-plugin/marketplace.json.kotl-orig)"
@@ -87,7 +144,7 @@ install_all() {
 
   # the VS Code extension, as a .vsix anyone can install (code --install-extension)
   local vsix
-  vsix=$(python3 "$REPO/vscode-kotl/build_vsix.py" "$(mktemp -d)")
+  vsix=$(python3 "$REPO/vscode-kotl/build_vsix.py" "$(mktemp -d)" "$BUILD")
   # a .vsix (zip) can't carry the "managed by kotl" mark either: replace it outright
   rm -f "$(p /opt/kotl/kotl-status.vsix)" "$(p /opt/kotl/kotl-status.vsix.kotl-orig)"
   put_file /opt/kotl/kotl-status.vsix 644 root:root <"$vsix"
@@ -124,18 +181,13 @@ install_all() {
   # adapters (task-specific parts: FireSim's checks and cleanup), switched on in kotl.conf
   if [ "$ADAPTERS" != unset ]; then set_conf /etc/kotl/kotl.conf adapters "$ADAPTERS"; fi
 
-  local b name type host addr account client
-  account=$(get_conf /etc/kotl/kotl.conf pc_account); account=${account:-virtex-host}
-  client="# $MARK (deploy/kotl/install.sh). During a lease, plain 'ssh <board>' uses your job key."$'\n'
+  local b name type host
   for b in "${BOARDS[@]}"; do
     name=${b%%=*}; type=${b#*=}; host=${type#*@}; type=${type%%@*}
     [ -n "$name" ] && [ -n "$type" ] && [ -n "$host" ] && [ "$b" != "$name" ] || die "--board wants NAME=TYPE@HOST, got '$b'"
     run runuser -u kotl -- /opt/kotl/launch board-add "$name" "$type" "$host"
-    if [ "$KOTL_DRY_RUN" = 1 ]; then addr="<address of $host>"; else
-      addr=$(runuser -u kotl -- ssh -G "$host" | sed -n 's/^hostname //p'); fi
-    client+=$'\n'"Host $name"$'\n'"  HostName $addr"$'\n'"  User $account"$'\n'"  IdentityFile /tmp/kotl-keys-%u/%n"$'\n'
   done
-  if [ ${#BOARDS[@]} -gt 0 ]; then printf '%s' "$client" | put_file /etc/ssh/ssh_config.d/kotl.conf 644 root:root; fi
+  sync_boards
   say "installed. Try (as yourself): kotl status; kotl run --eta 5m -- hostname"
 }
 
@@ -148,6 +200,7 @@ undo_all() {
   remove_file /opt/kotl/.claude-plugin/marketplace.json
   remove_file /opt/kotl/kotl-status.vsix
   remove_file /opt/kotl/client/install.sh
+  remove_file /opt/kotl/BUILD
   if grep -qs "$MARK" "$(p /etc/claude-code/CLAUDE.md)"; then remove_file /etc/claude-code/CLAUDE.md; fi
   remove_file /opt/kotl/launch
   remove_file /opt/kotl/bin/kotl

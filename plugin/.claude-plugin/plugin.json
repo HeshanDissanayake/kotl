@@ -1,6 +1,6 @@
 {
   "name": "kotl",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Use the lab's FPGA boards through Kotl: hold a board with kotl run or kotl lease, follow and fetch results, see notices.",
   "author": { "name": "Kotl" }
 }

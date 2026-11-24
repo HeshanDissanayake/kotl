@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "updated": "2026-11-24T13:56:58Z",
-  "repo_commit": "ac4797eafeec33600b5acd88e879008da22ca6a0",
+  "updated": "2026-11-24T14:11:26Z",
+  "repo_commit": "afc8927856b75d3f2aaea30092055291d0266313",
   "watch": [
     "deploy/",
     "kotl/",
@@ -32,7 +32,7 @@
     "M3": "Job keys on the real board; FireSim runs through kotl run",
     "M4": "Health check, ETA notices, interactive sessions",
     "M5": "Kotl plugin for Claude Code",
-    "P": "Product: Kotl sets up PCs itself, one-command install and full uninstall",
+    "P": "v1.0.0 · Product: Kotl sets up PCs itself, one-command update, full uninstall",
     "Later": "After the first release"
   },
   "features": {
@@ -50,7 +50,7 @@
         "unit": {
           "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-24T13:56:58Z"
+          "ran_at": "2026-11-24T14:11:26Z"
         },
         "hardware": null
       },
@@ -108,7 +108,7 @@
         "unit": {
           "passed": 4,
           "failed": 0,
-          "ran_at": "2026-11-24T13:56:58Z"
+          "ran_at": "2026-11-24T14:11:26Z"
         },
         "hardware": null
       },
@@ -146,7 +146,7 @@
         "unit": {
           "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-24T13:56:58Z"
+          "ran_at": "2026-11-24T14:11:26Z"
         },
         "hardware": null
       },
@@ -191,7 +191,7 @@
         "unit": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-24T13:56:58Z"
+          "ran_at": "2026-11-24T14:11:26Z"
         },
         "hardware": null
       },
@@ -224,7 +224,7 @@
         "unit": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-24T13:56:58Z"
+          "ran_at": "2026-11-24T14:11:26Z"
         },
         "hardware": null
       },
@@ -266,7 +266,7 @@
         "unit": {
           "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-24T13:56:58Z"
+          "ran_at": "2026-11-24T14:11:26Z"
         },
         "hardware": null
       },
@@ -315,7 +315,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-24T13:56:58Z"
+          "ran_at": "2026-11-24T14:11:26Z"
         },
         "hardware": {
           "passed": 1,
@@ -360,7 +360,7 @@
         "unit": {
           "passed": 4,
           "failed": 0,
-          "ran_at": "2026-11-24T13:56:58Z"
+          "ran_at": "2026-11-24T14:11:26Z"
         },
         "hardware": {
           "passed": 2,
@@ -444,9 +444,9 @@
       ],
       "tests": {
         "unit": {
-          "passed": 7,
+          "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-24T13:56:58Z"
+          "ran_at": "2026-11-24T14:11:26Z"
         },
         "hardware": null
       },
@@ -500,14 +500,14 @@
         "unit": {
           "passed": 36,
           "failed": 0,
-          "ran_at": "2026-11-24T13:56:58Z"
+          "ran_at": "2026-11-24T14:11:26Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "ac4797eafeec33600b5acd88e879008da22ca6a0",
-        "message": "Claude sessions know Kotl up front: skill, session start and a workstation-wide CLAUDE.md; daemon and plugin built",
-        "date": "2026-11-25T00:34:24+11:00"
+        "hash": "afc8927856b75d3f2aaea30092055291d0266313",
+        "message": "deploy/kotl/update.sh: update Kotl everywhere in one go (workstation, then each board's PC)",
+        "date": "2026-11-25T00:56:58+11:00"
       },
       "issues": [],
       "log": [
@@ -570,6 +570,10 @@
         {
           "date": "2026-11-25",
           "text": "deploy/kotl/update.sh (user request): one update for everything. The workstation via install.sh (no options: keeps boards and adapters), then each PC from ssh_config.d/kotl.conf: pc/setup.sh --keys-helper and each enabled adapter's pc-setup.sh, copied to a temporary folder and removed after. --no-pc, --pc, --dry-run."
+        },
+        {
+          "date": "2026-11-25",
+          "text": "v1.0.0: kotl/__init__.py __version__; install.sh writes /opt/kotl/BUILD (version+commit) and a copy into the plugins and the vsix; the daemon's file and kotl status --json carry it; kotl version. update.sh now runs pc.sh update for the PCs."
         }
       ]
     },
@@ -584,9 +588,9 @@
       ],
       "tests": {
         "unit": {
-          "passed": 17,
+          "passed": 18,
           "failed": 0,
-          "ran_at": "2026-11-24T13:56:58Z"
+          "ran_at": "2026-11-24T14:11:26Z"
         },
         "hardware": null
       },
@@ -659,7 +663,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-24T13:56:58Z"
+          "ran_at": "2026-11-24T14:11:26Z"
         },
         "hardware": null
       },
@@ -693,7 +697,7 @@
         "unit": {
           "passed": 11,
           "failed": 0,
-          "ran_at": "2026-11-24T13:56:58Z"
+          "ran_at": "2026-11-24T14:11:26Z"
         },
         "hardware": {
           "passed": 1,
@@ -777,7 +781,7 @@
         "unit": {
           "passed": 22,
           "failed": 0,
-          "ran_at": "2026-11-24T13:56:58Z"
+          "ran_at": "2026-11-24T14:11:26Z"
         },
         "hardware": null
       },
@@ -869,7 +873,7 @@
         "unit": {
           "passed": 6,
           "failed": 0,
-          "ran_at": "2026-11-24T13:56:58Z"
+          "ran_at": "2026-11-24T14:11:26Z"
         },
         "hardware": null
       },
@@ -906,7 +910,7 @@
         "unit": {
           "passed": 7,
           "failed": 0,
-          "ran_at": "2026-11-24T13:56:58Z"
+          "ran_at": "2026-11-24T14:11:26Z"
         },
         "hardware": null
       },
@@ -949,9 +953,9 @@
       ],
       "tests": {
         "unit": {
-          "passed": 20,
+          "passed": 22,
           "failed": 0,
-          "ran_at": "2026-11-24T13:56:58Z"
+          "ran_at": "2026-11-24T14:11:26Z"
         },
         "hardware": null
       },
@@ -1009,6 +1013,10 @@
         {
           "date": "2026-11-25",
           "text": "User request: Claude sessions should know Kotl without a run being killed first. Skill gets 'a board that is busy' (signs of Kotl, never stop others' work); the session-start hook says it; install.sh publishes /etc/claude-code/CLAUDE.md (left alone if the admin has their own); the test package README says what to do when FireSim runs outside Kotl."
+        },
+        {
+          "date": "2026-11-25",
+          "text": "Update nudge: the session-start hook and the VS Code extension compare their BUILD with the installed one and ask for kotl setup (a remote user: a new client bundle). On the workstation the plugins load from /opt/kotl in place, so only the extension needs kotl setup. Plugins and extension are 1.0.0."
         }
       ]
     },
@@ -1120,7 +1128,7 @@
         "unit": {
           "passed": 28,
           "failed": 0,
-          "ran_at": "2026-11-24T13:56:58Z"
+          "ran_at": "2026-11-24T14:11:26Z"
         },
         "hardware": {
           "passed": 2,
@@ -1196,33 +1204,51 @@
       ]
     },
     "pc_onboard": {
-      "status": "planned",
+      "status": "tested",
       "milestone": "P",
-      "now": "",
+      "now": "deploy/kotl/pc.sh add/remove/update/undo: one ssh login and one sudo password per PC; the registry drives the users' SSH entries and Slurm's license counts.",
       "tests": {
-        "unit": null,
+        "unit": {
+          "passed": 7,
+          "failed": 0,
+          "ran_at": "2026-11-24T14:11:26Z"
+        },
         "hardware": null
       },
-      "last_commit": null,
+      "last_commit": {
+        "hash": "c136deebe90ccff1cc683a48115082ce3ef4afb0",
+        "message": "Never stop work outside Kotl: the end step stops only the job's own; say who and how long",
+        "date": "2026-11-24T22:41:15+11:00"
+      },
       "issues": [],
       "drawn": false,
-      "title": "PC onboarding (kotl admin pc add/remove)",
+      "title": "PC onboarding (deploy/kotl/pc.sh add/remove)",
       "code": [
-        "kotl/admin/"
+        "deploy/kotl/pc.sh",
+        "deploy/ssh/",
+        "deploy/pc/"
       ],
       "log": [
         {
           "date": "2026-11-23",
           "text": "Planned (user goal): Kotl installs and removes its PC side itself (account, key, kotl-keys, sudoers), via kotl/ssh.py, asking the admin's PC password once; replaces the manual scp/ssh steps."
+        },
+        {
+          "date": "2026-11-25",
+          "text": "Built as a deploy script, not kotl admin: it needs root on both sides, which our scripts ask for and the CLI never does. add: Kotl's SSH entry (setup-kotl-key.sh --add), the PC (setup.sh --key --keys-helper + every enabled adapter), a login check, install.sh --board (registry, SSH entries and license counts from the registry), the board check. remove: board-remove (refused while held), the PC's --undo (also clears leftover kotl-job keys), --remove, install.sh. update/undo for all PCs."
         }
       ]
     },
     "uninstall": {
-      "status": "planned",
+      "status": "tested",
       "milestone": "P",
-      "now": "",
+      "now": "deploy/uninstall.sh [--purge] [--keep-pcs]: the PCs, then each workstation part's --undo in reverse; asks you to type uninstall; refuses while Kotl jobs run.",
       "tests": {
-        "unit": null,
+        "unit": {
+          "passed": 3,
+          "failed": 0,
+          "ran_at": "2026-11-24T14:11:26Z"
+        },
         "hardware": null
       },
       "last_commit": null,
@@ -1236,6 +1262,10 @@
         {
           "date": "2026-11-23",
           "text": "Planned (user goal): one command runs every --undo in reverse and removes the PC side; --purge also packages, data, accounts. Tested: install then uninstall leaves nothing."
+        },
+        {
+          "date": "2026-11-25",
+          "text": "Built: PCs (pc.sh undo), install.sh --undo, setup-kotl-key.sh --undo, slurm/install.sh --undo, accounts.sh --undo, each with --purge passed on. Tested: a dry-run install of every part, then every undo, leaves no file behind."
         }
       ]
     },
@@ -1251,7 +1281,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-24T13:56:58Z"
+          "ran_at": "2026-11-24T14:11:26Z"
         },
         "hardware": null
       },
@@ -1297,7 +1327,7 @@
         "unit": {
           "passed": 7,
           "failed": 0,
-          "ran_at": "2026-11-24T13:56:58Z"
+          "ran_at": "2026-11-24T14:11:26Z"
         },
         "hardware": null
       },
@@ -1332,7 +1362,7 @@
         "unit": {
           "passed": 7,
           "failed": 0,
-          "ran_at": "2026-11-24T13:56:58Z"
+          "ran_at": "2026-11-24T14:11:26Z"
         },
         "hardware": null
       },

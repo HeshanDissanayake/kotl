@@ -75,3 +75,15 @@ def test_re_adding_a_board_keeps_its_job_and_health(reg):
     b = reg.board("vcu118-pc1")
     assert b["state"] == "busy" and b["job_id"] == 41 and b["host"] == "new-host"
     assert reg.warnings("vcu118-pc1") == ["glibc differs"] and b["last_healthy"]
+
+
+@pytest.mark.feature("pc_onboard")
+def test_remove_board_only_when_nothing_holds_it(reg):
+    reg.claim(7, "vcu118")
+    with pytest.raises(RegistryError, match="in use"):
+        reg.remove_board("vcu118-pc1")
+    reg.release(7)
+    reg.remove_board("vcu118-pc1")
+    assert reg.boards() == []
+    with pytest.raises(RegistryError, match="no board"):
+        reg.remove_board("vcu118-pc1")

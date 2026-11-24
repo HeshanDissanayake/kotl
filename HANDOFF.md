@@ -117,9 +117,10 @@ docs/architecture/
 - The skill (kotl commands, expect scripts with timeouts, fetch-then-read-status workflow) and hooks (suggest `kotl run` around board commands, show the queue at session start).
 - Done when: a fresh Claude Code session on a user's PC can submit, wait, fetch and report a FireSim job using only the plugin.
 
-**P: Product** (user goal, 2026-11-23)
-- PC onboarding: `kotl admin pc add NAME ADDRESS` / `pc remove` installs and removes Kotl's PC side (kotl account, key, `kotl-keys`, sudoers) through `kotl/ssh.py`, asking for the admin's PC password once. It replaces the manual scp/ssh steps in the run sheets.
-- Full uninstall: `deploy/uninstall.sh [--purge]` runs every `--undo` in reverse order and removes each PC's side. Tested: install, then uninstall, leaves nothing.
+**P: Product = v1.0.0** (user goal 2026-11-23; built 2026-11-25)
+- PC onboarding: `bash deploy/kotl/pc.sh add NAME TYPE ADDRESS` / `remove NAME` / `update` / `undo`, run as the admin. A deploy script, not `kotl admin`: it needs root on both sides, and only deploy scripts ask for that. One ssh login (ControlMaster) and one sudo password per PC. The registry drives the users' SSH entries and Slurm's license counts (`install.sh` syncs them on every run; `slurm/install.sh` keeps the count).
+- Update: `bash deploy/kotl/update.sh` (workstation, then `pc.sh update`). Version: `kotl/__init__.py`; `install.sh` writes `/opt/kotl/BUILD` (version+commit) and a copy into the plugins and the vsix. The extension and the session-start hook compare and ask for `kotl setup` (on the workstation the plugins load in place from /opt/kotl, so only the extension needs it).
+- Full uninstall: `bash deploy/uninstall.sh [--purge] [--keep-pcs]` runs every `--undo` in reverse, PCs first. Tested: dry-run install of every part, then every undo, leaves no file.
 - Keep every new part uninstallable: whatever a script adds, its `--undo` removes.
 
 **Later:** power monitor, usage dashboard, program/reset adapter, board-tests adapter, more boards. **Parked:** same-design board pick.
