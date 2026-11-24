@@ -76,6 +76,10 @@
         {
           "date": "2026-11-24",
           "text": "View redesigned as a three-pane window (Sidebar · Canvas · Inspector): parts grouped in architecture.json groups, Slurm and Later collapse into one box with a count, labels show on selection, status and history behind disclosures, Overview/Progress/Guides. status.py check: every box in exactly one group."
+        },
+        {
+          "date": "2026-11-24",
+          "text": "View: Kotl's Ways in, Board lease and Background services fold into one box each; one click opens a group, a background click or Esc folds everything back; fade/scale transitions; arrows to a folded group are redrawn to its box; guide steps open only the groups they need."
         }
       ],
       "drawn": false

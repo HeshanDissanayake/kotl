@@ -3068,6 +3068,18 @@
       "top",
       "attach",
       "plugin"
+     ],
+     "collapse": "chip",
+     "collapsed": true,
+     "chip": {
+      "x": 281,
+      "y": 280,
+      "w": 170,
+      "h": 70
+     },
+     "keep": [
+      "plugin-l",
+      "plugin-r"
      ]
     },
     {
@@ -3080,6 +3092,17 @@
       "access",
       "results",
       "key"
+     ],
+     "collapse": "chip",
+     "collapsed": true,
+     "chip": {
+      "x": 477,
+      "y": 280,
+      "w": 170,
+      "h": 70
+     },
+     "keep": [
+      "key"
      ]
     },
     {
@@ -3090,7 +3113,15 @@
       "daemon",
       "health",
       "notifier"
-     ]
+     ],
+     "collapse": "chip",
+     "collapsed": true,
+     "chip": {
+      "x": 673,
+      "y": 280,
+      "w": 170,
+      "h": 70
+     }
     },
     {
      "id": "adapters",

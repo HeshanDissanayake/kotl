@@ -158,7 +158,8 @@ svg.diagram { position: absolute; inset: 0; width: 100%; height: 100%; display: 
 .tag-kotl { fill: var(--kotl); }
 .tag-kotl-text { font: 700 11px var(--font); letter-spacing: .06em; fill: var(--on-kotl); text-anchor: middle; }
 .divider { stroke: var(--kotl); stroke-opacity: .35; stroke-width: 1.2; stroke-dasharray: 4 4; }
-.node, .gbox { cursor: pointer; outline: none; transition: opacity .2s; }
+.node, .gbox { cursor: pointer; outline: none; transform-box: fill-box; transform-origin: center; transition: opacity .28s ease, transform .28s ease, visibility .28s; }
+.edge, .e-label, .badge, .zone-collapse { transition: opacity .28s ease, visibility .28s; }
 .node .box, .gbox .box { fill: var(--box); stroke: var(--box-line); stroke-width: 1.2; filter: drop-shadow(0 1px 1.5px rgba(0,0,0,.06)); }
 .node .box.kchip { fill: var(--kotl-tint); stroke: var(--kotl); stroke-opacity: .6; }
 .node .box.bus { fill: var(--kotl); stroke: none; filter: none; }
@@ -177,6 +178,7 @@ svg.diagram { position: absolute; inset: 0; width: 100%; height: 100%; display: 
 .gbox .box { stroke-dasharray: 0; }
 .gbox.slurm .box { fill: var(--box); stroke: var(--slurm); stroke-opacity: .7; }
 .gbox.chip .box { stroke-dasharray: 5 4; fill: var(--fill-2); }
+.gbox.kotlg .box { fill: var(--box); stroke: var(--kotl); stroke-opacity: .8; stroke-dasharray: 6 3; }
 .gbox .count { fill: var(--label); }
 .gbox .count-t { font: 600 11px var(--font); fill: var(--window); text-anchor: middle; }
 .gbox .expand { font: 500 11px var(--font); fill: var(--tint); text-anchor: middle; }
@@ -184,17 +186,21 @@ svg.diagram { position: absolute; inset: 0; width: 100%; height: 100%; display: 
 .zone-collapse rect { fill: var(--window); stroke: var(--sep); }
 .zone-collapse text { font: 500 11px var(--font); fill: var(--tint); text-anchor: middle; }
 .zone-collapse:hover rect { stroke: var(--tint); }
-.edge { fill: none; stroke: var(--edge); stroke-width: 1.4; marker-end: url(#arr); transition: opacity .2s; }
+.edge { fill: none; stroke: var(--edge); stroke-width: 1.4; marker-end: url(#arr); }
 .edge.bg { stroke-dasharray: 5 4; }
 .edge.fut { stroke-dasharray: 2 4; }
 .edge.hot { stroke: var(--hot); stroke-width: 2.4; marker-end: url(#arr-hot); }
 .edge.near { stroke: var(--tint); stroke-width: 2; marker-end: url(#arr-tint); }
-.e-label { font: 10.5px var(--font); fill: var(--label-2); opacity: 0; transition: opacity .2s; pointer-events: none; }
+.e-label { font: 10.5px var(--font); fill: var(--label-2); opacity: 0; pointer-events: none; }
 svg.labels .e-label, .e-label.hot, .e-label.near { opacity: 1; }
 .e-label.hot { fill: var(--hot); font-weight: 600; }
 .e-label.near { fill: var(--tint); font-weight: 600; }
 .ah { fill: var(--edge); } .ah-hot { fill: var(--hot); } .ah-sl { fill: var(--slurm); } .ah-tint { fill: var(--tint); }
-.gone { display: none; }
+.gone { opacity: 0 !important; visibility: hidden; pointer-events: none; }
+.node.gone, .gbox.gone { transform: scale(.94); }
+.edge.synth { stroke-dasharray: 1 0; }
+.edge.synth.bg { stroke-dasharray: 5 4; }
+svg.diagram { cursor: default; }
 .dim { opacity: .22; }
 svg.labels .e-label.dim { opacity: .15; }
 .badge { display: none; cursor: pointer; }
@@ -371,7 +377,7 @@ details.file pre { margin: 0; padding: 10px 12px; background: var(--code-bg); fo
             <marker id="arr-tint" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path class="ah-tint" d="M0,0 L10,5 L0,10 z"/></marker>
           </defs>
         </svg>
-        <span class="hintline" id="hintline">Click a box to inspect it · click a group to see what's inside</span>
+        <span class="hintline" id="hintline">Click a box to inspect it · click a group to open it · click the background to fold everything back</span>
         <div class="keypop" id="keypop" hidden>
           <span><i class="swb" style="border-color:var(--kotl);background:var(--kotl-tint)"></i>Kotl (ours)</span>
           <span><i class="sd s-tested"></i>tested</span>
@@ -408,6 +414,9 @@ let view = "overview", guide = null, step = 0, pills = [], current = null;   // 
 const GINDEX = {};        // group id -> {g, parent}
 const NODE_GROUP = {};    // node id -> innermost group id
 let collapsed = {};       // group id -> bool (diagram)
+let tempOpen = new Set(); // groups a guide step opens for the moment
+const KEEP = new Set();   // nodes a collapsed group leaves on the map (e.g. a plugin chip inside a user box)
+let synthLayer = null;
 let openRows = {};        // group id -> bool (sidebar outline)
 
 const $ = id => document.getElementById(id);
@@ -430,6 +439,7 @@ function nodeKey(n) { return n.detail || n.id; }
 function walkGroups(list, parent) {
   list.forEach(g => {
     GINDEX[g.id] = { g, parent };
+    (g.keep || []).forEach(k => KEEP.add(k));
     (g.items || []).forEach(i => {
       A.nodes.filter(n => n.id === i || nodeKey(n) === i).forEach(n => { NODE_GROUP[n.id] = g.id; });
     });
@@ -454,9 +464,21 @@ function groupKeys(gid) {    // distinct details keys in a group, in its own ord
 function allKeys(gid) { const g = GINDEX[gid].g; return groupKeys(gid).concat(...(g.children || []).map(c => allKeys(c.id))); }
 function groupPath(gid) { const out = []; for (let x = gid; x; x = GINDEX[x].parent) out.unshift(x); return out; }
 function keyGroup(key) { const n = A.nodes.find(n => nodeKey(n) === key); return n ? NODE_GROUP[n.id] : null; }
-function hiddenBy(nodeId) {  // the collapsed group hiding this node, if any
-  for (let g = NODE_GROUP[nodeId]; g; g = GINDEX[g].parent) if (GINDEX[g].g.collapse && collapsed[g]) return g;
-  return null;
+function isCollapsed(gid) { return !!(GINDEX[gid].g.collapse && collapsed[gid] && !tempOpen.has(gid)); }
+function hiddenBy(nodeId) {  // the outermost collapsed group hiding this node, if any
+  if (KEEP.has(nodeId)) return null;
+  let found = null;
+  for (let g = NODE_GROUP[nodeId]; g; g = GINDEX[g].parent) if (isCollapsed(g)) found = g;
+  return found;
+}
+function nodeRect(id) { const n = A.nodes.find(n => n.id === id); return n && { x: n.x, y: n.y, w: n.w, h: n.h }; }
+function route(a, b) {       // an orthogonal path from box a to box b, ending on b's edge
+  const ox0 = Math.max(a.x, b.x), ox1 = Math.min(a.x + a.w, b.x + b.w), oy0 = Math.max(a.y, b.y), oy1 = Math.min(a.y + a.h, b.y + b.h);
+  const acx = a.x + a.w / 2, acy = a.y + a.h / 2, bcx = b.x + b.w / 2, bcy = b.y + b.h / 2;
+  if (ox1 - ox0 > 12) { const x = Math.round((ox0 + ox1) / 2); return acy < bcy ? `M${x},${a.y + a.h} V${b.y}` : `M${x},${a.y} V${b.y + b.h}`; }
+  if (oy1 - oy0 > 12) { const y = Math.round((oy0 + oy1) / 2); return acx < bcx ? `M${a.x + a.w},${y} H${b.x}` : `M${a.x},${y} H${b.x + b.w}`; }
+  const sx = acx < bcx ? a.x + a.w : a.x;
+  return `M${sx},${Math.round(acy)} H${Math.round(bcx)} V${acy < bcy ? b.y : b.y + b.h}`;
 }
 function titleOf(key) { return (D[key] && D[key].title) || (STATUS && STATUS.features && STATUS.features[key] && STATUS.features[key].title) || (A.nodes.find(n => nodeKey(n) === key) || {}).title || key; }
 function statusOf(key) { return STATUS && STATUS.features && STATUS.features[key]; }
@@ -489,6 +511,7 @@ function draw() {
     t._e = e; return t;
   });
 
+  synthLayer = el("g", { class: "synth-layer" });
   (A.nodes || []).forEach(n => {
     const g = el("g", {
       class: "node" + (n.later ? " later" : ""), "data-id": n.id, "data-key": nodeKey(n),
@@ -530,28 +553,33 @@ function draw() {
       const x0 = Math.min(...ns.map(n => n.x)), y0 = Math.min(...ns.map(n => n.y));
       r = { x: x0, y: y0, w: Math.max(...ns.map(n => n.x + n.w)) - x0, h: Math.max(...ns.map(n => n.y + n.h)) - y0 };
     }
-    const owner = ns.every(n => n.owner === "slurm") ? " slurm" : "";
+    const owner = ns.every(n => n.owner === "slurm") ? " slurm" : ns.every(n => n.owner === "kotl") && !ns.some(n => n.later) ? " kotlg" : "";
     const gg = el("g", { class: "gbox" + owner + (g.collapse === "chip" ? " chip" : ""), "data-group": g.id, tabindex: 0, role: "button", "aria-label": g.title + ", " + allKeys(g.id).length + " parts, collapsed" });
     el("rect", { class: "box", x: r.x, y: r.y, width: r.w, height: r.h, rx: 10 }, gg);
     const cx = r.x + r.w / 2, wide = r.w > 300;
-    el("text", { class: "n-title", x: cx, y: r.y + r.h / 2 - (wide ? 6 : 8) }, gg, g.title);
     const names = allKeys(g.id).map(k => (A.nodes.find(n => nodeKey(n) === k) || {}).title || titleOf(k));
-    el("text", { class: "n-sub", x: cx, y: r.y + r.h / 2 + 12 }, gg, wide ? names.join(" · ") : allKeys(g.id).length + " parts");
+    if (wide) {
+      el("text", { class: "n-title", x: cx, y: r.y + r.h / 2 - 6 }, gg, g.title);
+      el("text", { class: "n-sub", x: cx, y: r.y + r.h / 2 + 12 }, gg, names.join(" · "));
+    } else {   // narrow: dots and count on top, title below, then the hint
+      el("text", { class: "n-title", x: cx, y: r.y + 43 }, gg, g.title);
+    }
     const cw = 26; el("rect", { class: "count", x: r.x + r.w - cw - 8, y: r.y + 8, width: cw, height: 17, rx: 8.5 }, gg);
     el("text", { class: "count-t", x: r.x + r.w - cw / 2 - 8, y: r.y + 20 }, gg, String(allKeys(g.id).length));
-    el("text", { class: "expand", x: cx, y: r.y + r.h - 8 }, gg, "Expand ⌄");
+    el("text", { class: "expand", x: cx, y: r.y + r.h - 9 }, gg, wide ? "Expand ⌄" : names.length + " parts · Expand ⌄");
     gg._rect = r;
     groupEls[g.id] = gg;
-    gg.addEventListener("click", ev => { select("g:" + g.id); });
-    gg.addEventListener("dblclick", () => setCollapsed(g.id, false));
-    gg.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select("g:" + g.id); } });
+    const open = () => { collapsed[g.id] = false; store("kotl-collapsed", JSON.stringify(collapsed)); applyCollapse(); select("g:" + g.id); };
+    gg.addEventListener("click", ev => { ev.stopPropagation(); open(); });
+    gg.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } });
     // when expanded, a small "Collapse" control on the group's zone (box groups) or near the chip slot
     const zone = (A.zones || []).find(z => z.id === g.id);
-    const at = zone ? { x: zone.x + zone.w - 86, y: zone.y + 10 } : { x: r.x + r.w - 82, y: r.y - 26 };
+    if (!zone) return;          // groups without a zone fold back with a background click, Esc, or the Inspector
+    const at = { x: zone.x + zone.w - 86, y: zone.y + 10 };
     const c = el("g", { class: "zone-collapse", "data-collapse": g.id, tabindex: 0, role: "button", "aria-label": "Collapse " + g.title });
     el("rect", { x: at.x, y: at.y, width: 76, height: 20, rx: 10 }, c);
     el("text", { x: at.x + 38, y: at.y + 14 }, c, "Collapse ⌃");
-    c.addEventListener("click", () => setCollapsed(g.id, true));
+    c.addEventListener("click", ev => { ev.stopPropagation(); setCollapsed(g.id, true); });
     c.addEventListener("keydown", e => { if (e.key === "Enter") setCollapsed(g.id, true); });
     groupEls[g.id + ":ctl"] = c;
   });
@@ -561,15 +589,38 @@ function applyCollapse() {
   svg.querySelectorAll(".badge").forEach(b => b.classList.toggle("gone", !!hiddenBy(b.dataset.node)));
   Object.values(GINDEX).forEach(({ g }) => {
     if (!g.collapse) return;
-    groupEls[g.id].classList.toggle("gone", !collapsed[g.id]);
-    groupEls[g.id + ":ctl"].classList.toggle("gone", !!collapsed[g.id]);
+    const shown = isCollapsed(g.id) && !Object.values(GINDEX).some(o => o.g !== g && isCollapsed(o.g.id) && groupPath(g.id).includes(o.g.id));
+    groupEls[g.id].classList.toggle("gone", !shown);
+    if (groupEls[g.id + ":ctl"]) groupEls[g.id + ":ctl"].classList.toggle("gone", isCollapsed(g.id) || !!hiddenByGroupOf(g.id));
   });
-  const hidden = e => { const a = hiddenBy(e.from), b = hiddenBy(e.to);
-    const chip = x => x && GINDEX[x].g.collapse === "chip";
-    return chip(a) || chip(b) || (a && a === b); };
+  const chip = x => x && GINDEX[x].g.collapse === "chip";
+  const hidden = e => { const a = hiddenBy(e.from), b = hiddenBy(e.to); return chip(a) || chip(b) || (a && a === b); };
   edgeEls.forEach(p => p.classList.toggle("gone", hidden(p._e)));
   labelEls.forEach(t => t.classList.toggle("gone", hidden(t._e)));
+  // arrows into a collapsed group are redrawn to its box, one per pair
+  synthLayer.innerHTML = "";
+  const pairs = {};
+  (A.edges || []).forEach(e => {
+    const a = hiddenBy(e.from), b = hiddenBy(e.to);
+    if (!(chip(a) || chip(b)) || (a && a === b)) return;
+    const k = (a ? "g:" + a : e.from) + ">" + (b ? "g:" + b : e.to);
+    (pairs[k] = pairs[k] || { a, b, from: e.from, to: e.to, ids: [], bg: true }).ids.push(e.id);
+    if (e.style !== "bg" && e.style !== "fut") pairs[k].bg = false;
+  });
+  Object.values(pairs).forEach(p => {
+    const ra = p.a ? groupEls[p.a]._rect : nodeRect(p.from), rb = p.b ? groupEls[p.b]._rect : nodeRect(p.to);
+    if (!ra || !rb) return;
+    const path = el("path", { class: "edge synth" + (p.bg ? " bg" : ""), d: route(ra, rb) }, synthLayer);
+    path._ids = p.ids; path._ends = [p.a ? "g:" + p.a : p.from, p.b ? "g:" + p.b : p.to];
+  });
   renderGroupDots();
+}
+function hiddenByGroupOf(gid) { for (let x = GINDEX[gid].parent; x; x = GINDEX[x].parent) if (isCollapsed(x)) return x; return null; }
+function collapseAll() {
+  Object.values(GINDEX).forEach(({ g }) => { if (g.collapse) collapsed[g.id] = true; });
+  store("kotl-collapsed", JSON.stringify(collapsed));
+  applyCollapse();
+  select(null);
 }
 function setCollapsed(gid, c) {
   collapsed[gid] = c;
@@ -794,7 +845,8 @@ function refresh() {
     const s = f.steps[step - 1];
     const on = new Set(s.nodes.map(visual).filter(Boolean));
     [...Object.values(nodeEls), ...Object.values(groupEls).filter(g => g.classList.contains("gbox"))].forEach(n => { n.classList.toggle("hot", on.has(n)); n.classList.toggle("dim", !on.has(n)); });
-    edgeEls.forEach(e => { const x = s.edges.includes(e.id); e.classList.toggle("hot", x); e.classList.toggle("dim", !x); if (x) svg.insertBefore(e, firstNode); });
+    edgeEls.forEach(e => { const x = s.edges.includes(e.id); e.classList.toggle("hot", x); e.classList.toggle("dim", !x); if (x) svg.insertBefore(e, synthLayer); });
+    synthLayer.querySelectorAll("path").forEach(e => { const x = e._ids.some(i => s.edges.includes(i)); e.classList.toggle("hot", x); e.classList.toggle("dim", !x); });
     labelEls.forEach(l => { const x = s.edges.includes(l._e.id); l.classList.toggle("hot", x); l.classList.toggle("dim", !x); });
   }
   if (current && current.startsWith("g:")) {
@@ -807,11 +859,13 @@ function refresh() {
       if (!f) Object.keys(groupEls).filter(k => !k.includes(":") && k !== gid).forEach(k => groupEls[k].classList.add("dim"));
     }
     if (groupEls[gid]) groupEls[gid].classList.add("selected");
+    synthLayer.querySelectorAll("path").forEach(e => { if (e._ends.includes("g:" + gid)) e.classList.add("near"); });
   } else if (current) {
     const ids = A.nodes.filter(n => nodeKey(n) === current).map(n => n.id);
     ids.forEach(id => { const v = visual(id); if (v) v.classList.add("selected"); });
     edgeEls.forEach(e => { if (ids.includes(e._e.from) || ids.includes(e._e.to)) { e.classList.add("near"); } });
     labelEls.forEach(l => { if (ids.includes(l._e.from) || ids.includes(l._e.to)) l.classList.add("near"); });
+    synthLayer.querySelectorAll("path").forEach(e => { if (e._ends.some(x => ids.includes(x))) e.classList.add("near"); });
   }
   renderSidebar();
 }
@@ -822,6 +876,12 @@ function revealInSidebar(key) {
 function select(key) {
   current = key || null;
   if (current) revealInSidebar(current);
+  if (current && !current.startsWith("g:")) {
+    const ids = A.nodes.filter(n => nodeKey(n) === current).map(n => n.id);
+    let changed = false;
+    ids.forEach(id => { for (let g = hiddenBy(id); g; g = hiddenBy(id)) { collapsed[g] = false; changed = true; } });
+    if (changed) { store("kotl-collapsed", JSON.stringify(collapsed)); applyCollapse(); }
+  }
   if (current && main.classList.contains("no-insp")) setInspector(true);
   refresh();
   renderPanel();
@@ -836,7 +896,7 @@ function setView(v) {
   $("guidebar").hidden = v !== "guides";
   $("hintline").hidden = v === "guides";
   if (v === "guides") setGuide(guide || Object.keys(FLOWS).find(k => FLOWS[k].first) || Object.keys(FLOWS)[0]);
-  else { current = null; refresh(); renderPanel(); }
+  else { tempOpen = new Set(); if (A) applyCollapse(); current = null; refresh(); renderPanel(); }
 }
 function setGuide(k) {
   guide = k;
@@ -860,6 +920,9 @@ function setStep(n) {
   $("next").disabled = step >= steps.length;
   const s = steps[step - 1];
   $("steptext").innerHTML = "<b>Step " + step + " · " + esc(s.name) + ".</b> " + s.text;
+  tempOpen = new Set();
+  s.nodes.forEach(id => { for (let g = NODE_GROUP[id]; g; g = GINDEX[g].parent) if (GINDEX[g].g.collapse && g !== "later") tempOpen.add(g); });
+  applyCollapse();
   current = null;
   refresh();
   renderPanel();
@@ -869,7 +932,8 @@ $("next").addEventListener("click", () => setStep(step + 1));
 $("views").querySelectorAll("button").forEach(b => b.addEventListener("click", () => setView(b.dataset.view)));
 $("labels-btn").addEventListener("click", e => { const on = e.currentTarget.getAttribute("aria-pressed") !== "true"; e.currentTarget.setAttribute("aria-pressed", String(on)); svg.classList.toggle("labels", on); store("kotl-labels", on ? "1" : "0"); });
 $("key-btn").addEventListener("click", e => { const on = e.currentTarget.getAttribute("aria-pressed") !== "true"; e.currentTarget.setAttribute("aria-pressed", String(on)); $("keypop").hidden = !on; });
-document.addEventListener("keydown", e => { if (e.key === "Escape" && current) select(null); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") collapseAll(); });
+svg.addEventListener("click", e => { if (!e.target.closest(".node, .gbox, .zone-collapse, .badge")) collapseAll(); });
 
 /* ---------- Sidebar / inspector visibility, resizable inspector ---------- */
 function setSidebar(on) { main.classList.toggle("no-side", !on); $("toggle-sidebar").setAttribute("aria-pressed", String(on)); store("kotl-side", on ? "1" : "0"); }
