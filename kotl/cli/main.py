@@ -5,6 +5,8 @@
   kotl release [JOB]                   end your lease
   kotl status                          the queue, every board, and the Kotl daemon
   kotl daemon                          the Kotl daemon (kotld): running? its tasks
+  kotl setup [--undo]                  install (or remove) Kotl in your Claude Code and VS Code
+  kotl client-bundle > kotl-client.tar the same for your own PC (then ./kotl-client/install.sh)
   kotl top                             the same, live, with your jobs (l logs, c cancel, r release, f fetch)
   kotl cancel JOB                      cancel your job (Slurm allows only the owner or root)
   kotl history | logs JOB [-f] | fetch JOB [--to DIR]
@@ -320,6 +322,8 @@ def main(argv=None):
     sub.add_parser("status").add_argument("--json", action="store_true", help="for status displays")
     sub.add_parser("top", help="live view of boards, queue and your jobs")
     sub.add_parser("daemon", help="the Kotl daemon: is it running, its tasks")
+    sub.add_parser("setup", help="install Kotl in your Claude Code and VS Code").add_argument("--undo", action="store_true")
+    sub.add_parser("client-bundle", help="a tar with Kotl for your own PC")
     sub.add_parser("cancel").add_argument("job", type=int)
     sub.add_parser("attach").add_argument("job", nargs="?", type=int)
     nt = sub.add_parser("notices"); nt.add_argument("--all", action="store_true")
@@ -345,6 +349,12 @@ def main(argv=None):
         return cmd_status(a)
     if a.cmd == "daemon":
         return cmd_daemon(a)
+    if a.cmd == "setup":
+        from kotl.cli import setup
+        return setup.setup(undo=a.undo)
+    if a.cmd == "client-bundle":
+        from kotl.cli import client
+        return client.main()
     if a.cmd == "top":
         from kotl.cli import top
         return top.main()

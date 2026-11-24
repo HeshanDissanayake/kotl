@@ -431,7 +431,7 @@ function draw() {
     const b = document.createElement("button");
     b.type = "button"; b.setAttribute("role", "tab"); b.dataset.mode = k; b.setAttribute("aria-selected", "false");
     b.textContent = FLOWS[k].tab || k;
-    tabsEl.appendChild(b);
+    if (FLOWS[k].first) tabsEl.prepend(b); else tabsEl.appendChild(b);
   });
   tabsEl.querySelectorAll("button").forEach(t => t.addEventListener("click", () => setMode(t.dataset.mode)));
 }

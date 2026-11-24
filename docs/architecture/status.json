@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "updated": "2026-11-24T07:58:11Z",
-  "repo_commit": "68a1939497019964ad9a7aedd04ca7f800ff69a8",
+  "updated": "2026-11-24T08:28:43Z",
+  "repo_commit": "688a48eb06bf0eec5e2cd06deace89ac5239adae",
   "watch": [
     "deploy/",
     "kotl/",
@@ -50,7 +50,7 @@
         "unit": {
           "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-24T07:58:11Z"
+          "ran_at": "2026-11-24T08:28:43Z"
         },
         "hardware": null
       },
@@ -88,7 +88,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-24T07:58:11Z"
+          "ran_at": "2026-11-24T08:28:43Z"
         },
         "hardware": null
       },
@@ -126,7 +126,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-24T07:58:11Z"
+          "ran_at": "2026-11-24T08:28:43Z"
         },
         "hardware": null
       },
@@ -171,7 +171,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-24T07:58:11Z"
+          "ran_at": "2026-11-24T08:28:43Z"
         },
         "hardware": null
       },
@@ -204,7 +204,7 @@
         "unit": {
           "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-24T07:58:11Z"
+          "ran_at": "2026-11-24T08:28:43Z"
         },
         "hardware": null
       },
@@ -246,14 +246,14 @@
         "unit": {
           "passed": 14,
           "failed": 0,
-          "ran_at": "2026-11-24T07:58:11Z"
+          "ran_at": "2026-11-24T08:28:43Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "7c3773b547e4d240bd2e4a525a02d56ba9a0ee65",
-        "message": "M4: health check takes broken boards down, notifier, kotl attach (not yet installed)",
-        "date": "2026-11-23T19:30:06+11:00"
+        "hash": "688a48eb06bf0eec5e2cd06deace89ac5239adae",
+        "message": "The Kotl daemon (kotld): Kotl's one always-running process",
+        "date": "2026-11-24T18:58:11+11:00"
       },
       "issues": [],
       "log": [
@@ -276,6 +276,10 @@
         {
           "date": "2026-11-22",
           "text": "Fixed: user name removed from M1-SETUP.md; verify-m1.sh test jobs no longer write slurm-*.out."
+        },
+        {
+          "date": "2026-11-24",
+          "text": "add-user prints the new user's next steps (kotl setup, or the client bundle)."
         }
       ]
     },
@@ -291,12 +295,12 @@
         "unit": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-24T07:58:11Z"
+          "ran_at": "2026-11-24T08:28:43Z"
         },
         "hardware": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-24T07:58:11Z"
+          "ran_at": "2026-11-24T08:28:43Z"
         }
       },
       "last_commit": {
@@ -336,12 +340,12 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-24T07:58:11Z"
+          "ran_at": "2026-11-24T08:28:43Z"
         },
         "hardware": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-24T07:58:11Z"
+          "ran_at": "2026-11-24T08:28:43Z"
         }
       },
       "last_commit": {
@@ -381,12 +385,12 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-24T07:58:11Z"
+          "ran_at": "2026-11-24T08:28:43Z"
         },
         "hardware": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-24T07:58:11Z"
+          "ran_at": "2026-11-24T08:28:43Z"
         }
       },
       "last_commit": {
@@ -463,14 +467,14 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-24T07:58:11Z"
+          "ran_at": "2026-11-24T08:28:43Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "205ab4ee6c582a5aa41d6a744eca3ec874da54df",
-        "message": "Fix: re-adding a board (every install) wiped its state, job and health",
-        "date": "2026-11-23T19:31:32+11:00"
+        "hash": "688a48eb06bf0eec5e2cd06deace89ac5239adae",
+        "message": "The Kotl daemon (kotld): Kotl's one always-running process",
+        "date": "2026-11-24T18:58:11+11:00"
       },
       "issues": [],
       "log": [
@@ -516,14 +520,14 @@
         "unit": {
           "passed": 37,
           "failed": 0,
-          "ran_at": "2026-11-24T07:58:11Z"
+          "ran_at": "2026-11-24T08:28:43Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "aa9c7c754213543c8f5176bdfccf4f3a1b597557",
-        "message": "VS Code extension: Kotl in the status bar",
-        "date": "2026-11-23T21:51:01+11:00"
+        "hash": "688a48eb06bf0eec5e2cd06deace89ac5239adae",
+        "message": "The Kotl daemon (kotld): Kotl's one always-running process",
+        "date": "2026-11-24T18:58:11+11:00"
       },
       "issues": [],
       "log": [
@@ -586,14 +590,14 @@
         "unit": {
           "passed": 19,
           "failed": 0,
-          "ran_at": "2026-11-24T07:58:11Z"
+          "ran_at": "2026-11-24T08:28:43Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "d1196f7507ba6b7036aa5fb5598dd8f2f98d5185",
-        "message": "kotl-band: say plainly when a terminal can't reach Kotl (not in kotl-users)",
-        "date": "2026-11-23T21:31:18+11:00"
+        "hash": "688a48eb06bf0eec5e2cd06deace89ac5239adae",
+        "message": "The Kotl daemon (kotld): Kotl's one always-running process",
+        "date": "2026-11-24T18:58:11+11:00"
       },
       "issues": [],
       "log": [
@@ -659,7 +663,7 @@
         "unit": {
           "passed": 4,
           "failed": 0,
-          "ran_at": "2026-11-24T07:58:11Z"
+          "ran_at": "2026-11-24T08:28:43Z"
         },
         "hardware": null
       },
@@ -744,7 +748,7 @@
         "unit": {
           "passed": 20,
           "failed": 0,
-          "ran_at": "2026-11-24T07:58:11Z"
+          "ran_at": "2026-11-24T08:28:43Z"
         },
         "hardware": null
       },
@@ -828,14 +832,14 @@
         "unit": {
           "passed": 6,
           "failed": 0,
-          "ran_at": "2026-11-24T07:58:11Z"
+          "ran_at": "2026-11-24T08:28:43Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "7c3773b547e4d240bd2e4a525a02d56ba9a0ee65",
-        "message": "M4: health check takes broken boards down, notifier, kotl attach (not yet installed)",
-        "date": "2026-11-23T19:30:06+11:00"
+        "hash": "688a48eb06bf0eec5e2cd06deace89ac5239adae",
+        "message": "The Kotl daemon (kotld): Kotl's one always-running process",
+        "date": "2026-11-24T18:58:11+11:00"
       },
       "issues": [],
       "log": [
@@ -865,7 +869,7 @@
         "unit": {
           "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-24T07:58:11Z"
+          "ran_at": "2026-11-24T08:28:43Z"
         },
         "hardware": null
       },
@@ -905,14 +909,14 @@
         "unit": {
           "passed": 18,
           "failed": 0,
-          "ran_at": "2026-11-24T07:58:11Z"
+          "ran_at": "2026-11-24T08:28:43Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "68a1939497019964ad9a7aedd04ca7f800ff69a8",
-        "message": "kotl-band: /kotl clashed with the kotl plugin's skill and stopped the band",
-        "date": "2026-11-23T21:58:30+11:00"
+        "hash": "688a48eb06bf0eec5e2cd06deace89ac5239adae",
+        "message": "The Kotl daemon (kotld): Kotl's one always-running process",
+        "date": "2026-11-24T18:58:11+11:00"
       },
       "issues": [],
       "log": [
@@ -955,6 +959,10 @@
         {
           "date": "2026-11-24",
           "text": "Band (0.1.2) and VS Code extension (0.3.0) read /run/kotl/status.json every second, with a 30 s fallback."
+        },
+        {
+          "date": "2026-11-24",
+          "text": "Extension 0.3.1 reads the workstation name from ~/.kotl-client/ssh; band 0.1.3 falls back every 5 s (remote users)."
         }
       ]
     },
@@ -1066,12 +1074,12 @@
         "unit": {
           "passed": 21,
           "failed": 0,
-          "ran_at": "2026-11-24T07:58:11Z"
+          "ran_at": "2026-11-24T08:28:43Z"
         },
         "hardware": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-24T07:58:11Z"
+          "ran_at": "2026-11-24T08:28:43Z"
         }
       },
       "last_commit": {
@@ -1189,14 +1197,14 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-24T07:58:11Z"
+          "ran_at": "2026-11-24T08:28:43Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "893c2fe84b383252565d62143f4e2c1f400a504e",
-        "message": "kotl top: don't crash where the cursor can't be hidden; cap process lists at 8",
-        "date": "2026-11-23T20:10:01+11:00"
+        "hash": "688a48eb06bf0eec5e2cd06deace89ac5239adae",
+        "message": "The Kotl daemon (kotld): Kotl's one always-running process",
+        "date": "2026-11-24T18:58:11+11:00"
       },
       "issues": [],
       "log": [
@@ -1235,16 +1243,48 @@
         "unit": {
           "passed": 7,
           "failed": 0,
-          "ran_at": "2026-11-24T07:58:11Z"
+          "ran_at": "2026-11-24T08:28:43Z"
         },
         "hardware": null
       },
-      "last_commit": null,
+      "last_commit": {
+        "hash": "688a48eb06bf0eec5e2cd06deace89ac5239adae",
+        "message": "The Kotl daemon (kotld): Kotl's one always-running process",
+        "date": "2026-11-24T18:58:11+11:00"
+      },
       "issues": [],
       "log": [
         {
           "date": "2026-11-24",
           "text": "New part (user decision): Kotl's one always-running process, general so tasks can be added later. First task: /run/kotl/status.json every 1 s (boards, Kotl's queue, unread counts). Readers (kotl status, kotl top, the band, the VS Code extension) use it and fall back to asking directly."
+        }
+      ]
+    },
+    "setup": {
+      "title": "User setup (kotl setup, client bundle)",
+      "status": "tested",
+      "milestone": "M5",
+      "now": "Code and tests done; the next install publishes the client installer.",
+      "code": [
+        "kotl/cli/setup.py",
+        "kotl/cli/client.py",
+        "deploy/client/"
+      ],
+      "tests": {
+        "unit": {
+          "passed": 7,
+          "failed": 0,
+          "ran_at": "2026-11-24T08:28:43Z"
+        },
+        "hardware": null
+      },
+      "last_commit": null,
+      "issues": [],
+      "drawn": false,
+      "log": [
+        {
+          "date": "2026-11-24",
+          "text": "New (user request): kotl setup installs the Claude plugins and the VS Code extension for whoever runs it (into their VS Code server); kotl client-bundle + install.sh does the same on a user's own PC over ssh. Both have --undo. accounts.sh add-user tells the new user."
         }
       ]
     }

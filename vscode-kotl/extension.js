@@ -11,6 +11,14 @@ const { execFile } = require('child_process');
 const { statusText, tooltip, tree, fromShared } = require('./format');
 
 const SHARED = '/run/kotl/status.json';
+const CLIENT_SSH = require('path').join(os.homedir(), '.kotl-client', 'ssh');   // set by kotl-client/install.sh
+
+// The workstation's ssh name on a user's own PC: the kotl.ssh setting, KOTL_SSH, or ~/.kotl-client/ssh
+function sshName() {
+  const set = vscode.workspace.getConfiguration('kotl').get('ssh') || process.env.KOTL_SSH;
+  if (set) return set;
+  try { return fs.readFileSync(CLIENT_SSH, 'utf8').trim(); } catch (e) { return ''; }
+}
 const USER = os.userInfo().username;
 let lastFallback = 0;
 let lastSnap = null;
@@ -75,7 +83,7 @@ function activate(context) {
   let timer = null;
   const refresh = async () => {
     const cfg = vscode.workspace.getConfiguration('kotl');
-    const ssh = cfg.get('ssh') || process.env.KOTL_SSH || '';
+    const ssh = sshName();
     const s = await readSnapshot(ssh);
     lastSnap = s;
     item.text = statusText(s);
@@ -88,12 +96,12 @@ function activate(context) {
   const schedule = () => {
     if (timer) clearInterval(timer);
     const cfg = vscode.workspace.getConfiguration('kotl');
-    const remote = cfg.get('ssh') || process.env.KOTL_SSH;
+    const remote = sshName();
     const secs = Math.max(remote ? 5 : 1, cfg.get('refreshSeconds') || 1);
     timer = setInterval(refresh, secs * 1000);
   };
   const terminal = (name, cmd) => {
-    const ssh = vscode.workspace.getConfiguration('kotl').get('ssh') || process.env.KOTL_SSH || '';
+    const ssh = sshName();
     const t = vscode.window.createTerminal({ name });
     t.sendText(ssh ? `ssh -t ${ssh} ${cmd}` : cmd);
     t.show();

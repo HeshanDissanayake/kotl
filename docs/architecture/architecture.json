@@ -2,7 +2,7 @@
  "schema": 1,
  "title": "Kotl Architecture",
  "intro": "Teal is Kotl, our product. Purple is Slurm. Gray is everything else off the shelf, plus the hardware. The dot on each box is its build status; click a box for exactly what's happening.",
- "latest": "Latest: the Kotl daemon (kotld), Kotl's one always-running process. Its first task writes a shared status file every second, so the band, the VS Code extension and kotl top refresh every second for almost nothing.",
+ "latest": "Latest: kotl setup and the client bundle put Kotl into each user's Claude Code and VS Code; a New user tab walks a newcomer from account to first FireSim run.",
  "canvas": {
   "w": 1520,
   "h": 820
@@ -895,6 +895,144 @@
   }
  ],
  "flows": {
+  "newuser": {
+   "tab": "New user: start here",
+   "steps": [
+    {
+     "name": "Welcome",
+     "text": "New to Kotl? This tab takes you from account to first FireSim run. Use ◀ ▶ to step through.",
+     "nodes": [
+      "local",
+      "remote",
+      "cli"
+     ],
+     "edges": [],
+     "detail": "nu-welcome"
+    },
+    {
+     "name": "Account",
+     "text": "The admin adds you once (kotl-users, Slurm, the sudo rule). Then log in again so your shell has the group.",
+     "nodes": [
+      "admin",
+      "os",
+      "queue"
+     ],
+     "edges": [
+      "e-admin-cli"
+     ],
+     "detail": "nu-account"
+    },
+    {
+     "name": "Setup here",
+     "text": "On the workstation: <code>kotl setup</code> installs Kotl into your Claude Code and VS Code.",
+     "nodes": [
+      "local",
+      "plugin-l",
+      "cli"
+     ],
+     "edges": [
+      "e-local-cli"
+     ],
+     "detail": "nu-setup-ws"
+    },
+    {
+     "name": "Setup on your PC",
+     "text": "On your own PC: fetch the client bundle and run its installer; it reads Kotl over ssh.",
+     "nodes": [
+      "remote",
+      "plugin-r",
+      "cli"
+     ],
+     "edges": [
+      "e-remote-cli"
+     ],
+     "detail": "nu-setup-pc"
+    },
+    {
+     "name": "First job",
+     "text": "<code>kotl run --eta 5m -- hostname</code>: queued, a board claimed, a job key on its PC, your command runs, the board is freed.",
+     "nodes": [
+      "cli",
+      "queue",
+      "starter",
+      "launcher",
+      "registry",
+      "access",
+      "key",
+      "pc1"
+     ],
+     "edges": [
+      "e-cli-queue",
+      "e-queue-starter",
+      "e-starter-launch",
+      "e-launch-registry",
+      "e-launch-access",
+      "e-access-bus",
+      "e-bus-pc1"
+     ],
+     "detail": "nu-first"
+    },
+    {
+     "name": "Watch",
+     "text": "The Kotl daemon refreshes a status file every second; the Claude band, the VS Code panel and <code>kotl top</code> show it.",
+     "nodes": [
+      "daemon",
+      "queue",
+      "top",
+      "plugin-l",
+      "plugin-r"
+     ],
+     "edges": [
+      "e-daemon-queue",
+      "e-daemon-top"
+     ],
+     "detail": "nu-watch"
+    },
+    {
+     "name": "Results",
+     "text": "Each job leaves a private folder: <code>kotl logs</code>, <code>kotl fetch</code>, <code>kotl history</code>.",
+     "nodes": [
+      "launcher",
+      "results",
+      "remote",
+      "local"
+     ],
+     "edges": [
+      "e-launch-results",
+      "e-results-remote"
+     ],
+     "detail": "nu-results"
+    },
+    {
+     "name": "FireSim",
+     "text": "Your own FireSim inside <code>kotl run</code>; the board is freed when runworkload returns.",
+     "nodes": [
+      "cli",
+      "launcher",
+      "firesim",
+      "key",
+      "pc1"
+     ],
+     "edges": [
+      "e-firesim-bus",
+      "e-bus-pc1"
+     ],
+     "detail": "nu-firesim"
+    },
+    {
+     "name": "Rules",
+     "text": "Shared boards: always through Kotl, honest ETAs, release leases.",
+     "nodes": [
+      "queue",
+      "registry",
+      "pc1"
+     ],
+     "edges": [],
+     "detail": "nu-rules"
+    }
+   ],
+   "first": true
+  },
   "batch": {
    "tab": "FireSim run",
    "steps": [
@@ -1321,7 +1459,7 @@
     "Users keep <b>their own Chipyard and FireSim</b> and run them unchanged inside a generic lease: <code>kotl run -- &lt;command&gt;</code> ends when the command exits, <code>kotl lease</code> ends on release. Kotl enforces an <b>exit plan</b>, not FireSim.",
     "The core is a generic <b>board lease</b> (queue, claim, SSH access, end step). <b>Adapters</b> are admin board care, later: FireSim (flash, recover), program/reset, board tests."
    ],
-   "hint": "Click any box for its commands and files. The tabs show build progress, what Kotl is, where it meets Slurm, a FireSim run, a lease by hand, maintenance and every system file Kotl changes."
+   "hint": "New to Kotl? Open the <b>New user: start here</b> tab. Click any box for its commands and files; the other tabs show build progress, what Kotl is, where it meets Slurm, a FireSim run, a lease by hand, maintenance and every system file."
   },
   "kotllens": {
    "kind": "Kotl · our product",
@@ -1509,6 +1647,7 @@
    "title": "kotl CLI",
    "what": "The one command for everything, and generic: it holds a board for whatever you run. It talks to Slurm's queue for you.",
    "bullets": [
+    "<b>kotl setup</b> installs Kotl into your Claude Code and VS Code (<code>--undo</code> removes it); <b>kotl client-bundle</b> does the same for your own PC.",
     "<b>kotl run --eta T -- CMD</b>: holds a board while CMD runs; ends the moment CMD exits. Good for FireSim runs.",
     "<b>kotl lease --eta T</b>: holds a board for work by hand; ends on <code>kotl release</code>, the idle guard, or <code>--max</code>.",
     "<b>Exit plan, always:</b> the ETA is required, <code>--max</code> defaults to 2× ETA, and a lease always has an idle guard. A job without one is refused.",
@@ -2233,6 +2372,7 @@
     "<code>/usr/local/bin/kotl</code>: link to <code>/opt/kotl/bin/kotl</code>, so everyone has the command <i>(new · M2, deploy/kotl/install.sh)</i>",
     "<code>/opt/kotl/plugin/</code>, <code>/opt/kotl/plugin-band/</code> + <code>/opt/kotl/.claude-plugin/marketplace.json</code>: the Claude Code plugins, readable by everyone <i>(new · M5)</i>",
     "<code>/opt/kotl/kotl-status.vsix</code>: the VS Code extension, for anyone to install <i>(new · M5)</i>",
+    "<code>/opt/kotl/client/install.sh</code>: the installer inside <code>kotl client-bundle</code>, for users' own PCs <i>(new · M5)</i>",
     "<b>Slurm:</b> the <code>kotl</code> account becomes an operator, so its guards can cancel a hung job <i>(M2)</i>",
     "<code>/var/lib/kotl/</code>: board registry kotl.db (owner kotl; folder M1, database M2) <i>(new · M1)</i>",
     "<code>/srv/kotl/</code>: jobs/ and out/&lt;user&gt;/&lt;job&gt;/, owner-only, deleted after 30 days (folders M1) <i>(new · M1)</i>",
@@ -2288,7 +2428,8 @@
    "bullets": [
     "<b>Their Chipyard and FireSim:</b> read only. Kotl copies <code>config_runtime.yaml</code> into <code>/srv/kotl/jobs/&lt;job&gt;/</code> and changes the copy.",
     "<b>Their home folder:</b> nothing, unless they run <code>kotl fetch</code> (downloads results).",
-    "<b>Their own PC:</b> only the Claude Code plugin, if they install it (M5); it reaches the workstation with <code>ssh $KOTL_SSH kotl …</code>."
+    "<b>Their own PC:</b> only the Claude Code plugin, if they install it (M5); it reaches the workstation with <code>ssh $KOTL_SSH kotl …</code>.",
+    "<b>Per user, by their own command:</b> <code>kotl setup</code> installs the Claude plugins and the VS Code extension in their own Claude Code and VS Code; on their own PC, <code>~/.kotl-client</code> from the client bundle. Both have <code>--undo</code>."
    ],
    "files": [
     "workloadjson",
@@ -2386,6 +2527,234 @@
    "files": [
     "daemonsvc",
     "statusfile"
+   ]
+  },
+  "nu-welcome": {
+   "kind": "New user",
+   "kindClass": "ko",
+   "title": "New to Kotl? Start here",
+   "what": "Kotl is the lab's queue for the FPGA boards. You never log in to a board's PC by hand: you ask Kotl for a board, it runs your work or gives you access, and frees the board the moment you're done.",
+   "bullets": [
+    "<b>1 · Account:</b> the admin adds you once.",
+    "<b>2 · Setup:</b> one command puts Kotl into your Claude Code and VS Code (on the workstation, or on your own PC).",
+    "<b>3 · First job:</b> <code>kotl run --eta 5m -- hostname</code>.",
+    "<b>4 · Watch:</b> the Kotl band in Claude Code, the Kotl panel in VS Code, or <code>kotl top</code>.",
+    "<b>5 · Results</b>, then <b>FireSim</b> and the <b>house rules</b>.",
+    "Use ◀ ▶ above to step through. Each step shows its commands here."
+   ]
+  },
+  "nu-account": {
+   "kind": "New user",
+   "kindClass": "ko",
+   "title": "1 · Get an account",
+   "what": "The admin adds you to Kotl once. That gives you the kotl-users group, a Slurm account, and the one sudo rule Kotl needs.",
+   "bullets": [
+    "Ask the admin to run: <code>sudo deploy/accounts.sh add-user YOURNAME</code>.",
+    "<b>Then log in again</b> (new ssh login; restart tmux with <code>tmux kill-server</code>; in VS Code: <b>Remote-SSH: Kill VS Code Server on Host</b>). A shell that started before you were added doesn't have the group, and Kotl will say \"can't reach Kotl\".",
+    "Check: <code>id -nG</code> lists <code>kotl-users</code>, and <code>kotl status</code> works without a password."
+   ],
+   "term": [
+    {
+     "host": "admin@ws",
+     "lines": [
+      {
+       "c": "sudo deploy/accounts.sh add-user alice"
+      }
+     ]
+    },
+    {
+     "host": "alice@ws · after logging in again",
+     "lines": [
+      {
+       "c": "id -nG | tr ' ' '\\n' | grep kotl-users"
+      },
+      {
+       "c": "kotl status"
+      }
+     ]
+    }
+   ]
+  },
+  "nu-setup-ws": {
+   "kind": "New user",
+   "kindClass": "ko",
+   "title": "2a · Setup on the workstation",
+   "what": "One command installs Kotl into your Claude Code and VS Code. Safe to re-run (after updates too); --undo removes it.",
+   "bullets": [
+    "<b>Claude Code:</b> the kotl plugin (Claude knows how to use the boards, asks before FireSim runs outside Kotl, shows the queue when a session starts) and kotl-band (a live line above the prompt).",
+    "<b>VS Code:</b> the Kotl extension (status bar and a Kotl panel). Connect VS Code to the workstation once first (Remote-SSH), then run <code>kotl setup</code>, then <b>Developer: Reload Window</b>.",
+    "Remove everything: <code>kotl setup --undo</code>."
+   ],
+   "term": [
+    {
+     "host": "you@ws",
+     "lines": [
+      {
+       "c": "kotl setup"
+      },
+      {
+       "o": "- Claude Code: marketplace /opt/kotl added"
+      },
+      {
+       "o": "- Claude Code: kotl@kotl installed"
+      },
+      {
+       "o": "- Claude Code: kotl-band@kotl installed"
+      },
+      {
+       "o": "- VS Code: extension installed (reload the VS Code window: Developer: Reload Window)"
+      },
+      {
+       "o": "Done. Try: kotl status · kotl top · kotl run --eta 5m -- hostname"
+      }
+     ]
+    }
+   ]
+  },
+  "nu-setup-pc": {
+   "kind": "New user",
+   "kindClass": "ko",
+   "title": "2b · Setup on your own PC",
+   "what": "Working from your own machine: fetch a small bundle from the workstation and run its installer. It reads Kotl over ssh, so you need ssh to the workstation with a key.",
+   "bullets": [
+    "The bundle holds both Claude plugins, the VS Code extension and an installer. It keeps its files in <code>~/.kotl-client</code>, sets <code>KOTL_SSH</code> for Claude Code and tells VS Code the workstation's name.",
+    "Re-run it after updates. Remove: <code>~/.kotl-client/install.sh --undo</code>.",
+    "Kotl commands then run on the workstation: <code>ssh comparch kotl status</code>; Claude does this for you."
+   ],
+   "term": [
+    {
+     "host": "you@laptop",
+     "lines": [
+      {
+       "c": "ssh comparch kotl client-bundle > kotl-client.tar && tar xf kotl-client.tar"
+      },
+      {
+       "c": "./kotl-client/install.sh"
+      },
+      {
+       "o": "Workstation: comparch"
+      },
+      {
+       "o": "- ssh comparch kotl: works"
+      },
+      {
+       "o": "- Claude Code: kotl@kotl installed"
+      },
+      {
+       "o": "- VS Code: extension installed (reload the window)"
+      }
+     ]
+    }
+   ],
+   "files": [
+    "clientinstall"
+   ]
+  },
+  "nu-first": {
+   "kind": "New user",
+   "kindClass": "ko",
+   "title": "3 · Your first job",
+   "what": "Hold a board while one command runs. The board is freed the moment it exits.",
+   "bullets": [
+    "<code>--eta</code> is required: your honest estimate. It orders the queue and never kills the job; <code>--max</code> (default 2× ETA) stops a hung one.",
+    "Inside the job, <code>$KOTL_PC</code> is the board's PC and an ssh-agent holds a key that works only for this job.",
+    "Work by hand instead: <code>kotl lease --eta 1h</code>, then <code>ssh vcu118-pc1</code>, and <b>always</b> <code>kotl release</code> when done."
+   ],
+   "term": [
+    {
+     "host": "you@ws",
+     "lines": [
+      {
+       "c": "kotl run --eta 5m -- hostname"
+      },
+      {
+       "o": "kotl: job 60 queued"
+      },
+      {
+       "o": "virtex-host-pc"
+      },
+      {
+       "o": "kotl: job 60 succeeded · vcu118-pc1 freed"
+      }
+     ]
+    }
+   ]
+  },
+  "nu-watch": {
+   "kind": "New user",
+   "kindClass": "ko",
+   "title": "4 · Watch the boards",
+   "what": "Everything below reads the Kotl daemon's status file, refreshed every second.",
+   "bullets": [
+    "<b>Claude Code:</b> the Kotl band above the prompt: who holds each board and their time of ETA, how many wait, your jobs with their ETA and place in line, unread notices. <code>/kotl-band hide</code> hides it.",
+    "<b>VS Code:</b> Kotl in the status bar (hover for the queue) and the Kotl panel (the chip icon on the left).",
+    "<b>Terminal:</b> <code>kotl top</code> (live; l logs, a attach, c cancel, r release, f fetch), <code>kotl status</code>, <code>kotl notices</code>."
+   ]
+  },
+  "nu-results": {
+   "kind": "New user",
+   "kindClass": "ko",
+   "title": "5 · Results",
+   "what": "Every job leaves a folder only you can read, kept 30 days.",
+   "bullets": [
+    "<code>kotl logs JOB -f</code> follows a running job's output.",
+    "<code>kotl fetch JOB</code> unpacks <code>status.json</code>, <code>output.log</code>, <code>launcher.log</code> and <code>outputs/</code> into <code>kotl-results/JOB/</code>. Read <code>status.json</code> first.",
+    "<code>kotl history</code> lists your jobs and results; <code>kotl notices</code> has ETA, start-time and board notices."
+   ],
+   "term": [
+    {
+     "host": "you@ws",
+     "lines": [
+      {
+       "c": "kotl history"
+      },
+      {
+       "c": "kotl fetch 60 && cat kotl-results/60/status.json"
+      }
+     ]
+    }
+   ],
+   "files": [
+    "resultsdir",
+    "statusjson"
+   ]
+  },
+  "nu-firesim": {
+   "kind": "New user",
+   "kindClass": "ko",
+   "title": "6 · FireSim through Kotl",
+   "what": "Run your own FireSim, from your own Chipyard, inside kotl run.",
+   "bullets": [
+    "In a shell with your Chipyard environment active (<code>source env.sh</code>, <code>sourceme-manager.sh --skip-ssh-setup</code>), and <b>not</b> Kotl's test venv (<code>deactivate</code> first).",
+    "The workload must power off by itself (FireMarshal <code>run</code>/<code>command</code>, or <code>poweroff</code>); otherwise <code>--max</code> ends the job.",
+    "This PC's glibc is older than the workstation's: remove FireSim's bundled glibc after infrasetup, e.g. with <code>deploy/examples/firesim-smoke.sh --use-pc-glibc</code>.",
+    "Print <code>KOTL RESULT: PASS</code> or <code>FAIL</code> from the uartlog for an honest result."
+   ],
+   "term": [
+    {
+     "host": "you@ws · in your Chipyard's sims/firesim/deploy",
+     "lines": [
+      {
+       "c": "kotl run --eta 30m -- ~/working_dir/kotl/deploy/examples/firesim-smoke.sh --use-pc-glibc config_runtime.yaml"
+      }
+     ]
+    }
+   ],
+   "files": [
+    "workloadjson",
+    "runtestsh"
+   ]
+  },
+  "nu-rules": {
+   "kind": "New user",
+   "kindClass": "ko",
+   "title": "7 · House rules",
+   "what": "The boards are shared; these keep them fair and working.",
+   "bullets": [
+    "Never use a board outside Kotl: no plain <code>firesim infrasetup/runworkload</code>, no ssh to an FPGA PC without a lease.",
+    "Give an honest ETA; it's what everyone's start estimates are built on.",
+    "Release a lease the moment you're done (<code>kotl release</code>); idle leases are ended after 30 minutes anyway.",
+    "Problems with a board: <code>kotl board list</code> shows its health; tell the admin."
    ]
   }
  },
@@ -2613,6 +2982,13 @@
    "ext": "json",
    "desc": "Written every second by the daemon; readable by everyone: boards, Kotl's queue, unread counts (never notice texts)",
    "body": "{\n  \"version\": 1,\n  \"updated\": 1795420943.1,\n  \"daemon\": {\n    \"pid\": 4242,\n    \"started\": 1795420000.0,\n    \"tasks\": {\n      \"status\": {\n        \"every\": 1.0,\n        \"last_ok\": 1795420943.1,\n        \"error\": null\n      }\n    }\n  },\n  \"boards\": [\n    {\n      \"name\": \"vcu118-pc1\",\n      \"host\": \"vcu118-pc1\",\n      \"type\": \"vcu118\",\n      \"state\": \"busy\",\n      \"job_id\": 41,\n      \"last_healthy\": \"2026-11-24 18:30\",\n      \"warnings\": \"[\\\"glibc differs: ...\\\"]\"\n    }\n  ],\n  \"queue\": [\n    {\n      \"job\": \"41\",\n      \"user\": \"bob\",\n      \"name\": \"kotl-run\",\n      \"state\": \"RUNNING\",\n      \"eta\": \"30:00\",\n      \"used\": \"12:03\",\n      \"start\": \"2026-11-24T18:18:00\",\n      \"reason\": \"None\"\n    },\n    {\n      \"job\": \"42\",\n      \"user\": \"alice\",\n      \"name\": \"kotl-lease\",\n      \"state\": \"PENDING\",\n      \"eta\": \"1:00:00\",\n      \"used\": \"0:00\",\n      \"start\": \"2026-11-24T18:48:00\",\n      \"reason\": \"Licenses\"\n    }\n  ],\n  \"unread\": {\n    \"alice\": 2\n  }\n}"
+  },
+  "clientinstall": {
+   "name": "install.sh",
+   "path": "kotl-client/ (from kotl client-bundle; /opt/kotl/client/)",
+   "ext": "sh",
+   "desc": "On a user's own PC: the Claude plugins, the VS Code extension, KOTL_SSH; --undo removes it all",
+   "body": "#!/bin/sh\n# Kotl on your own PC: the Claude Code plugins (kotl, kotl-band) and the VS Code extension,\n# reading Kotl over ssh from the workstation. Get this folder with:\n#\n#   ssh <workstation> kotl client-bundle > kotl-client.tar && tar xf kotl-client.tar\n#   ./kotl-client/install.sh [--ssh <workstation ssh name>]     install (re-run after updates)\n#   ./kotl-client/install.sh --undo                             remove it all again\n#\n# It keeps its files in ~/.kotl-client, sets KOTL_SSH for Claude Code (~/.claude/settings.json)\n# and tells the VS Code extension the workstation's name (~/.kotl-client/ssh). Needs ssh to the\n# workstation with a key (no password prompt), python3, and Claude Code and/or VS Code.\nset -u\nHERE=$(cd \"$(dirname \"$0\")\" && pwd)\nDEST=\"$HOME/.kotl-client\"\nSSH=$(cat \"$HERE/workstation\" 2>/dev/null || true)\nUNDO=0\nwhile [ $# -gt 0 ]; do\n  case \"$1\" in\n    --ssh) SSH=${2:-}; shift ;;\n    --undo) UNDO=1 ;;\n    -h|--help) sed -n '2,14p' \"$0\" | sed 's/^# \\{0,1\\}//'; exit 0 ;;\n    *) echo \"unknown option $1\" >&2; exit 2 ;;\n  esac\n  shift\ndone\n\nsettings_env() {  # settings_env set NAME VALUE | settings_env unset NAME   (~/.claude/settings.json)\n  python3 - \"$@\" <<'PY'\nimport json, os, sys\np = os.path.expanduser(\"~/.claude/settings.json\")\nos.makedirs(os.path.dirname(p), exist_ok=True)\ntry:\n    s = json.load(open(p))\nexcept (OSError, ValueError):\n    s = {}\nenv = s.setdefault(\"env\", {})\nif sys.argv[1] == \"set\":\n    env[sys.argv[2]] = sys.argv[3]\nelse:\n    env.pop(sys.argv[2], None)\n    if not env:\n        s.pop(\"env\")\njson.dump(s, open(p, \"w\"), indent=2)\nPY\n}\n\nif [ \"$UNDO\" = 1 ]; then\n  if command -v claude >/dev/null; then\n    claude plugin uninstall kotl@kotl >/dev/null 2>&1 && echo \"- Claude Code: kotl removed\"\n    claude plugin uninstall kotl-band@kotl >/dev/null 2>&1 && echo \"- Claude Code: kotl-band removed\"\n    claude plugin marketplace remove kotl >/dev/null 2>&1 && echo \"- Claude Code: marketplace removed\"\n    settings_env unset KOTL_SSH && echo \"- Claude Code: KOTL_SSH removed\"\n  fi\n  if command -v code >/dev/null; then\n    code --uninstall-extension kotl.kotl-status >/dev/null 2>&1 && echo \"- VS Code: extension removed\"\n  fi\n  rm -rf \"$DEST\" && echo \"- removed $DEST\"\n  exit 0\nfi\n\n[ -n \"$SSH\" ] || { echo \"give the workstation's ssh name: --ssh NAME\" >&2; exit 2; }\necho \"Workstation: $SSH\"\nif ssh -o BatchMode=yes -o ConnectTimeout=5 \"$SSH\" kotl status --json >/dev/null 2>&1; then\n  echo \"- ssh $SSH kotl: works\"\nelse\n  echo \"! ssh $SSH kotl status failed: check you can ssh there with a key, and that you are in kotl-users\"\nfi\n\n# a stable copy: Claude Code reads the plugins from this folder\nif [ \"$HERE\" != \"$DEST\" ]; then mkdir -p \"$(dirname \"$DEST\")\"; rm -rf \"$DEST\"; cp -R \"$HERE\" \"$DEST\"; fi\nprintf '%s\\n' \"$SSH\" >\"$DEST/ssh\"\n\nif command -v claude >/dev/null; then\n  claude plugin marketplace list 2>/dev/null | grep -q kotl || claude plugin marketplace add \"$DEST\" >/dev/null\n  for p in kotl@kotl kotl-band@kotl; do\n    claude plugin install \"$p\" >/dev/null 2>&1 || true\n    echo \"- Claude Code: $p installed\"\n  done\n  settings_env set KOTL_SSH \"$SSH\" && echo \"- Claude Code: KOTL_SSH=$SSH\"\nelse\n  echo \"- Claude Code: not installed here; skipped\"\nfi\n\nif command -v code >/dev/null; then\n  code --install-extension \"$DEST/kotl-status.vsix\" --force >/dev/null && echo \"- VS Code: extension installed (reload the window)\"\nelse\n  echo \"- VS Code: the 'code' command isn't on PATH; skipped (in VS Code: Shell Command: Install 'code' command, then re-run)\"\nfi\necho \"Done. Start a new Claude Code session; in VS Code, Kotl is in the status bar and the Kotl panel.\""
   }
  }
 }

@@ -11,6 +11,9 @@ pytestmark = pytest.mark.feature("cli")
 
 @pytest.fixture
 def fs(monkeypatch):
+    # the live Kotl daemon's file must not leak into these tests: they test asking directly
+    from kotl.core import daemon
+    monkeypatch.setattr(daemon, "read_status", lambda *a, **k: None)
     f = FakeSlurm()
     for name in ("submit", "cancel", "state", "queue", "job_info"):
         monkeypatch.setattr(slurm, name, getattr(f, name))

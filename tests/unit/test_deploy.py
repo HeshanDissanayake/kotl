@@ -349,3 +349,13 @@ def test_install_runs_the_kotl_daemon(tmp_path):
     r = dry("kotl/install.sh", "--undo", root=tmp_path)
     assert "systemctl disable --now kotl-daemon.service" in r.stdout
     assert not (tmp_path / "etc/systemd/system/kotl-daemon.service").exists()
+
+
+@pytest.mark.feature("setup")
+def test_install_publishes_the_client_installer_and_replaces_json(tmp_path):
+    (tmp_path / "opt/kotl/.claude-plugin").mkdir(parents=True)
+    (tmp_path / "opt/kotl/.claude-plugin/marketplace.json").write_text('{"old": true}')
+    dry("kotl/install.sh", root=tmp_path)
+    assert os.access(tmp_path / "opt/kotl/client/install.sh", os.X_OK)
+    assert not (tmp_path / "opt/kotl/.claude-plugin/marketplace.json.kotl-orig").exists()
+    assert '"kotl-band"' in (tmp_path / "opt/kotl/.claude-plugin/marketplace.json").read_text()

@@ -2,7 +2,7 @@
   "name": "kotl-status",
   "displayName": "Kotl",
   "description": "The lab's FPGA board queue (Kotl) in the status bar: who holds each board, time against ETA, your jobs, notices.",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "publisher": "kotl",
   "license": "UNLICENSED",
   "engines": {
@@ -37,7 +37,7 @@
         "kotl.ssh": {
           "type": "string",
           "default": "",
-          "description": "Leave empty on the workstation. On your own PC: the workstation's ssh name (e.g. comparch); Kotl is then read over ssh."
+          "description": "Leave empty on the workstation. On your own PC: the workstation's ssh name (kotl-client/install.sh sets it in ~/.kotl-client/ssh)."
         },
         "kotl.refreshSeconds": {
           "type": "number",

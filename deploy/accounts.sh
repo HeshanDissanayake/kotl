@@ -34,6 +34,8 @@ add_users() {
     run gpasswd -a "$u" "$GROUP"
     if slurm_ready; then run sacctmgr -i add user name="$u" account=kotl; fi
   done
+  say "tell them: log in again, then run 'kotl setup' (on the workstation) or, on their own PC,"
+  say "  'ssh $(hostname -s) kotl client-bundle > kotl-client.tar && tar xf kotl-client.tar && ./kotl-client/install.sh'"
 }
 
 remove_users() {

@@ -78,12 +78,16 @@ install_all() {
   find "$band" -name '*.test.tsx' -delete
   if [ "$KOTL_DRY_RUN" != 1 ]; then chown -R root:root "$band"; fi
   say "copied plugin-band/ to /opt/kotl/plugin-band"
+  # JSON can't carry the "managed by kotl" mark, so replace it outright (no .kotl-orig backup)
+  rm -f "$(p /opt/kotl/.claude-plugin/marketplace.json)" "$(p /opt/kotl/.claude-plugin/marketplace.json.kotl-orig)"
   put_file /opt/kotl/.claude-plugin/marketplace.json 644 root:root <"$REPO/.claude-plugin/marketplace.json"
 
   # the VS Code extension, as a .vsix anyone can install (code --install-extension)
   local vsix
   vsix=$(python3 "$REPO/vscode-kotl/build_vsix.py" "$(mktemp -d)")
   put_file /opt/kotl/kotl-status.vsix 644 root:root <"$vsix"
+  make_dir /opt/kotl/client 755 root:root
+  put_file /opt/kotl/client/install.sh 755 root:root <"$DEPLOY_DIR/client/install.sh"
 
   # kotl cancels hung jobs (guards) and holds a down board's license (reservations): Slurm admin
   if [ "$KOTL_DRY_RUN" = 1 ] || [ -z "$(sacctmgr -n -P show user kotl format=user 2>/dev/null)" ]; then
@@ -127,6 +131,7 @@ undo_all() {
   rm -rf "$(p /opt/kotl/plugin)" "$(p /opt/kotl/plugin-band)"     # under the dry-run folder in a dry run
   remove_file /opt/kotl/.claude-plugin/marketplace.json
   remove_file /opt/kotl/kotl-status.vsix
+  remove_file /opt/kotl/client/install.sh
   remove_file /opt/kotl/launch
   remove_file /opt/kotl/bin/kotl
   remove_file /etc/ssh/ssh_config.d/kotl.conf

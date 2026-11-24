@@ -6,7 +6,7 @@ import type { KotlSnapshot } from '../types'
 // A live Kotl band above the prompt. Every second it reads the Kotl daemon's shared status file
 // (/run/kotl/status.json), with no process started. When that file is missing or stale (the
 // daemon is down, or this is a user's own PC), it runs `kotl status --json` instead, locally or
-// over `ssh $KOTL_SSH`, at most every 30 s. Read-only: it never starts or stops a job.
+// over `ssh $KOTL_SSH`, at most every 5 s. Read-only: it never starts or stops a job.
 const snapshot = atom({ plugin: 'kotl-band', key: 'snapshot' } as const, null)
 const isHidden = atom({ plugin: 'kotl-band', key: 'isHidden' } as const, false)
 const error = atom({ plugin: 'kotl-band', key: 'error' } as const, null)
@@ -14,7 +14,7 @@ const error = atom({ plugin: 'kotl-band', key: 'error' } as const, null)
 const POLL_MS = 1_000
 const SHARED = '/run/kotl/status.json'
 const SHARED_MAX_AGE_MS = 5_000
-const FALLBACK_MS = 30_000
+const FALLBACK_MS = 5_000     // asking directly (or over ssh from a user's own PC)
 const LOCAL = ['kotl', 'status', '--json']
 const REMOTE = ['sh', '-c', '[ -n "$KOTL_SSH" ] || exit 127; exec ssh -o BatchMode=yes -o ConnectTimeout=5 "$KOTL_SSH" kotl status --json']
 
