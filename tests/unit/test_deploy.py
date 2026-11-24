@@ -17,7 +17,7 @@ SCRIPTS = {  # script -> feature it belongs to
     "slurm/install.sh": "queue", "epilog.sh": "starter", "health.sh": "health",
     "ssh/setup-kotl-key.sh": "key", "pc/setup.sh": "pc1", "firesim/check.sh": "firesim",
     "kotl/install.sh": "launcher", "job.sh": "launcher",
-    "pc/kotl-keys": "access", "pc/kotl-xdma-reload": "health",
+    "pc/kotl-keys": "access", "adapters/firesim/pc-setup.sh": "fsmod",
 }
 
 
@@ -288,13 +288,19 @@ def test_pc_setup_installs_keys_helper(tmp_path):
     assert r.returncode != 0
 
 
-@pytest.mark.feature("health")
-def test_pc_setup_installs_driver_helper_with_no_arguments(tmp_path):
-    r = dry("pc/setup.sh", "--driver-helper", str(DEPLOY / "pc/kotl-xdma-reload"), root=tmp_path)
+@pytest.mark.feature("fsmod")
+def test_firesim_pc_setup_installs_driver_helper_with_no_arguments(tmp_path):
+    r = dry("adapters/firesim/pc-setup.sh", root=tmp_path)
     assert "/usr/local/bin/kotl-xdma-reload" in r.stdout
     assert 'kotl ALL=(root) NOPASSWD: /usr/local/bin/kotl-xdma-reload ""' in r.stdout   # "" = no arguments allowed
-    r = dry("pc/setup.sh", "--driver-helper", str(DEPLOY / "accounts.sh"), root=tmp_path, check=False)
-    assert r.returncode != 0
+    r = dry("adapters/firesim/pc-setup.sh", "--undo", root=tmp_path)
+    assert "rm -f /usr/local/bin/kotl-xdma-reload /etc/sudoers.d/kotl-driver" in r.stdout
+
+
+@pytest.mark.feature("pc1")
+def test_generic_pc_setup_knows_no_tool():
+    text = (DEPLOY / "pc/setup.sh").read_text()
+    assert "--driver-helper" not in text and "xdma" not in text.lower().replace("kotl-xdma-reload", "")
 
 
 @pytest.mark.feature("notifier")
@@ -331,9 +337,9 @@ def test_install_publishes_the_plugin(tmp_path):
     assert not (tmp_path / "opt/kotl/plugin").exists()
 
 
-@pytest.mark.feature("health")
+@pytest.mark.feature("fsmod")
 def test_xdma_reload_loads_it_the_way_firesim_does():
-    text = (DEPLOY / "pc/kotl-xdma-reload").read_text()
+    text = (DEPLOY / "adapters/firesim/kotl-xdma-reload").read_text()
     assert 'insmod "$KO" poll_mode=1' in text and "modprobe xdma poll_mode=1" in text
     assert "/lib/modules/$(uname -r)/extra/xdma.ko" in text
     assert "modprobe xdma\n" not in text                     # never a plain modprobe (no poll_mode)

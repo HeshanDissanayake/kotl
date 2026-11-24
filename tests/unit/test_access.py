@@ -159,3 +159,28 @@ def test_kotl_keys_busy_answers(tmp_path):
     assert r.returncode == 0 and (out == "idle" or out.startswith("busy: "))
     if out != "idle":
         assert "kotl-keys" not in out and " ps" not in out           # this check itself isn't counted
+
+
+def test_kotl_keys_remove_takes_the_adapters_names(tmp_path):
+    (tmp_path / ".ssh").mkdir()
+    keys(tmp_path, "add", "42", KEY)
+    r = keys(tmp_path, "remove", "42", "soft", "--screen", "fsim", "--proc", "FireSim-")
+    assert r.returncode == 0 and "screens: fsim procs: FireSim-" in r.stdout
+    assert keys(tmp_path, "list").stdout.split() == []
+    r = keys(tmp_path, "remove", "43")
+    assert r.returncode == 0 and "screens: none procs: none" in r.stdout          # generic: names nothing
+
+
+@pytest.mark.parametrize("bad", [["--proc", "a b"], ["--proc", "x;rm"], ["--screen", ""], ["--nuke", "x"]])
+def test_kotl_keys_refuses_bad_names(tmp_path, bad):
+    (tmp_path / ".ssh").mkdir()
+    keys(tmp_path, "add", "42", KEY)
+    assert keys(tmp_path, "remove", "42", "soft", *bad).returncode == 2
+    assert keys(tmp_path, "list").stdout.split() == ["42"]                       # nothing removed on bad input
+
+
+def test_end_step_passes_the_adapters_names():
+    from kotl.adapters import load, stop_args, work_args
+    assert stop_args(load("firesim")) == ["--screen", "fsim", "--proc", "FireSim-"]
+    assert work_args(load("firesim")) == ["--proc", "FireSim-"]
+    assert stop_args(load("")) == [] and work_args(load("")) == []

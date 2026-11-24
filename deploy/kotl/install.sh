@@ -10,13 +10,15 @@
 #       /plugin marketplace add /opt/kotl), the notifier's systemd timer (every minute), adds each board to the registry, and makes
 #       kotl a Slurm admin (its guards cancel hung jobs; its health check holds a down board's
 #       license with a reservation). Re-run after every update of the repo.
+#   kotl/install.sh --adapters firesim   also switches adapters on (kotl.conf `adapters =`;
+#       "" switches them all off). Without it the current setting stays.
 #   kotl/install.sh --undo     removes the code (the registry and results stay)
 #
 # Add --dry-run to preview without changing anything.
 source "$(dirname "$0")/../lib.sh"
 
 REPO=$(cd "$DEPLOY_DIR/.." && pwd)
-usage() { sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'; exit "${1:-0}"; }
+usage() { sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//'; exit "${1:-0}"; }
 
 py_wrapper() {  # py_wrapper MODULE   -> a tiny entry script; -I ignores the caller's Python env
   cat <<EOF
@@ -108,6 +110,9 @@ install_all() {
   run systemctl enable kotl-daemon.service
   run systemctl restart kotl-daemon.service
 
+  # adapters (task-specific parts: FireSim's checks and cleanup), switched on in kotl.conf
+  if [ "$ADAPTERS" != unset ]; then set_conf /etc/kotl/kotl.conf adapters "$ADAPTERS"; fi
+
   local b name type host addr account client
   account=$(get_conf /etc/kotl/kotl.conf pc_account); account=${account:-virtex-host}
   client="# $MARK (deploy/kotl/install.sh). During a lease, plain 'ssh <board>' uses your job key."$'\n'
@@ -154,12 +159,14 @@ undo_all() {
   say "kept the registry (/var/lib/kotl) and results (/srv/kotl)"
 }
 
-ACTION=install BOARDS=()
+ACTION=install BOARDS=() ADAPTERS=unset
 while [ $# -gt 0 ]; do
   case "$1" in
     --dry-run) KOTL_DRY_RUN=1 ;;
     --undo) ACTION=undo ;;
     --board) BOARDS+=("${2:-}"); shift ;;
+    --adapters) ADAPTERS=${2:-}; shift
+      case "$ADAPTERS" in *[!a-z0-9,]*) die "--adapters: names like firesim, comma-separated" ;; esac ;;
     -h|--help) usage ;;
     *) die "unknown option $1" ;;
   esac

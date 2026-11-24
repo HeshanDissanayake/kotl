@@ -60,13 +60,23 @@ def time_limit_seconds(text):
 
 
 class Launcher:
-    def __init__(self, cfg=None, slurm=slurm_mod, who=None, clock=time.time, sleep=time.sleep, ssh=ssh_mod):
+    def __init__(self, cfg=None, slurm=slurm_mod, who=None, clock=time.time, sleep=time.sleep, ssh=ssh_mod,
+                 adapters=None):
         self.cfg = cfg or Config()
+        self._adapters = adapters
         self.slurm = slurm
         self.ssh = ssh
         self.who = who or caller()
         self.clock, self.sleep = clock, sleep
         self.reg = Registry(self.cfg.db)
+
+    @property
+    def adapters(self):
+        """The enabled adapters (kotl.conf `adapters =`); none means generic only."""
+        if self._adapters is None:
+            from kotl.adapters import enabled
+            self._adapters = enabled(self.cfg)
+        return self._adapters
 
     # --- who may do what
     def is_admin(self):
@@ -151,7 +161,9 @@ class Launcher:
         account = self.cfg.get("pc_account")
         mode = "full" if self.cfg.get("lockdown") == "full" else "soft"
         try:
-            self.ssh.run(b["host"], ["sudo", "-n", "-u", account, KEYS_HELPER, "remove", str(job_id), mode])
+            from kotl.adapters import stop_args
+            self.ssh.run(b["host"], ["sudo", "-n", "-u", account, KEYS_HELPER, "remove", str(job_id), mode,
+                                     *stop_args(self.adapters)])
             note = f"access: job key removed ({mode} lockdown)"
         except ssh_mod.SSHError as e:
             note = f"access: could not remove the job key: {e} (it names the job, so the next start or admin can)"
@@ -218,8 +230,9 @@ class Launcher:
         If the PC can't be asked, count it as busy: never free a board on a guess."""
         b = self.reg.board(j["board"])
         try:
-            out = self.ssh.run(b["host"], ["sudo", "-n", "-u", self.cfg.get("pc_account"), KEYS_HELPER, "busy"],
-                               timeout=30)
+            from kotl.adapters import work_args
+            out = self.ssh.run(b["host"], ["sudo", "-n", "-u", self.cfg.get("pc_account"), KEYS_HELPER, "busy",
+                                           *work_args(self.adapters)], timeout=30)
             return out.strip().startswith("busy")
         except ssh_mod.SSHError:
             return True
@@ -263,7 +276,12 @@ class Launcher:
                 "state": state, "result": j["result"], "rc": j["rc"], "reason": j["reason"],
                 "eta_s": j["eta"], "max_s": j["max"], "idle_s": j["idle"],
                 "started": j["started"], "ended": j["ended"], "command": j["command"],
-                "pc_address": j.get("pc_address"), "pc_user": self.cfg.get("pc_account")}
+                "pc_address": j.get("pc_address"), "pc_user": self.cfg.get("pc_account"),
+                "console": self.console()}
+
+    def console(self):
+        from kotl.adapters import console
+        return console(self.adapters)
 
     def set_result(self, job_id, result):
         if result not in OWNER_RESULTS:
@@ -328,7 +346,7 @@ class Launcher:
         from kotl.core import health
         self.need_admin()
         return health.run(self.reg, ssh=self.ssh, slurm=self.slurm, admin=self.cfg.get("admin"),
-                          account=self.cfg.get("pc_account"))
+                          account=self.cfg.get("pc_account"), adapters=self.adapters)
 
     def notify(self):
         from kotl.core import notifier

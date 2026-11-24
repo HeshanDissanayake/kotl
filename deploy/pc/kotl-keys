@@ -1,15 +1,19 @@
 #!/bin/sh
 # managed by kotl (deploy/pc/setup.sh). Installed on each FPGA PC as /usr/local/bin/kotl-keys.
-# Runs as the PC's FireSim account (virtex-host), started by the kotl account through sudo.
+# Runs as the PC's board account (virtex-host), started by the kotl account through sudo.
+# Generic: what a tool leaves running (FireSim's screens and drivers) is named by the workstation's
+# adapters, as --screen/--proc arguments; this script knows no tool.
 #
 #   kotl-keys add JOB 'ssh-ed25519 KEY'   let this job's key in (no forwarding; a terminal is allowed)
-#   kotl-keys remove JOB [soft|full]      take the key out and stop the simulations;
-#                                         full lockdown also ends every process of this account
+#   kotl-keys remove JOB [soft|full] [--screen PREFIX]... [--proc PATTERN]...
+#                                         take the key out, quit the named screen sessions and stop
+#                                         the named processes; full lockdown ends every process
+#                                         of this account
 #   kotl-keys list                        jobs whose keys are in
-#   kotl-keys busy                        "busy: NAME, NAME" if remote work of this account runs here
-#                                         (SSH sessions and what they started, FireSim screens and
-#                                         drivers; not a local desktop login), else "idle": the lease
-#                                         idle guard and the health check's "unleased work" warning
+#   kotl-keys busy [--proc PREFIX]...     "busy: NAME, NAME" if remote work of this account runs here
+#                                         (SSH sessions and what they started, screen, tmux, and the
+#                                         named processes; not a local desktop login), else "idle":
+#                                         the lease idle guard and the health check's warning
 #
 # Only lines ending in "kotl-job-<JOB>" are ever touched; every other key stays.
 set -eu
@@ -31,6 +35,20 @@ strip() {   # drop this job's lines, keep everything else and the file itself
   rm -f "$tmp"
 }
 
+# --screen/--proc NAME pairs after the fixed arguments; names are plain words only
+SCREENS="" PROCS=""
+names() {
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --screen|--proc)
+        case "${2:-}" in ''|*[!A-Za-z0-9_.-]*) die "bad name '${2:-}' for $1" ;; esac
+        if [ "$1" = --screen ]; then SCREENS="$SCREENS $2"; else PROCS="$PROCS $2"; fi
+        shift 2 ;;
+      *) die "unknown argument '$1'" ;;
+    esac
+  done
+}
+
 exec 9>"$HOMEDIR/.ssh/.kotl-keys.lock"
 flock 9
 
@@ -44,31 +62,41 @@ case "${1:-}" in
     ;;
   remove)
     job_ok "${2:-}"
-    strip "$2"
-    [ -z "${KOTL_KEYS_TEST_HOME:-}" ] || exit 0
-    # stop simulations: FireSim's screen sessions and its FPGA drivers
-    screen -ls 2>/dev/null | awk '/[0-9]+\.fsim[0-9]+/ {print $1}' | while read -r s; do
-      screen -S "$s" -X quit 2>/dev/null || true
+    JOB=$2 MODE=soft
+    shift 2
+    case "${1:-}" in soft|full) MODE=$1; shift ;; esac
+    names "$@"
+    strip "$JOB"
+    [ -z "${KOTL_KEYS_TEST_HOME:-}" ] || { echo "would stop screens:${SCREENS:- none} procs:${PROCS:- none}"; exit 0; }
+    # stop what the adapters named: their screen sessions, then their processes
+    for p in $SCREENS; do
+      screen -ls 2>/dev/null | awk -v p="$p" '$1 ~ "^[0-9]+\\." p { print $1 }' | while read -r s; do
+        screen -S "$s" -X quit 2>/dev/null || true
+      done
     done
-    pkill -u "$ME" -f 'FireSim-xilinx' 2>/dev/null || true
-    if [ "${3:-soft}" = full ]; then
+    for p in $PROCS; do pkill -u "$ME" -f "$p" 2>/dev/null || true; done
+    if [ "$MODE" = full ]; then
       exec pkill -KILL -u "$ME"   # full lockdown: nothing of this account outlives the job
     fi
     ;;
   busy)
-    # Remote work only: processes in this account's SSH sessions, plus FireSim's screen
-    # sessions, tmux servers and drivers (they outlive the ssh that started them). The PC's own desktop
+    # Remote work only: processes in this account's SSH sessions, plus screen sessions, tmux
+    # servers and the named processes (they outlive the ssh that started them). The PC's own desktop
     # login, if it runs as this account, isn't counted. This check itself isn't either.
+    shift
+    names "$@"
     mysid=$(ps -o sid= -p $$ | tr -d ' ')
     sshsids=$(ps -u "$ME" -o sid=,comm= | awk '$2 == "sshd" {print $1}' | sort -u | tr '\n' ' ')
-    names=$(ps -u "$ME" -o sid=,comm=,args= | awk -v me="$mysid" -v ss=" $sshsids" '
+    found=$(ps -u "$ME" -o sid=,comm=,args= | awk -v me="$mysid" -v ss=" $sshsids" -v procs="$PROCS" '
+        BEGIN { n = split(procs, pp, " ") }
         $1 == me { next }
-        index(ss, " " $1 " ") || $2 == "screen" || $2 == "SCREEN" || $2 ~ /^tmux/ || $2 ~ /^FireSim-/ || $0 ~ /FireSim-/ { print $2 }' \
+        index(ss, " " $1 " ") || $2 == "screen" || $2 == "SCREEN" || $2 ~ /^tmux/ { print $2; next }
+        { for (i = 1; i <= n; i++) if (index($2, pp[i]) == 1 || index($0, " " pp[i]) || index($0, "/" pp[i])) { print $2; next } }' \
       | sort | uniq -c | awk '{print $2 ($1 > 1 ? " x" $1 : "")}' | paste -sd, - | sed 's/,/, /g')
-    if [ -n "$names" ]; then echo "busy: $names"; else echo idle; fi
+    if [ -n "$found" ]; then echo "busy: $found"; else echo idle; fi
     ;;
   list)
     sed -n 's/.* kotl-job-\([0-9][0-9]*\)$/\1/p' "$AK"
     ;;
-  *) die "usage: kotl-keys add JOB KEY | remove JOB [soft|full] | list | busy" ;;
+  *) die "usage: kotl-keys add JOB KEY | remove JOB [soft|full] [--screen P]... [--proc P]... | list | busy [--proc P]..." ;;
 esac

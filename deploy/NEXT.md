@@ -3,12 +3,11 @@
 This file always holds only the current steps. **To run them: `bash ~/working_dir/kotl/deploy/next.sh`**
 (it asks before each step and logs everything to `.kotl/next.log`).
 
-1. **Update Kotl (sudo).** Brings `kotl setup` and `kotl client-bundle`, the fixed Claude band
-   (`/kotl-band`), the band and VS Code extension reading the daemon's file every second.
-2. **`kotl setup`** for yourself: it re-installs the Claude plugins and the VS Code extension the
-   way every new user will. Then reload the VS Code window and start a new `claude`.
-3. **XDMA check** (read-only): `poll_mode=1` is right.
-4. **Only if it isn't:** reload XDMA with the fixed helper, when nobody runs FireSim.
-
-New users: the view's first tab, **New user: start here**, walks them through it. The admin adds
-them with `sudo deploy/accounts.sh add-user NAME`, which now tells them what to run next.
+1. **Update Kotl (sudo)** with `--adapters firesim`: FireSim's checks, XDMA repair, cleanup and
+   console now live in the FireSim adapter, switched on in `/etc/kotl/kotl.conf`
+   (`adapters = firesim`). Without that line Kotl runs generic only.
+2. **Update the PC (sudo there):** `kotl-keys` is generic now (it stops what the workstation's
+   adapters name), and the FireSim adapter installs its own PC part (`kotl-xdma-reload`, same
+   paths as before, so nothing else changes).
+3. **`kotl board check`:** the same checks as before, through the adapter.
+4. **`kotl setup`** for yourself, if you haven't yet (Claude plugins + VS Code extension).

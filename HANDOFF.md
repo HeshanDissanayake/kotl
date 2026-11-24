@@ -41,7 +41,7 @@ Click any box for its commands and config files. The tabs show what Kotl is, whe
 - **How a job ends (exit plan, decided 2026-11-22):** `kotl run -- CMD` ends the moment CMD exits (for FireSim: the simulated Linux powers off, `runworkload` returns). `kotl lease` ends on `kotl release`. Every job has a cap: the ETA is required and `--max` defaults to 2× ETA; a lease also has an idle guard (nothing of the PC account running for N minutes). A job without an exit plan is refused.
 - **Pass or fail:** the run script prints `KOTL RESULT: PASS` or `KOTL RESULT: FAIL`. The launcher reads it from the console log, and the exit code tells Slurm succeeded or failed.
 - **Clean stop:** every lease ends with the same end step: the adapter's polite `stop` (`firesim kill` for FireSim), then remove the job key, kill every process of the PC account, and only then free the board.
-- **Generic, users' own tools (decided 2026-11-22):** users keep their own Chipyard and FireSim and run them unchanged inside `kotl run` or `kotl lease`. No `firesim` wrapper, no PATH tricks, configs untouched. Inside a job the command gets an ssh-agent holding only the job key, plus `KOTL_JOB`, `KOTL_BOARD`, `KOTL_PC`. FireSim stays in Kotl only as a later, admin-only adapter (flash, reset, recover).
+- **Generic, users' own tools (decided 2026-11-22):** users keep their own Chipyard and FireSim and run them unchanged inside `kotl run` or `kotl lease`. No `firesim` wrapper, no PATH tricks, configs untouched. Inside a job the command gets an ssh-agent holding only the job key, plus `KOTL_JOB`, `KOTL_BOARD`, `KOTL_PC`. FireSim knowledge lives only in the FireSim adapter (`kotl/adapters/firesim/`, decided 2026-11-24): the XDMA and glibc checks, the XDMA repair, the end-step cleanup names and the attach console. The core and `kotl-keys` know no tool. Later, the same adapter gets admin-only flash and recover.
 - **PC access follows the job:** a per-job SSH key is added at job start and removed by the end step (with Slurm's `Epilog` as backup), which also closes leftover sessions. No timer closes a job; idle and `--max` guards catch forgotten or hung ones.
 - **Result:** the exit code, or a `KOTL RESULT: PASS`/`FAIL` line if the command prints one.
 - **Board registry:** one SQLite file at `/var/lib/kotl/kotl.db`. States: down → idle → setting_up → busy → draining → maintenance. Boards are claimed atomically.
@@ -58,7 +58,8 @@ Python 3.10+. Only the standard library at runtime where practical: `sqlite3`, `
 kotl/
   cli/                 # the kotl command: run/lease/release, status, history, logs, fetch, board
   core/                # board lease (launcher, access, guards, end step), registry, results, health, notifier, attach
-  adapters/firesim/    # later, admin only: flash / reset / check a board
+  adapters/__init__.py # the adapter interface (probe, failures, warnings, repair, stop/work names, console)
+  adapters/firesim/    # FireSim: XDMA + glibc checks, XDMA repair, cleanup, console; later flash/recover
   slurm.py             # the ONLY place that runs Slurm commands
   ssh.py               # the ONLY place that runs ssh/scp/rsync to the PCs
 deploy/                # setup scripts and config templates; the admin runs these

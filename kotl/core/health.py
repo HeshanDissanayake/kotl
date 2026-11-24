@@ -1,72 +1,42 @@
 """Health checks for each board's PC. Runs as kotl: from Slurm every 5 minutes (health.sh),
 or by the admin with `kotl board check`.
 
-Each run asks the PC, in one ssh call: is it reachable, is the Xilinx card on PCI, is the XDMA
-driver loaded, which glibc does it have.
+Generic: each run asks the PC, in one ssh call, whether it is reachable and whether the board
+type's card is on PCI. The enabled adapters (kotl.conf `adapters =`) add their own lines to that
+call and their own failures, warnings and one repair (e.g. the FireSim adapter's driver check
+and reload).
 
-  failures  unreachable, no Xilinx card, no XDMA driver
-            -> on an IDLE board only, one driver reload is tried (kotl-xdma-reload, via sudo on
-               the PC, loading it as FireSim does); if it still fails, the board goes DOWN: a Slurm
-               reservation holds its license so queued jobs wait, and the admin gets a notice.
-               A board a job holds is never touched: FireSim unloads and reloads XDMA itself
-               during infrasetup, so a missing driver there is normal for a moment.
-  warnings  glibc differs from the workstation's (FireSim's bundled libc won't start there);
-            something runs as the PC account on an idle board (soft lockdown: warn only)
-            -> shown on the board (kotl board list, kotl top); the board stays in the pool.
+  failures  unreachable, no card, or an adapter's failure
+            -> on an IDLE board only, each adapter may try one repair; if it still fails, the board
+               goes DOWN: a Slurm reservation holds its license so queued jobs wait, and the admin
+               gets a notice. A board a job holds is never touched.
+  warnings  an adapter's warnings; something runs as the PC account on an idle board (soft
+            lockdown: warn only) -> shown on the board; the board stays in the pool.
   recovery  a DOWN board whose checks pass again goes back to idle, the hold is released,
             and the admin gets a notice.
 """
-import re
-import subprocess
 import time
 
 from kotl import slurm as slurm_mod
 from kotl import ssh as ssh_mod
+from kotl.adapters import work_args
 
-PROBE = ('echo "host=$(hostname)"; '
-         'echo "card=$(lspci -d 10ee: 2>/dev/null | head -n 1)"; '
-         'echo "xdma=$(lsmod 2>/dev/null | grep -o "^xdma ")"; '
-         'echo "glibc=$(ldd --version 2>/dev/null | head -n 1)"')
-RELOAD = "/usr/local/bin/kotl-xdma-reload"
 KEYS = "/usr/local/bin/kotl-keys"
+# the card a board type has on PCI: lspci vendor id, and its name for messages
+CARDS = {"vcu118": ("10ee", "Xilinx"), "u250": ("10ee", "Xilinx")}
 
 
-def glibc_line(text):
-    """First line of `ldd --version`, e.g. 'ldd (Ubuntu GLIBC 2.39-0ubuntu8.12) 2.39'."""
-    return (text or "").strip().splitlines()[0].strip() if (text or "").strip() else ""
+def probe_script(board, adapters=()):
+    lines = ['echo "host=$(hostname)"']
+    if board.get("type") in CARDS:
+        lines.append(f'echo "card=$(lspci -d {CARDS[board["type"]][0]}: 2>/dev/null | head -n 1)"')
+    return "; ".join(lines + [a.probe for a in adapters if a.probe])
 
 
-def glibc_version(line):
-    """The distro's full glibc version from that line ('2.39-0ubuntu8.12'), or the plain version."""
-    m = re.search(r"GLIBC ([^)\s]+)\)", line)       # Ubuntu/Debian: the full package version
-    if m:
-        return m.group(1)
-    return line.split()[-1] if line else ""
-
-
-def local_glibc():
-    r = subprocess.run(["ldd", "--version"], capture_output=True, text=True)
-    return glibc_version(glibc_line(r.stdout))
-
-
-def glibc_warning(here, there):
-    if not there or there == here:
-        return None
-    base_here, base_there = here.split("-")[0], there.split("-")[0]
-    if base_here != base_there:
-        fix = (f"the PC has an older glibc release ({base_there} vs {base_here}), which a package update "
-               f"can't close: remove the bundled glibc after infrasetup (deploy/examples/firesim-smoke.sh "
-               f"--use-pc-glibc), or bring the PC to the workstation's OS release")
-    else:
-        fix = "upgrade libc6 on the PC to match, or remove the bundled glibc after infrasetup (--use-pc-glibc)"
-    return (f"glibc differs: workstation {here}, PC {there}. FireSim drivers built on the "
-            f"workstation won't start on this PC as they are: {fix}")
-
-
-def probe(board, ssh=ssh_mod):
-    """One ssh call: {'host', 'card', 'xdma', 'glibc'}, or {'error': ...} if unreachable."""
+def probe(board, ssh=ssh_mod, adapters=()):
+    """One ssh call: {'host', 'card', ...adapters' keys}, or {'error': ...} if unreachable."""
     try:
-        out = ssh.run(board["host"], ["sh", "-c", PROBE], timeout=30)
+        out = ssh.run(board["host"], ["sh", "-c", probe_script(board, adapters)], timeout=30)
     except ssh_mod.SSHError as e:
         return {"error": str(e)}
     found = {}
@@ -77,29 +47,33 @@ def probe(board, ssh=ssh_mod):
     return found
 
 
-def failures_of(p):
+def failures_of(board, p, adapters=()):
     if "error" in p:
         return [f"unreachable: {p['error']}"]
     out = []
-    if not p.get("card"):
-        out.append("no Xilinx card on PCI (lspci -d 10ee:)")
-    if not p.get("xdma"):
-        out.append("XDMA driver not loaded (lsmod)")
+    if board.get("type") in CARDS and not p.get("card"):
+        vendor, name = CARDS[board["type"]]
+        out.append(f"no {name} card on PCI (lspci -d {vendor}:)")
+    for a in adapters:
+        out += a.failures(p)
     return out
 
 
-def check_board(board, ssh=ssh_mod, here=None):
+def warnings_of(p, adapters=()):
+    return [] if "error" in p else [w for a in adapters for w in a.warnings(p)]
+
+
+def check_board(board, ssh=ssh_mod, adapters=()):
     """Failures and warnings for one board, without changing anything."""
-    here = here or local_glibc()
-    p = probe(board, ssh)
-    w = glibc_warning(here, glibc_version(p.get("glibc", ""))) if "error" not in p else None
-    return failures_of(p) + ([w] if w else [])
+    p = probe(board, ssh, adapters)
+    return failures_of(board, p, adapters) + warnings_of(p, adapters)
 
 
-def pc_busy(board, account, ssh=ssh_mod):
+def pc_busy(board, account, ssh=ssh_mod, adapters=()):
     """'' when nothing of the account runs on the PC, else what runs ('screen, sshd x2'), or 'busy'."""
     try:
-        out = ssh.run(board["host"], ["sudo", "-n", "-u", account, KEYS, "busy"], timeout=30).strip()
+        out = ssh.run(board["host"], ["sudo", "-n", "-u", account, KEYS, "busy", *work_args(adapters)],
+                      timeout=30).strip()
     except ssh_mod.SSHError:
         return ""
     if not out.startswith("busy"):
@@ -110,32 +84,28 @@ def pc_busy(board, account, ssh=ssh_mod):
     return ", ".join(names) or "busy"
 
 
-def run(registry, ssh=ssh_mod, slurm=slurm_mod, admin="", account="virtex-host", now=time.time, here=None):
+def run(registry, ssh=ssh_mod, slurm=slurm_mod, admin="", account="virtex-host", now=time.time, adapters=()):
     """Check every board, change states, hold or release licenses. Returns {board: [problems]}."""
-    here = here or local_glibc()
     found = {}
     for b in registry.boards():
         name = b["name"]
-        p = probe(b, ssh)
-        fails = failures_of(p)
+        p = probe(b, ssh, adapters)
+        fails = failures_of(b, p, adapters)
         notes = []
-        # FireSim unloads and reloads XDMA itself during infrasetup: never touch the driver while
-        # a job holds the board, or the reload lands in the middle of someone's setup
+        # never repair while a job holds the board: the job's own tools may be mid-setup
+        # (FireSim reloads its driver during infrasetup)
         held = b["state"] != "idle" or b["job_id"]
-        if ("error" not in p and any(f.startswith("XDMA") for f in fails) and not held
-                and registry.once(f"reload:{name}")):
-            try:
-                ssh.run(b["host"], ["sudo", "-n", RELOAD], timeout=120)
-                notes.append("tried one XDMA driver reload")
-            except ssh_mod.SSHError as e:
-                notes.append(f"XDMA driver reload failed: {e}")
-            p = probe(b, ssh)
-            fails = failures_of(p)
-        warnings = []
-        g = glibc_warning(here, glibc_version(p.get("glibc", ""))) if "error" not in p else None
-        if g:
-            warnings.append(g)
-        running = pc_busy(b, account, ssh) if not fails and b["state"] == "idle" and not b["job_id"] else ""
+        if fails and "error" not in p and not held and registry.once(f"reload:{name}"):
+            for a in adapters:
+                note = a.repair(b, ssh, fails)
+                if note:
+                    notes.append(note)
+            if notes:
+                p = probe(b, ssh, adapters)
+                fails = failures_of(b, p, adapters)
+        warnings = warnings_of(p, adapters)
+        running = (pc_busy(b, account, ssh, adapters)
+                   if not fails and b["state"] == "idle" and not b["job_id"] else "")
         if running:
             warnings.append(f"something runs as {account} on the PC with no Kotl job holding the board: {running}")
 

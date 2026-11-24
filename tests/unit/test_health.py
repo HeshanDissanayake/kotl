@@ -6,6 +6,8 @@ from pathlib import Path
 
 import pytest
 
+from kotl.adapters import firesim
+from kotl.adapters.firesim import FireSim
 from kotl.core import health
 from kotl.core.config import Config
 from kotl.core.launcher import Launcher, Refused
@@ -33,9 +35,10 @@ class FakePC:
             raise SSHError(f"{host}: no answer within 30 s")
         if argv[:2] == ["sh", "-c"]:
             return "".join(f"{k}={v}\n" for k, v in self.state.items())
-        if argv[-1] == "busy":
+        if "busy" in argv:
+            self.busy_args = argv[argv.index("busy") + 1:]
             return "busy: screen, FireSim-xilinx_vcu118\n" if self.busy else "idle\n"
-        if argv[-1] == health.RELOAD:
+        if argv[-1] == firesim.RELOAD:
             self.reloads += 1
             if self.reload_fixes:
                 self.state["xdma"] = "xdma"
@@ -63,15 +66,16 @@ def reg(tmp_path):
     return r
 
 
-def run(reg, pc, holds):
-    return health.run(reg, ssh=pc, slurm=holds, admin="boss", account="virtex-host", here=HERE)
+def run(reg, pc, holds, adapters=None):
+    adapters = [FireSim(here=HERE)] if adapters is None else adapters
+    return health.run(reg, ssh=pc, slurm=holds, admin="boss", account="virtex-host", adapters=adapters)
 
 
 @pytest.mark.parametrize("text,version", [
     (f"ldd (Ubuntu GLIBC {HERE}) 2.39\nCopyright", HERE), ("ldd (GNU libc) 2.35\n", "2.35"), ("", ""),
 ])
 def test_glibc_version(text, version):
-    assert health.glibc_version(health.glibc_line(text)) == version
+    assert firesim.glibc_version(firesim.glibc_line(text)) == version
 
 
 def test_healthy_board_stays_idle(reg):
@@ -142,7 +146,7 @@ def test_glibc_and_unleased_work_are_warnings(reg):
 
 
 def test_patch_gap_suggests_upgrade():
-    w = health.glibc_warning(HERE, "2.39-0ubuntu8.9")
+    w = firesim.glibc_warning(HERE, "2.39-0ubuntu8.9")
     assert "upgrade libc6" in w and "older glibc release" not in w
 
 
@@ -165,7 +169,7 @@ def test_only_kotl_or_admin_runs_checks(tmp_path, monkeypatch):
         (tmp_path / d).mkdir(parents=True)
     (tmp_path / "etc/kotl/kotl.conf").write_text("admin = boss\n")
     cfg = Config(prefix=str(tmp_path))
-    monkeypatch.setattr(health, "local_glibc", lambda: HERE)
+    monkeypatch.setattr(firesim, "local_glibc", lambda: HERE)
     Launcher(cfg, who="kotl").reg.add_board("vcu118-pc1", "vcu118-pc1", "vcu118")
     with pytest.raises(Refused):
         Launcher(cfg, who="alice", ssh=FakePC(), slurm=FakeHolds()).health()
@@ -181,7 +185,41 @@ def test_health_sh_always_exits_0():
 def test_long_process_lists_are_capped():
     class Many(FakePC):
         def run(self, host, argv, timeout=60, check=True):
-            if argv[-1] == "busy":
+            if "busy" in argv:
                 return "busy: " + ", ".join(f"p{i}" for i in range(20)) + "\n"
             return super().run(host, argv, timeout, check)
     assert health.pc_busy({"host": "pc"}, "virtex-host", Many()) == "p0, p1, p2, p3, p4, p5, p6, p7 and 12 more"
+
+
+# ---- the core is generic: without the FireSim adapter it knows nothing of XDMA, glibc or FireSim
+
+def test_without_adapters_only_generic_checks(reg):
+    pc, holds = FakePC(xdma="", glibc="ldd (Ubuntu GLIBC 2.35-0ubuntu3.13) 2.35"), FakeHolds()
+    found = run(reg, pc, holds, adapters=[])["vcu118-pc1"]
+    assert found == [] and pc.reloads == 0 and reg.board("vcu118-pc1")["state"] == "idle"
+    assert "xdma" not in health.probe_script({"type": "vcu118"}) and "ldd" not in health.probe_script({"type": "vcu118"})
+    pc.state["card"] = ""
+    assert run(reg, pc, holds, adapters=[])["vcu118-pc1"] == ["no Xilinx card on PCI (lspci -d 10ee:)"]
+
+
+def test_firesim_adapter_adds_its_probe_and_work_names(reg):
+    pc = FakePC()
+    pc.busy = True
+    run(reg, pc, FakeHolds())
+    assert pc.busy_args == ["--proc", "FireSim-"]
+    assert "xdma=" in health.probe_script({"type": "vcu118"}, [FireSim(here=HERE)])
+    run(reg, pc, FakeHolds(), adapters=[])
+    assert pc.busy_args == []
+
+
+def test_unknown_board_type_skips_the_card_check():
+    assert "lspci" not in health.probe_script({"type": "mystery"})
+    assert health.failures_of({"type": "mystery"}, {"host": "h"}) == []
+
+
+def test_core_has_no_firesim_knowledge():
+    core = Path(__file__).resolve().parents[2] / "kotl/core"
+    for f in core.glob("*.py"):
+        text = f.read_text()
+        for word in ("xdma", "glibc", "fsim0", "FireSim-"):
+            assert word not in text, f"kotl/core/{f.name} mentions {word}"

@@ -1,5 +1,5 @@
 #!/bin/sh
-# managed by kotl (deploy/pc/setup.sh). Installed on each FPGA PC as /usr/local/bin/kotl-xdma-reload.
+# managed by kotl (deploy/adapters/firesim/pc-setup.sh). FireSim adapter. Installed on each FPGA PC as /usr/local/bin/kotl-xdma-reload.
 # Kotl's health check runs it (as root, through one sudoers line, with no arguments) when the
 # XDMA driver isn't loaded on an IDLE board: one attempt to reload it. It changes nothing else.
 #

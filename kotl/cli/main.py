@@ -10,7 +10,7 @@
   kotl top                             the same, live, with your jobs (l logs, c cancel, r release, f fetch)
   kotl cancel JOB                      cancel your job (Slurm allows only the owner or root)
   kotl history | logs JOB [-f] | fetch JOB [--to DIR]
-  kotl attach [JOB]                    FireSim's console on your job's PC (Ctrl-a d detaches)
+  kotl attach [JOB]                    your job's console on its PC (FireSim: fsim0; Ctrl-a d detaches)
   kotl notices [--all] [--peek]        ETA, start-time and board notices for you (--peek: don't mark read)
   kotl board list | add NAME TYPE HOST | drain NAME | resume NAME | check    (changes: admin only)
 

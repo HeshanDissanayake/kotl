@@ -8,7 +8,7 @@ import pwd
 from dataclasses import dataclass, field
 
 DEFAULTS = {"lockdown": "soft", "admin": "", "pc_account": "virtex-host", "idle": "30m",
-            "board_type": "vcu118", "keep_days": "30"}
+            "board_type": "vcu118", "keep_days": "30", "adapters": ""}
 
 
 def read_conf(path):

@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "updated": "2026-11-24T08:28:43Z",
-  "repo_commit": "688a48eb06bf0eec5e2cd06deace89ac5239adae",
+  "updated": "2026-11-24T08:41:14Z",
+  "repo_commit": "a1ff57c58d59d899057ce6689e5d1db32db69134",
   "watch": [
     "deploy/",
     "kotl/",
@@ -50,7 +50,7 @@
         "unit": {
           "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-24T08:28:43Z"
+          "ran_at": "2026-11-24T08:41:13Z"
         },
         "hardware": null
       },
@@ -88,7 +88,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-24T08:28:43Z"
+          "ran_at": "2026-11-24T08:41:13Z"
         },
         "hardware": null
       },
@@ -126,7 +126,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-24T08:28:43Z"
+          "ran_at": "2026-11-24T08:41:13Z"
         },
         "hardware": null
       },
@@ -171,7 +171,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-24T08:28:43Z"
+          "ran_at": "2026-11-24T08:41:13Z"
         },
         "hardware": null
       },
@@ -204,7 +204,7 @@
         "unit": {
           "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-24T08:28:43Z"
+          "ran_at": "2026-11-24T08:41:13Z"
         },
         "hardware": null
       },
@@ -246,14 +246,14 @@
         "unit": {
           "passed": 14,
           "failed": 0,
-          "ran_at": "2026-11-24T08:28:43Z"
+          "ran_at": "2026-11-24T08:41:13Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "688a48eb06bf0eec5e2cd06deace89ac5239adae",
-        "message": "The Kotl daemon (kotld): Kotl's one always-running process",
-        "date": "2026-11-24T18:58:11+11:00"
+        "hash": "a1ff57c58d59d899057ce6689e5d1db32db69134",
+        "message": "kotl setup and the client bundle; a New user tab as the view's intro",
+        "date": "2026-11-24T19:28:43+11:00"
       },
       "issues": [],
       "log": [
@@ -295,12 +295,12 @@
         "unit": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-24T08:28:43Z"
+          "ran_at": "2026-11-24T08:41:13Z"
         },
         "hardware": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-24T08:28:43Z"
+          "ran_at": "2026-11-24T08:41:13Z"
         }
       },
       "last_commit": {
@@ -340,12 +340,12 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-24T08:28:43Z"
+          "ran_at": "2026-11-24T08:41:13Z"
         },
         "hardware": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-24T08:28:43Z"
+          "ran_at": "2026-11-24T08:41:13Z"
         }
       },
       "last_commit": {
@@ -383,14 +383,14 @@
       ],
       "tests": {
         "unit": {
-          "passed": 3,
+          "passed": 4,
           "failed": 0,
-          "ran_at": "2026-11-24T08:28:43Z"
+          "ran_at": "2026-11-24T08:41:13Z"
         },
         "hardware": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-24T08:28:43Z"
+          "ran_at": "2026-11-24T08:41:13Z"
         }
       },
       "last_commit": {
@@ -427,6 +427,10 @@
         {
           "date": "2026-11-22",
           "text": "pc/setup.sh --keys-helper installs kotl-keys and one sudoers line (M3)."
+        },
+        {
+          "date": "2026-11-24",
+          "text": "pc/setup.sh is generic: --driver-helper moved to deploy/adapters/firesim/pc-setup.sh; --undo removes every kotl-* helper."
         }
       ]
     },
@@ -467,7 +471,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-24T08:28:43Z"
+          "ran_at": "2026-11-24T08:41:13Z"
         },
         "hardware": null
       },
@@ -514,20 +518,21 @@
         "deploy/job.sh",
         "deploy/kotl/",
         "kotl/core/config.py",
-        "kotl/core/launcher.py"
+        "kotl/core/launcher.py",
+        "kotl/adapters/__init__.py"
       ],
       "tests": {
         "unit": {
           "passed": 37,
           "failed": 0,
-          "ran_at": "2026-11-24T08:28:43Z"
+          "ran_at": "2026-11-24T08:41:13Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "688a48eb06bf0eec5e2cd06deace89ac5239adae",
-        "message": "The Kotl daemon (kotld): Kotl's one always-running process",
-        "date": "2026-11-24T18:58:11+11:00"
+        "hash": "a1ff57c58d59d899057ce6689e5d1db32db69134",
+        "message": "kotl setup and the client bundle; a New user tab as the view's intro",
+        "date": "2026-11-24T19:28:43+11:00"
       },
       "issues": [],
       "log": [
@@ -574,6 +579,10 @@
         {
           "date": "2026-11-23",
           "text": "Lease idle guard relies on kotl-keys busy, now remote work only (was always busy because of the PC's desktop session)."
+        },
+        {
+          "date": "2026-11-24",
+          "text": "Adapter interface (kotl/adapters/__init__.py); install.sh --adapters sets kotl.conf; the end step and idle guard pass the adapters' names to kotl-keys."
         }
       ]
     },
@@ -590,14 +599,14 @@
         "unit": {
           "passed": 19,
           "failed": 0,
-          "ran_at": "2026-11-24T08:28:43Z"
+          "ran_at": "2026-11-24T08:41:13Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "688a48eb06bf0eec5e2cd06deace89ac5239adae",
-        "message": "The Kotl daemon (kotld): Kotl's one always-running process",
-        "date": "2026-11-24T18:58:11+11:00"
+        "hash": "a1ff57c58d59d899057ce6689e5d1db32db69134",
+        "message": "kotl setup and the client bundle; a New user tab as the view's intro",
+        "date": "2026-11-24T19:28:43+11:00"
       },
       "issues": [],
       "log": [
@@ -663,7 +672,7 @@
         "unit": {
           "passed": 4,
           "failed": 0,
-          "ran_at": "2026-11-24T08:28:43Z"
+          "ran_at": "2026-11-24T08:41:13Z"
         },
         "hardware": null
       },
@@ -685,18 +694,19 @@
       ]
     },
     "fsmod": {
-      "title": "FireSim admin adapter",
-      "status": "later",
-      "milestone": "Later",
-      "now": "Admin-only board care (flash, reset, recover); users run FireSim inside kotl run/lease.",
+      "title": "FireSim adapter",
+      "status": "tested",
+      "milestone": "M5",
+      "now": "FireSim's checks, repair, cleanup and console moved out of the core into this adapter; on in kotl.conf (adapters = firesim). Later: flash, recover (admin).",
       "code": [
-        "kotl/adapters/firesim/"
+        "kotl/adapters/firesim/",
+        "deploy/adapters/firesim/"
       ],
       "tests": {
         "unit": {
-          "passed": 11,
+          "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-21T15:42:44Z"
+          "ran_at": "2026-11-24T08:41:13Z"
         },
         "hardware": null
       },
@@ -730,6 +740,10 @@
         {
           "date": "2026-11-22",
           "text": "User decision: generic design. The firesim wrapper and job template are removed; FireSim stays only as a later admin adapter."
+        },
+        {
+          "date": "2026-11-24",
+          "text": "Built (user decision: FireSim out of the generic core). Holds the XDMA check and reload, the glibc warning, the end-step cleanup (fsim screens, FireSim- drivers), the idle-guard work names and the attach console. PC part: deploy/adapters/firesim/ (kotl-xdma-reload, pc-setup.sh with --undo)."
         }
       ]
     },
@@ -741,14 +755,13 @@
       "code": [
         "deploy/M4-SETUP.md",
         "deploy/health.sh",
-        "deploy/pc/kotl-xdma-reload",
         "kotl/core/health.py"
       ],
       "tests": {
         "unit": {
-          "passed": 20,
+          "passed": 21,
           "failed": 0,
-          "ran_at": "2026-11-24T08:28:43Z"
+          "ran_at": "2026-11-24T08:41:13Z"
         },
         "hardware": null
       },
@@ -816,6 +829,10 @@
         {
           "date": "2026-11-23",
           "text": "Bug found from job 54 (xdma_id != -1): FireSim's infrasetup unloads XDMA, flashes, then loads it with poll_mode=1 only if not loaded. The health check reloaded with a plain modprobe (no poll_mode) and also while a job held the board. Fixed: reload only on idle boards, the way FireSim loads it. The 20:05 'missing XDMA' was most likely a FireSim run between its unload and load."
+        },
+        {
+          "date": "2026-11-24",
+          "text": "Generic now: reachable and the board type's card; adapters add their probe lines, failures, warnings and one repair."
         }
       ]
     },
@@ -832,7 +849,7 @@
         "unit": {
           "passed": 6,
           "failed": 0,
-          "ran_at": "2026-11-24T08:28:43Z"
+          "ran_at": "2026-11-24T08:41:13Z"
         },
         "hardware": null
       },
@@ -867,9 +884,9 @@
       ],
       "tests": {
         "unit": {
-          "passed": 5,
+          "passed": 7,
           "failed": 0,
-          "ran_at": "2026-11-24T08:28:43Z"
+          "ran_at": "2026-11-24T08:41:13Z"
         },
         "hardware": null
       },
@@ -891,6 +908,10 @@
         {
           "date": "2026-11-23",
           "text": "Live (job 53): attach with only the lease's key; no fsim0 running, so it listed the PC's screens; lease released."
+        },
+        {
+          "date": "2026-11-24",
+          "text": "The console name comes from the adapter (FireSim: fsim0); with none, the PC's only screen."
         }
       ]
     },
@@ -909,14 +930,14 @@
         "unit": {
           "passed": 18,
           "failed": 0,
-          "ran_at": "2026-11-24T08:28:43Z"
+          "ran_at": "2026-11-24T08:41:13Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "688a48eb06bf0eec5e2cd06deace89ac5239adae",
-        "message": "The Kotl daemon (kotld): Kotl's one always-running process",
-        "date": "2026-11-24T18:58:11+11:00"
+        "hash": "a1ff57c58d59d899057ce6689e5d1db32db69134",
+        "message": "kotl setup and the client bundle; a New user tab as the view's intro",
+        "date": "2026-11-24T19:28:43+11:00"
       },
       "issues": [],
       "log": [
@@ -1072,14 +1093,14 @@
       ],
       "tests": {
         "unit": {
-          "passed": 21,
+          "passed": 27,
           "failed": 0,
-          "ran_at": "2026-11-24T08:28:43Z"
+          "ran_at": "2026-11-24T08:41:13Z"
         },
         "hardware": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-24T08:28:43Z"
+          "ran_at": "2026-11-24T08:41:13Z"
         }
       },
       "last_commit": {
@@ -1138,6 +1159,10 @@
         {
           "date": "2026-11-23",
           "text": "Job 49: linux-poweroff booted Linux and powered off on the VCU118 through kotl run, with the user's workaround (bundled glibc removed over the job key). Result passed from KOTL RESULT; key removed; board freed after 2.6 min of a 30 min ETA."
+        },
+        {
+          "date": "2026-11-24",
+          "text": "kotl-keys knows no tool: remove/busy take --screen/--proc names from the adapters (plain words only). Needs updating on the PC."
         }
       ]
     },
@@ -1197,7 +1222,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-24T08:28:43Z"
+          "ran_at": "2026-11-24T08:41:13Z"
         },
         "hardware": null
       },
@@ -1243,7 +1268,7 @@
         "unit": {
           "passed": 7,
           "failed": 0,
-          "ran_at": "2026-11-24T08:28:43Z"
+          "ran_at": "2026-11-24T08:41:13Z"
         },
         "hardware": null
       },
@@ -1274,11 +1299,15 @@
         "unit": {
           "passed": 7,
           "failed": 0,
-          "ran_at": "2026-11-24T08:28:43Z"
+          "ran_at": "2026-11-24T08:41:13Z"
         },
         "hardware": null
       },
-      "last_commit": null,
+      "last_commit": {
+        "hash": "a1ff57c58d59d899057ce6689e5d1db32db69134",
+        "message": "kotl setup and the client bundle; a New user tab as the view's intro",
+        "date": "2026-11-24T19:28:43+11:00"
+      },
       "issues": [],
       "drawn": false,
       "log": [
