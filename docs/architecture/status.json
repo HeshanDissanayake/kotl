@@ -752,6 +752,10 @@
         {
           "date": "2026-11-24",
           "text": "Built (user decision: FireSim out of the generic core). Holds the XDMA check and reload, the glibc warning, the end-step cleanup (fsim screens, FireSim- drivers), the idle-guard work names and the attach console. PC part: deploy/adapters/firesim/ (kotl-xdma-reload, pc-setup.sh with --undo)."
+        },
+        {
+          "date": "2026-11-24",
+          "text": "View: removed the arrow from the FireSim adapter to Your FireSim. The adapter never talks to a user's FireSim; it acts on the PC through the health check and the end step, which have their own arrows."
         }
       ]
     },

@@ -717,19 +717,6 @@
    }
   },
   {
-   "id": "e-fsmod-firesim",
-   "from": "fsmod",
-   "to": "firesim",
-   "d": "M1039,685 H1090",
-   "style": "bg",
-   "label": {
-    "text": "its driver, screens",
-    "x": 1068,
-    "y": 640,
-    "anchor": "start"
-   }
-  },
-  {
    "id": "e-firesim-bus",
    "from": "firesim",
    "to": "key",
