@@ -7,11 +7,13 @@ Users run FireSim unchanged inside `kotl run` / `kotl lease`; this adapter only 
   repair    one XDMA reload on an IDLE board (kotl-xdma-reload on the PC, loading it exactly as
             FireSim's infrasetup does, poll_mode=1). Never while a job holds the board: FireSim
             unloads and reloads XDMA itself during infrasetup.
-  end step  quit FireSim's screen sessions (fsim*) and stop its drivers (FireSim-*)
+  end step  quit FireSim's screen sessions (fsim*) and stop its drivers (FireSim-*); then, as root,
+            kotl-firesim-stop: FireSim starts its driver through sudo, so the driver runs as
+            root and the board account can't stop it
   idle      FireSim-* processes count as work for the lease idle guard
   console   `kotl attach` opens screen session fsim0
 
-Its PC part is deploy/adapters/firesim/ (kotl-xdma-reload and its install). Later, admin only:
+Its PC part is deploy/adapters/firesim/ (kotl-xdma-reload, kotl-firesim-stop and their install). Later, admin only:
 flash a known-good bitstream, recover a board.
 """
 import re
@@ -21,6 +23,7 @@ from kotl import ssh as ssh_mod
 from kotl.adapters import Adapter
 
 RELOAD = "/usr/local/bin/kotl-xdma-reload"
+STOP = "/usr/local/bin/kotl-firesim-stop"
 
 
 def glibc_line(text):
@@ -63,6 +66,7 @@ class FireSim(Adapter):
     stop_procs = ("FireSim-",)
     work_procs = ("FireSim-",)
     console = "fsim0"
+    end_commands = (("sudo", "-n", STOP),)
     XDMA = "XDMA driver not loaded (lsmod)"
 
     def __init__(self, here=None):

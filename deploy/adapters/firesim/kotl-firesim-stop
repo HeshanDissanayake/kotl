@@ -1,0 +1,23 @@
+#!/bin/sh
+# managed by kotl (deploy/adapters/firesim/pc-setup.sh). FireSim adapter. Installed on each FPGA PC
+# as /usr/local/bin/kotl-firesim-stop.
+# Kotl's end step runs it (as root, through one sudoers line, with no arguments) after a job's
+# key is removed: FireSim runs its driver through sudo, so the driver runs as root and the
+# board account can't stop it. This stops every FireSim driver on this PC (Kotl has just freed
+# the PC's board, so any driver left is the ended job's). It changes nothing else.
+set -u
+found=$(pgrep -a '^FireSim-' 2>/dev/null || true)
+if [ -z "$found" ]; then
+  echo "kotl-firesim-stop: no FireSim driver running"
+  exit 0
+fi
+echo "kotl-firesim-stop: stopping: $(echo "$found" | cut -c1-80 | paste -sd';' -)"
+pkill -TERM '^FireSim-' 2>/dev/null || true
+for _ in 1 2 3 4 5; do
+  pgrep '^FireSim-' >/dev/null 2>&1 || { echo "kotl-firesim-stop: stopped"; exit 0; }
+  sleep 1
+done
+pkill -KILL '^FireSim-' 2>/dev/null || true
+sleep 1
+if pgrep '^FireSim-' >/dev/null 2>&1; then echo "kotl-firesim-stop: a FireSim driver is still running"; exit 1; fi
+echo "kotl-firesim-stop: stopped (killed)"

@@ -11,6 +11,8 @@ about any tool. An adapter adds what one tool needs, through these hooks, all op
   stop_procs   process patterns the end step stops (pkill -f, as the PC account)
   work_procs   process name prefixes that count as work for the lease idle guard
   console      the screen session `kotl attach` opens
+  end_commands commands the end step runs on the board's PC (as kotl, over its SSH key) after the
+               job's key is removed, e.g. a root helper that stops what the board account can't
 
 Adapters are switched on in /etc/kotl/kotl.conf: `adapters = firesim` (comma-separated).
 With none, Kotl still runs leases and jobs on any board, with only the generic checks.
@@ -30,6 +32,7 @@ class Adapter:
     stop_procs = ()
     work_procs = ()
     console = ""
+    end_commands = ()
 
     def failures(self, p):
         return []
@@ -76,6 +79,11 @@ def stop_args(adapters):
 def work_args(adapters):
     """kotl-keys busy arguments: --proc PREFIX for each adapter's work processes."""
     return [x for a in adapters for p in _safe(a.work_procs) for x in ("--proc", p)]
+
+
+def end_commands(adapters):
+    """Every adapter's end-step commands, in order (argv lists run on the PC)."""
+    return [list(c) for a in adapters for c in a.end_commands]
 
 
 def console(adapters):

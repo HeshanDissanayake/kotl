@@ -17,7 +17,7 @@ SCRIPTS = {  # script -> feature it belongs to
     "slurm/install.sh": "queue", "epilog.sh": "starter", "health.sh": "health",
     "ssh/setup-kotl-key.sh": "key", "pc/setup.sh": "pc1", "adapters/firesim/check.sh": "fsmod",
     "kotl/install.sh": "launcher", "job.sh": "launcher",
-    "pc/kotl-keys": "access", "adapters/firesim/pc-setup.sh": "fsmod",
+    "pc/kotl-keys": "access", "adapters/firesim/pc-setup.sh": "fsmod", "adapters/firesim/kotl-firesim-stop": "fsmod",
 }
 
 
@@ -293,8 +293,10 @@ def test_firesim_pc_setup_installs_driver_helper_with_no_arguments(tmp_path):
     r = dry("adapters/firesim/pc-setup.sh", root=tmp_path)
     assert "/usr/local/bin/kotl-xdma-reload" in r.stdout
     assert 'kotl ALL=(root) NOPASSWD: /usr/local/bin/kotl-xdma-reload ""' in r.stdout   # "" = no arguments allowed
+    assert 'kotl ALL=(root) NOPASSWD: /usr/local/bin/kotl-firesim-stop ""' in r.stdout
     r = dry("adapters/firesim/pc-setup.sh", "--undo", root=tmp_path)
     assert "rm -f /usr/local/bin/kotl-xdma-reload /etc/sudoers.d/kotl-driver" in r.stdout
+    assert "rm -f /usr/local/bin/kotl-firesim-stop /etc/sudoers.d/kotl-firesim-stop" in r.stdout
 
 
 @pytest.mark.feature("pc1")
@@ -365,3 +367,25 @@ def test_install_publishes_the_client_installer_and_replaces_json(tmp_path):
     assert os.access(tmp_path / "opt/kotl/client/install.sh", os.X_OK)
     assert not (tmp_path / "opt/kotl/.claude-plugin/marketplace.json.kotl-orig").exists()
     assert '"kotl-band"' in (tmp_path / "opt/kotl/.claude-plugin/marketplace.json").read_text()
+
+
+@pytest.mark.feature("fsmod")
+@pytest.mark.parametrize("stubborn", [False, True])
+def test_firesim_stop_stops_the_root_driver(tmp_path, stubborn):
+    # stand-in pgrep/pkill: a "driver" is running while the state file exists
+    state, bindir = tmp_path / "running", tmp_path / "bin"
+    bindir.mkdir()
+    state.write_text("4242 ./FireSim-xilinx_vcu118 +permissive\n")
+    (bindir / "pgrep").write_text(f'#!/bin/sh\n[ -f {state} ] || exit 1\ncase "$1" in -a) cat {state};; *) echo 4242;; esac\n')
+    kill_on = "-KILL" if stubborn else "-TERM"
+    (bindir / "pkill").write_text(f'#!/bin/sh\necho "$1" >> {tmp_path}/signals\n[ "$1" = {kill_on} ] && rm -f {state}\nexit 0\n')
+    (bindir / "sleep").write_text("#!/bin/sh\nexit 0\n")
+    for f in bindir.iterdir():
+        f.chmod(0o755)
+    env = dict(os.environ, PATH=f"{bindir}:/usr/bin:/bin")
+    r = subprocess.run(["sh", str(DEPLOY / "adapters/firesim/kotl-firesim-stop")], capture_output=True, text=True, env=env)
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert "stopping: 4242 ./FireSim-xilinx_vcu118" in r.stdout and not state.exists()
+    assert ("killed" in r.stdout) == stubborn
+    r = subprocess.run(["sh", str(DEPLOY / "adapters/firesim/kotl-firesim-stop")], capture_output=True, text=True, env=env)
+    assert "no FireSim driver running" in r.stdout

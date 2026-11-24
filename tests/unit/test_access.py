@@ -184,3 +184,23 @@ def test_end_step_passes_the_adapters_names():
     assert stop_args(load("firesim")) == ["--screen", "fsim", "--proc", "FireSim-"]
     assert work_args(load("firesim")) == ["--proc", "FireSim-"]
     assert stop_args(load("")) == [] and work_args(load("")) == []
+
+
+def test_end_step_runs_the_firesim_root_stop_only_with_the_adapter(world):
+    cfg, fs, make = world
+    for adapters, expect in (("firesim", True), ("", False)):
+        conf = cfg.path("/etc/kotl/kotl.conf")
+        open(conf, "w").write(f"admin = boss\npc_account = virtex-host\nadapters = {adapters}\n")
+        cfg.settings = {}
+        ssh = FakeSSH()
+        job = 90 if expect else 91
+        fs.add(job, "alice")
+        L = make("alice", ssh)
+        L.start(job, "run", pubkey=KEY)
+        L.end(job, signal=True)
+        stop = ("vcu118-pc1", ["sudo", "-n", "/usr/local/bin/kotl-firesim-stop"])
+        assert (stop in ssh.calls) == expect
+        if expect:
+            remove = next(i for i, c in enumerate(ssh.calls) if "remove" in c[1])
+            assert ssh.calls.index(stop) > remove                    # after the key is out
+            assert ssh.calls[remove][1][-4:] == ["--screen", "fsim", "--proc", "FireSim-"]

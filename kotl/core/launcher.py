@@ -168,6 +168,13 @@ class Launcher:
         except ssh_mod.SSHError as e:
             note = f"access: could not remove the job key: {e} (it names the job, so the next start or admin can)"
         results.log(self.dir_for(j), note)
+        from kotl.adapters import end_commands
+        for argv in end_commands(self.adapters):
+            try:
+                out = self.ssh.run(b["host"], argv, timeout=60).strip()
+                results.log(self.dir_for(j), f"end step: {out or ' '.join(argv)}")
+            except ssh_mod.SSHError as e:
+                results.log(self.dir_for(j), f"end step: {argv[-1]} failed: {e}")
 
     def spawn_watcher(self, job_id):
         # the watcher is Kotl's own process, not the user's: drop sudo's caller variables,

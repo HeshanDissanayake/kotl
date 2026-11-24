@@ -562,6 +562,10 @@
         {
           "date": "2026-11-24",
           "text": "install.sh replaces the .vsix outright (no .kotl-orig backup)."
+        },
+        {
+          "date": "2026-11-24",
+          "text": "End step runs the adapters' end_commands on the PC after removing the job key (the epilog too), logged as 'end step: ...'."
         }
       ]
     },
@@ -739,6 +743,10 @@
         {
           "date": "2026-11-24",
           "text": "FireSim test package: make-test-package.sh builds a self-contained folder (driver + libs without workstation glibc, bitstream, linux-poweroff, run.sh, README for people and Claude) from the job-49 combination; built at <shared folder>/kotl-firesim-test (623 MB). Not yet run on the board."
+        },
+        {
+          "date": "2026-11-24",
+          "text": "Root cleanup: FireSim's driver runs as root (via sudo), so the board account couldn't stop it at the end step. New adapter hook end_commands; FireSim's runs kotl-firesim-stop on the PC (root, one sudoers line, no arguments) after the job key is removed. Needs the PC update (pc-setup.sh)."
         }
       ]
     },
