@@ -15,7 +15,7 @@ DEPLOY = ROOT / "deploy"
 SCRIPTS = {  # script -> feature it belongs to
     "lib.sh": "os", "accounts.sh": "os", "verify-m1.sh": "os",
     "slurm/install.sh": "queue", "epilog.sh": "starter", "health.sh": "health",
-    "ssh/setup-kotl-key.sh": "key", "pc/setup.sh": "pc1", "firesim/check.sh": "firesim",
+    "ssh/setup-kotl-key.sh": "key", "pc/setup.sh": "pc1", "adapters/firesim/check.sh": "fsmod",
     "kotl/install.sh": "launcher", "job.sh": "launcher",
     "pc/kotl-keys": "access", "adapters/firesim/pc-setup.sh": "fsmod",
 }
@@ -224,9 +224,9 @@ def test_pc_setup_rejects_bad_key(tmp_path):
     assert r.returncode != 0 and "public key" in r.stderr
 
 
-@pytest.mark.feature("firesim")
+@pytest.mark.feature("fsmod")
 def test_firesim_check_is_read_only():
-    text = (DEPLOY / "firesim/check.sh").read_text()
+    text = (DEPLOY / "adapters/firesim/check.sh").read_text()
     body = text.split('check "kotl login"')[1]
     for word in ("rm ", "sed -i", "install ", "chmod", "tee ", "useradd", "systemctl"):
         assert word not in body

@@ -49,7 +49,7 @@ sshd, `virtex-host`, its password and its keys stay as they are.
 ## 5. Check everything
 
 ```sh
-sudo deploy/firesim/check.sh vcu118-pc1
+sudo deploy/adapters/firesim/check.sh vcu118-pc1
 sudo deploy/verify-m1.sh
 python3 tools/status.py refresh --results /tmp/kotl-m1-results.json
 ```

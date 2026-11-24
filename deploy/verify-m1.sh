@@ -72,13 +72,13 @@ sleep 2
 result acct false history_shows_completed "$(ok sh -c "sacct -n -X -j $B -o State | grep -q COMPLETED")" "job $B: $(sacct -n -X -j "$B" -o State | tr -s ' ')"
 result acct false history_shows_cancelled "$(ok sh -c "sacct -n -X -j $A -o State | grep -q CANCELLED")"
 
-# --- the PC, as kotl (key, pc1, firesim): these touch the board's PC, so they count as hardware
+# --- the PC, as kotl (key, pc1, fsmod): these touch the board's PC, so they count as hardware
 pc() { as kotl ssh "$PC" "$1" 2>/dev/null; }
 result key true kotl_ssh_login "$( [ -n "$(pc hostname)" ] && echo 1 || echo 0)" "$(pc hostname)"
 result pc1 true xilinx_card_on_pci "$( [ -n "$(pc 'lspci -d 10ee:')" ] && echo 1 || echo 0)" "$(pc 'lspci -d 10ee: | head -n 1')"
 ACCOUNT=$(sed -n 's/^pc_account *= *//p' /etc/kotl/kotl.conf | head -n 1)
-result firesim true pc_account_exists "$( [ -n "$(pc "getent passwd ${ACCOUNT:-virtex-host}")" ] && echo 1 || echo 0)" "${ACCOUNT:-virtex-host}"
-result firesim true xdma_driver_loaded "$( [ -n "$(pc 'lsmod | grep -w xdma')" ] && echo 1 || echo 0)"
+result pc1 true pc_account_exists "$( [ -n "$(pc "getent passwd ${ACCOUNT:-virtex-host}")" ] && echo 1 || echo 0)" "${ACCOUNT:-virtex-host}"
+result fsmod true xdma_driver_loaded "$( [ -n "$(pc 'lsmod | grep -w xdma')" ] && echo 1 || echo 0)"
 
 {
   printf '{"ran_at": "%s", "results": [\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"

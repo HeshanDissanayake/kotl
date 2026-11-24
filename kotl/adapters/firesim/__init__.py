@@ -47,7 +47,7 @@ def glibc_warning(here, there):
     base_here, base_there = here.split("-")[0], there.split("-")[0]
     if base_here != base_there:
         fix = (f"the PC has an older glibc release ({base_there} vs {base_here}), which a package update "
-               f"can't close: remove the bundled glibc after infrasetup (deploy/examples/firesim-smoke.sh "
+               f"can't close: remove the bundled glibc after infrasetup (deploy/adapters/firesim/firesim-smoke.sh "
                f"--use-pc-glibc), or bring the PC to the workstation's OS release")
     else:
         fix = "upgrade libc6 on the PC to match, or remove the bundled glibc after infrasetup (--use-pc-glibc)"

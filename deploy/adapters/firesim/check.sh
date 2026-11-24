@@ -2,7 +2,7 @@
 # Read-only check that an FPGA PC is ready for users' own FireSim. Changes nothing.
 # Run on the workstation as root (it logs in as kotl):
 #
-#   sudo deploy/firesim/check.sh [vcu118-pc1]
+#   sudo deploy/adapters/firesim/check.sh [vcu118-pc1]
 #
 # Checks: kotl can log in; the Xilinx card shows on PCI; the XDMA driver is loaded;
 # the PC's FireSim account (pc_account in /etc/kotl/kotl.conf) exists.

@@ -373,15 +373,15 @@
    ]
   },
   {
-   "id": "firesim",
-   "owner": "outside",
+   "id": "job",
+   "owner": "user",
    "x": 1090,
    "y": 650,
    "w": 160,
    "h": 70,
-   "title": "Your FireSim",
+   "title": "Your job",
    "sub": [
-    "inside kotl run"
+    "any tool · inside kotl run"
    ]
   },
   {
@@ -717,8 +717,8 @@
    }
   },
   {
-   "id": "e-firesim-bus",
-   "from": "firesim",
+   "id": "e-job-bus",
+   "from": "job",
    "to": "key",
    "d": "M1250,685 H1280",
    "style": "solid"
@@ -886,7 +886,7 @@
    "steps": [
     {
      "name": "Welcome",
-     "text": "New to Kotl? This tab takes you from account to first FireSim run. Use ◀ ▶ to step through.",
+     "text": "New to Kotl? This guide takes you from your account to your first job. Use ‹ › to step through.",
      "nodes": [
       "local",
       "remote",
@@ -990,17 +990,18 @@
      "detail": "nu-results"
     },
     {
-     "name": "FireSim",
-     "text": "Your own FireSim inside <code>kotl run</code>; the board is freed when runworkload returns.",
+     "name": "Your tools",
+     "text": "Run any tool inside <code>kotl run</code>. FireSim gets extra care from the FireSim adapter (driver checks, cleanup, the console).",
      "nodes": [
       "cli",
       "launcher",
-      "firesim",
+      "job",
+      "fsmod",
       "key",
       "pc1"
      ],
      "edges": [
-      "e-firesim-bus",
+      "e-job-bus",
       "e-bus-pc1"
      ],
      "detail": "nu-firesim"
@@ -1020,11 +1021,11 @@
    "first": true
   },
   "batch": {
-   "tab": "FireSim run",
+   "tab": "A batch job",
    "steps": [
     {
      "name": "Submit",
-     "text": "Claude runs <code>kotl run --eta 1h -- firesim runworkload …</code> over SSH. Kotl refuses a job without an exit plan (an ETA; --max defaults to 2× ETA).",
+     "text": "You (or Claude) run <code>kotl run --eta 1h -- ./my-test.sh</code>. Kotl refuses a job without an exit plan: an ETA, and a command that ends by itself.",
      "nodes": [
       "remote",
       "plugin-r",
@@ -1077,15 +1078,15 @@
     },
     {
      "name": "Run",
-     "text": "Your command runs as you: your own FireSim, from your Chipyard. It reflashes the board and boots Linux, reaching the PC with the job key through the job's ssh-agent.",
+     "text": "Your command runs as you, with an ssh-agent holding only the job key: any tool, unchanged (a test script, a bitstream load, a FireSim run). It reaches the board's PC through the key bus.",
      "nodes": [
       "launcher",
-      "firesim",
+      "job",
       "key",
       "pc1"
      ],
      "edges": [
-      "e-firesim-bus",
+      "e-job-bus",
       "e-bus-pc1"
      ]
     },
@@ -1125,12 +1126,12 @@
      ]
     },
     {
-     "name": "Power off",
-     "text": "Normal end: the simulated Linux powers off, FireSim's runworkload returns, and the command exits. The launcher reads an optional KOTL RESULT line, removes the job key and frees the board. Slurm records succeeded or failed; its epilog repeats the end step as a backup.",
+     "name": "Done",
+     "text": "Normal end: your command exits. The launcher runs the end step (removes the job key, stops what the enabled adapters name), records the result and frees the board for the next job.",
      "nodes": [
       "pc1",
       "key",
-      "firesim",
+      "job",
       "launcher",
       "access",
       "registry",
@@ -1138,7 +1139,7 @@
      ],
      "edges": [
       "e-bus-pc1",
-      "e-firesim-bus",
+      "e-job-bus",
       "e-launch-access",
       "e-access-bus",
       "e-launch-registry",
@@ -1217,15 +1218,15 @@
     },
     {
      "name": "Work",
-     "text": "<code>ssh vcu118-pc1</code> uses your job key; <code>ssh-add /tmp/kotl-keys-$USER/vcu118-pc1</code> gives it to FireSim or any tool. Run what you like.",
+     "text": "<code>ssh vcu118-pc1</code> uses your job key; <code>ssh-add /tmp/kotl-keys-$USER/vcu118-pc1</code> gives it to your tools or any tool. Run what you like.",
      "nodes": [
       "local",
-      "firesim",
+      "job",
       "key",
       "pc1"
      ],
      "edges": [
-      "e-firesim-bus",
+      "e-job-bus",
       "e-bus-pc1"
      ]
     },
@@ -1419,13 +1420,13 @@
     },
     {
      "name": "Users",
-     "text": "Nothing system-wide for users; their Chipyard is only read.",
+     "text": "Nothing system-wide for users; their own tools are only used, never changed.",
      "nodes": [
       "remote",
       "local",
       "plugin-r",
       "plugin-l",
-      "firesim"
+      "job"
      ],
      "edges": [],
      "detail": "sys-users"
@@ -1965,6 +1966,8 @@
     "<b>End step:</b> names what to stop on the PC: screen sessions <code>fsim*</code> and processes <code>FireSim-*</code>. <code>kotl-keys</code> on the PC stops them without knowing they're FireSim's.",
     "<b>Lease idle guard:</b> <code>FireSim-*</code> processes count as work.",
     "<b>Console:</b> <code>kotl attach</code> opens screen session <code>fsim0</code>.",
+    "<b>User help:</b> <code>deploy/adapters/firesim/firesim-smoke.sh</code> runs <code>infrasetup</code> + <code>runworkload</code> inside <code>kotl run</code>, removes the bundled glibc when the PC's is older (<code>--use-pc-glibc</code>), and prints an honest <code>KOTL RESULT</code> from the uartlog. <code>check.sh</code> confirms a PC works with a user's own FireSim (M1).",
+    "<b>Running FireSim:</b> from your own Chipyard, environment active, inside <code>kotl run</code>; the workload must power off by itself. Kotl changes nothing in FireSim or its configs.",
     "<b>Later, admin only:</b> flash a known-good bitstream, recover a board after a crashed job, a short known-good simulation as a deep check."
    ],
    "term": [
@@ -1990,7 +1993,9 @@
     "fsadapter",
     "xdmareload",
     "pcdriversudo",
-    "fspcsetup"
+    "fspcsetup",
+    "workloadjson",
+    "runtestsh"
    ]
   },
   "program": {
@@ -2183,21 +2188,6 @@
     "notiftimer"
    ]
   },
-  "firesim": {
-   "kind": "Off the shelf",
-   "title": "FireSim",
-   "what": "Each user's own FireSim, in their own Chipyard, unchanged. Kotl doesn't install, wrap or change it: you run it inside a lease.",
-   "bullets": [
-    "Run it with <code>kotl run --eta T -- …firesim…</code>: the board is held while it runs and freed the moment it exits.",
-    "Inside the job, FireSim reaches the PC through the ssh-agent job.sh starts (only the job key). Point your run farm at <code>virtex-host@192.168.1.2</code>, as your configs already do.",
-    "How the end is known: the simulated Linux powers off, FireSim's driver exits, runworkload sees the simulations finished and returns; Kotl sees the command exit.",
-    "A workload that never powers off keeps runworkload waiting; then <code>--max</code> ends the job."
-   ],
-   "files": [
-    "workloadjson",
-    "runtestsh"
-   ]
-  },
   "pc1": {
    "kind": "Hardware",
    "title": "VCU118 PC 1",
@@ -2378,7 +2368,7 @@
     "<code>/etc/kotl/kotl.conf</code>: Kotl settings: lockdown mode, admin, PC account, idle time <i>(new · M1)</i>",
     "<code>/etc/systemd/system/kotl-notifier.{service,timer}</code>: runs the notifier every minute, as kotl <i>(new · M4)</i>",
     "<code>/etc/systemd/system/kotl-daemon.service</code> and <code>/run/kotl/status.json</code>: the Kotl daemon, always on, and its status file, readable by everyone <i>(new · M5)</i>",
-    "<code>/opt/kotl/</code>: Kotl's code. M1: no-op <code>epilog.sh</code>, <code>health.sh</code>. M2: <code>lib/kotl/</code> (the package, root-owned), <code>launch</code>, <code>job.sh</code>, real <code>epilog.sh</code>, <code>bin/kotl</code>. M3: <code>bin/firesim</code>, adapters <i>(new · M1–M3)</i>",
+    "<code>/opt/kotl/</code>: Kotl's code. M1: no-op <code>epilog.sh</code>, <code>health.sh</code>. M2: <code>lib/kotl/</code> (the package, root-owned), <code>launch</code>, <code>job.sh</code>, real <code>epilog.sh</code>, <code>bin/kotl</code>. M3–M5: adapters (<code>lib/kotl/adapters/</code>) <i>(new · M1–M3)</i>",
     "<code>/usr/local/bin/kotl</code>: link to <code>/opt/kotl/bin/kotl</code>, so everyone has the command <i>(new · M2, deploy/kotl/install.sh)</i>",
     "<code>/opt/kotl/plugin/</code>, <code>/opt/kotl/plugin-band/</code> + <code>/opt/kotl/.claude-plugin/marketplace.json</code>: the Claude Code plugins, readable by everyone <i>(new · M5)</i>",
     "<code>/opt/kotl/kotl-status.vsix</code>: the VS Code extension, for anyone to install <i>(new · M5)</i>",
@@ -2549,7 +2539,7 @@
     "<b>2 · Setup:</b> one command puts Kotl into your Claude Code and VS Code (on the workstation, or on your own PC).",
     "<b>3 · First job:</b> <code>kotl run --eta 5m -- hostname</code>.",
     "<b>4 · Watch:</b> the Kotl band in Claude Code, the Kotl panel in VS Code, or <code>kotl top</code>.",
-    "<b>5 · Results</b>, then <b>FireSim</b> and the <b>house rules</b>.",
+    "<b>5 · Results</b>, then <b>your tools</b> (FireSim via its adapter) and the <b>house rules</b>.",
     "Use ◀ ▶ above to step through. Each step shows its commands here."
    ]
   },
@@ -2732,12 +2722,12 @@
   "nu-firesim": {
    "kind": "New user",
    "kindClass": "ko",
-   "title": "6 · FireSim through Kotl",
-   "what": "Run your own FireSim, from your own Chipyard, inside kotl run.",
+   "title": "6 · Your tools (FireSim)",
+   "what": "Any tool runs inside <code>kotl run</code> unchanged. FireSim, the lab's main one, has an adapter; here is how to run it.",
    "bullets": [
     "In a shell with your Chipyard environment active (<code>source env.sh</code>, <code>sourceme-manager.sh --skip-ssh-setup</code>), and <b>not</b> Kotl's test venv (<code>deactivate</code> first).",
     "The workload must power off by itself (FireMarshal <code>run</code>/<code>command</code>, or <code>poweroff</code>); otherwise <code>--max</code> ends the job.",
-    "This PC's glibc is older than the workstation's: remove FireSim's bundled glibc after infrasetup, e.g. with <code>deploy/examples/firesim-smoke.sh --use-pc-glibc</code>.",
+    "This PC's glibc is older than the workstation's: remove FireSim's bundled glibc after infrasetup, e.g. with <code>deploy/adapters/firesim/firesim-smoke.sh --use-pc-glibc</code>.",
     "Print <code>KOTL RESULT: PASS</code> or <code>FAIL</code> from the uartlog for an honest result."
    ],
    "term": [
@@ -2745,7 +2735,7 @@
      "host": "you@ws · in your Chipyard's sims/firesim/deploy",
      "lines": [
       {
-       "c": "kotl run --eta 30m -- ~/working_dir/kotl/deploy/examples/firesim-smoke.sh --use-pc-glibc config_runtime.yaml"
+       "c": "kotl run --eta 30m -- ~/working_dir/kotl/deploy/adapters/firesim/firesim-smoke.sh --use-pc-glibc config_runtime.yaml"
       }
      ]
     }
@@ -2765,6 +2755,35 @@
     "Give an honest ETA; it's what everyone's start estimates are built on.",
     "Release a lease the moment you're done (<code>kotl release</code>); idle leases are ended after 30 minutes anyway.",
     "Problems with a board: <code>kotl board list</code> shows its health; tell the admin."
+   ]
+  },
+  "job": {
+   "kind": "Yours",
+   "title": "Your job",
+   "what": "Whatever you run on a board: a test script, a bitstream load, a simulation, by hand during a lease. Kotl doesn't install, wrap or change your tools: it holds a board while your command runs, and frees it when it exits.",
+   "bullets": [
+    "<b>Batch:</b> <code>kotl run --eta T -- COMMAND</code>. The board is held while the command runs and freed the moment it exits.",
+    "<b>By hand:</b> <code>kotl lease --eta T</code>, then <code>ssh vcu118-pc1</code>; <code>kotl release</code> when done.",
+    "<b>Reaching the board's PC:</b> inside the job your command has an ssh-agent holding only the job key, plus <code>KOTL_JOB</code>, <code>KOTL_BOARD</code> and <code>KOTL_PC</code>. Tools that use ssh (FireSim's run farm, rsync, your scripts) work unchanged.",
+    "<b>Result:</b> exit code 0 is <i>succeeded</i>; a line <code>KOTL RESULT: PASS</code> or <code>FAIL</code> in the output sets <i>passed</i>/<i>failed</i> when the exit code can't tell.",
+    "<b>The exit plan:</b> the command must end by itself (or the lease be released); <code>--max</code> (default 2× ETA) stops a hung one.",
+    "Tool-specific care (driver checks, cleanup, the console) comes from that tool's <b>adapter</b>. FireSim's is the first."
+   ],
+   "term": [
+    {
+     "host": "you@ws",
+     "lines": [
+      {
+       "c": "kotl run --eta 20m -- ./my-test.sh"
+      },
+      {
+       "c": "kotl run --eta 30m --max 2h -- sh -c 'make program && ./run-bench'"
+      }
+     ]
+    }
+   ],
+   "files": [
+    "statusjson"
    ]
   }
  },
@@ -2893,7 +2912,7 @@
    "path": "plugin/skills/kotl/ (installed as /opt/kotl/plugin)",
    "ext": "md",
    "desc": "Teaches Claude kotl run / lease with an ETA and an exit plan, FireSim through Kotl, and the fetch-then-read-status workflow",
-   "body": "---\nname: kotl\ndescription: Use the lab's FPGA boards (VCU118) through Kotl, the lab's board queue. Use whenever a task runs anything on an FPGA board or its PC (FireSim infrasetup/runworkload, a bitstream, a driver test, ssh to an FPGA PC), or when the person asks about the board queue, their Kotl jobs, results, logs or notices.\n---\n\n# Kotl: the lab's FPGA board queue\n\nThe FPGA boards are shared. Kotl queues every use of a board through Slurm, gives the job SSH\naccess to the board's PC only while it runs, and frees the board the moment the job ends.\n**Never use a board outside Kotl** (no plain `firesim infrasetup`/`runworkload`, no direct ssh to\nan FPGA PC without a lease): it can break someone else's run.\n\n## Where to run `kotl`\n\n- On the workstation (`command -v kotl` finds it): run `kotl ...` directly.\n- On a user's own PC: run it over ssh, `ssh \"$KOTL_SSH\" 'cd <folder> && kotl ...'`.\n  `KOTL_SSH` is the workstation's ssh name (set in `~/.claude/settings.json` under `env`). If it\n  is unset, ask the person for it. Files and folders must exist on the workstation.\n\n## Every job needs an ETA and an exit plan\n\n- `--eta` is required: your honest estimate. It only orders the queue; it never kills the job.\n- `--max` (default 2x ETA) stops a hung job. Set it when a run might legitimately take longer.\n- The job must end by itself: a command that exits, or a lease that is released.\n\n## Run a command on a board: `kotl run` (preferred)\n\nThe board is held while the command runs and freed the moment it exits.\n\n```sh\nkotl run --eta 30m -- <command>\n```\n\n- Inside the job, the command has `KOTL_JOB`, `KOTL_BOARD`, `KOTL_PC` (user@address of the board's\n  PC) and an ssh-agent holding only the job key: `ssh \"$KOTL_PC\" ...` works, FireSim's own ssh too.\n- Exit code 0 = `succeeded`. A line `KOTL RESULT: PASS` or `KOTL RESULT: FAIL` in the output sets\n  `passed`/`failed` instead. Print one when the exit code alone can't tell (see FireSim below).\n- `kotl run` waits and streams the output. For a long run, add `--no-wait` (it prints the job\n  number), then follow with `kotl logs JOB -f` or check `kotl status`. Run long waits in the\n  background rather than blocking the conversation.\n\n### FireSim\n\nRun FireSim from the person's own Chipyard, with their environment active (`source env.sh` and\n`sourceme-manager.sh --skip-ssh-setup` in the same shell), from `sims/firesim/deploy`:\n\n```sh\nkotl run --eta 30m -- sh -c \"firesim infrasetup -c CFG && firesim runworkload -c CFG\"\n```\n\n- The workload must power off by itself (FireMarshal `run`/`command`, or a script ending in\n  `poweroff`); otherwise `runworkload` waits until `--max` stops the job.\n- `runworkload` reports \"completed\" even when the driver failed to start: check the uartlog in\n  `results-workload/<newest>/*/uartlog` and print `KOTL RESULT: PASS` only if it shows the real\n  end (e.g. `reboot: Power down`). The lab's `deploy/examples/firesim-smoke.sh` does this.\n- If `kotl board list` warns that glibc differs between the workstation and the PC, FireSim's\n  bundled glibc must be removed on the PC after infrasetup: use\n  `deploy/examples/firesim-smoke.sh --use-pc-glibc CFG`, or\n  `ssh \"$KOTL_PC\" \"cd <sim dir>/sim_slot_0 && rm -f libc.so.6 libm.so.6 libpthread.so.0 libdl.so.2 librt.so.1\"`\n  between the two commands.\n\n## Work by hand: `kotl lease`\n\n```sh\nkotl lease --eta 1h        # waits for a board, then prints how to reach it\nssh <board>                # e.g. ssh vcu118-pc1: uses the lease's job key\nkotl attach                # FireSim's console (Ctrl-a d detaches)\nkotl release               # ALWAYS release when done\n```\n\nA lease ends on `kotl release`, after 30 minutes with nothing of yours running on the PC, or at\n`--max`. If you start a lease for the person, release it when the work is done.\n\n## Check, follow, fetch\n\n| Need | Command |\n| --- | --- |\n| queue, boards, unread notices | `kotl status` (live view for a person: `kotl top`) |\n| your past jobs and results | `kotl history` |\n| output of a job | `kotl logs JOB` (`-f` follows a running one) |\n| everything a job left | `kotl fetch JOB` -> `kotl-results/JOB/` with `status.json`, `output.log`, `launcher.log`, `outputs/` |\n| cancel your job | `kotl cancel JOB` |\n| notices (ETA passed, start slipped, board down/up) | `kotl notices` (marks them read) |\n\nAfter a job ends: fetch it, read `status.json` first (`result`, `rc`, `reason`), then\n`output.log`, then `launcher.log` (what Kotl did: key added/removed, guards, end). Report the\nresult, how long it took against the ETA, and anything odd.\n\n## Results\n\n`passed` / `failed` (KOTL RESULT line), `succeeded` / `failed` (exit code), `over_max` (the --max\nguard stopped it), `idle` (a lease with nothing running), `released`, `cancelled`, `killed`\n(ended by Slurm's backup), `no_access` (the board's PC couldn't be reached).\n\n## Don'ts\n\n- Don't run FireSim or touch an FPGA PC outside a Kotl job or lease.\n- Don't cancel other people's jobs (Kotl won't let you anyway).\n- Don't leave a lease running: release it.\n- Don't guess an ETA of hours for a minutes-long run: ETAs order the queue for everyone."
+   "body": "---\nname: kotl\ndescription: Use the lab's FPGA boards (VCU118) through Kotl, the lab's board queue. Use whenever a task runs anything on an FPGA board or its PC (FireSim infrasetup/runworkload, a bitstream, a driver test, ssh to an FPGA PC), or when the person asks about the board queue, their Kotl jobs, results, logs or notices.\n---\n\n# Kotl: the lab's FPGA board queue\n\nThe FPGA boards are shared. Kotl queues every use of a board through Slurm, gives the job SSH\naccess to the board's PC only while it runs, and frees the board the moment the job ends.\n**Never use a board outside Kotl** (no plain `firesim infrasetup`/`runworkload`, no direct ssh to\nan FPGA PC without a lease): it can break someone else's run.\n\n## Where to run `kotl`\n\n- On the workstation (`command -v kotl` finds it): run `kotl ...` directly.\n- On a user's own PC: run it over ssh, `ssh \"$KOTL_SSH\" 'cd <folder> && kotl ...'`.\n  `KOTL_SSH` is the workstation's ssh name (set in `~/.claude/settings.json` under `env`). If it\n  is unset, ask the person for it. Files and folders must exist on the workstation.\n\n## Every job needs an ETA and an exit plan\n\n- `--eta` is required: your honest estimate. It only orders the queue; it never kills the job.\n- `--max` (default 2x ETA) stops a hung job. Set it when a run might legitimately take longer.\n- The job must end by itself: a command that exits, or a lease that is released.\n\n## Run a command on a board: `kotl run` (preferred)\n\nThe board is held while the command runs and freed the moment it exits.\n\n```sh\nkotl run --eta 30m -- <command>\n```\n\n- Inside the job, the command has `KOTL_JOB`, `KOTL_BOARD`, `KOTL_PC` (user@address of the board's\n  PC) and an ssh-agent holding only the job key: `ssh \"$KOTL_PC\" ...` works, FireSim's own ssh too.\n- Exit code 0 = `succeeded`. A line `KOTL RESULT: PASS` or `KOTL RESULT: FAIL` in the output sets\n  `passed`/`failed` instead. Print one when the exit code alone can't tell (see FireSim below).\n- `kotl run` waits and streams the output. For a long run, add `--no-wait` (it prints the job\n  number), then follow with `kotl logs JOB -f` or check `kotl status`. Run long waits in the\n  background rather than blocking the conversation.\n\n### FireSim\n\nRun FireSim from the person's own Chipyard, with their environment active (`source env.sh` and\n`sourceme-manager.sh --skip-ssh-setup` in the same shell), from `sims/firesim/deploy`:\n\n```sh\nkotl run --eta 30m -- sh -c \"firesim infrasetup -c CFG && firesim runworkload -c CFG\"\n```\n\n- The workload must power off by itself (FireMarshal `run`/`command`, or a script ending in\n  `poweroff`); otherwise `runworkload` waits until `--max` stops the job.\n- `runworkload` reports \"completed\" even when the driver failed to start: check the uartlog in\n  `results-workload/<newest>/*/uartlog` and print `KOTL RESULT: PASS` only if it shows the real\n  end (e.g. `reboot: Power down`). The lab's `deploy/adapters/firesim/firesim-smoke.sh` does this.\n- If `kotl board list` warns that glibc differs between the workstation and the PC, FireSim's\n  bundled glibc must be removed on the PC after infrasetup: use\n  `deploy/adapters/firesim/firesim-smoke.sh --use-pc-glibc CFG`, or\n  `ssh \"$KOTL_PC\" \"cd <sim dir>/sim_slot_0 && rm -f libc.so.6 libm.so.6 libpthread.so.0 libdl.so.2 librt.so.1\"`\n  between the two commands.\n\n## Work by hand: `kotl lease`\n\n```sh\nkotl lease --eta 1h        # waits for a board, then prints how to reach it\nssh <board>                # e.g. ssh vcu118-pc1: uses the lease's job key\nkotl attach                # FireSim's console (Ctrl-a d detaches)\nkotl release               # ALWAYS release when done\n```\n\nA lease ends on `kotl release`, after 30 minutes with nothing of yours running on the PC, or at\n`--max`. If you start a lease for the person, release it when the work is done.\n\n## Check, follow, fetch\n\n| Need | Command |\n| --- | --- |\n| queue, boards, unread notices | `kotl status` (live view for a person: `kotl top`) |\n| your past jobs and results | `kotl history` |\n| output of a job | `kotl logs JOB` (`-f` follows a running one) |\n| everything a job left | `kotl fetch JOB` -> `kotl-results/JOB/` with `status.json`, `output.log`, `launcher.log`, `outputs/` |\n| cancel your job | `kotl cancel JOB` |\n| notices (ETA passed, start slipped, board down/up) | `kotl notices` (marks them read) |\n\nAfter a job ends: fetch it, read `status.json` first (`result`, `rc`, `reason`), then\n`output.log`, then `launcher.log` (what Kotl did: key added/removed, guards, end). Report the\nresult, how long it took against the ETA, and anything odd.\n\n## Results\n\n`passed` / `failed` (KOTL RESULT line), `succeeded` / `failed` (exit code), `over_max` (the --max\nguard stopped it), `idle` (a lease with nothing running), `released`, `cancelled`, `killed`\n(ended by Slurm's backup), `no_access` (the board's PC couldn't be reached).\n\n## Don'ts\n\n- Don't run FireSim or touch an FPGA PC outside a Kotl job or lease.\n- Don't cancel other people's jobs (Kotl won't let you anyway).\n- Don't leave a lease running: release it.\n- Don't guess an ETA of hours for a minutes-long run: ETAs order the queue for everyone."
   },
   "epilog": {
    "name": "epilog.sh",
@@ -3005,7 +3024,7 @@
    "path": "kotl/adapters/firesim/",
    "ext": "py",
    "desc": "The FireSim adapter: its checks, repair, cleanup names and console",
-   "body": "\"\"\"FireSim adapter: what Kotl needs to know so users can run their own FireSim on a board.\n\nUsers run FireSim unchanged inside `kotl run` / `kotl lease`; this adapter only adds:\n\n  checks    XDMA driver loaded (failure); glibc on the PC vs the workstation (warning: drivers\n            built here won't start on an older glibc)\n  repair    one XDMA reload on an IDLE board (kotl-xdma-reload on the PC, loading it exactly as\n            FireSim's infrasetup does, poll_mode=1). Never while a job holds the board: FireSim\n            unloads and reloads XDMA itself during infrasetup.\n  end step  quit FireSim's screen sessions (fsim*) and stop its drivers (FireSim-*)\n  idle      FireSim-* processes count as work for the lease idle guard\n  console   `kotl attach` opens screen session fsim0\n\nIts PC part is deploy/adapters/firesim/ (kotl-xdma-reload and its install). Later, admin only:\nflash a known-good bitstream, recover a board.\n\"\"\"\nimport re\nimport subprocess\n\nfrom kotl import ssh as ssh_mod\nfrom kotl.adapters import Adapter\n\nRELOAD = \"/usr/local/bin/kotl-xdma-reload\"\n\n\ndef glibc_line(text):\n    \"\"\"First line of `ldd --version`, e.g. 'ldd (Ubuntu GLIBC 2.39-0ubuntu8.12) 2.39'.\"\"\"\n    return (text or \"\").strip().splitlines()[0].strip() if (text or \"\").strip() else \"\"\n\n\ndef glibc_version(line):\n    \"\"\"The distro's full glibc version from that line ('2.39-0ubuntu8.12'), or the plain version.\"\"\"\n    m = re.search(r\"GLIBC ([^)\\s]+)\\)\", line)       # Ubuntu/Debian: the full package version\n    if m:\n        return m.group(1)\n    return line.split()[-1] if line else \"\"\n\n\ndef local_glibc():\n    r = subprocess.run([\"ldd\", \"--version\"], capture_output=True, text=True)\n    return glibc_version(glibc_line(r.stdout))\n\n\ndef glibc_warning(here, there):\n    if not there or there == here:\n        return None\n    base_here, base_there = here.split(\"-\")[0], there.split(\"-\")[0]\n    if base_here != base_there:\n        fix = (f\"the PC has an older glibc release ({base_there} vs {base_here}), which a package update \"\n               f\"can't close: remove the bundled glibc after infrasetup (deploy/examples/firesim-smoke.sh \"\n               f\"--use-pc-glibc), or bring the PC to the workstation's OS release\")\n    else:\n        fix = \"upgrade libc6 on the PC to match, or remove the bundled glibc after infrasetup (--use-pc-glibc)\"\n    return (f\"glibc differs: workstation {here}, PC {there}. FireSim drivers built on the \"\n            f\"workstation won't start on this PC as they are: {fix}\")\n\n\nclass FireSim(Adapter):\n    name = \"firesim\"\n    probe = ('echo \"xdma=$(lsmod 2>/dev/null | grep -o \"^xdma \")\"; '\n             'echo \"glibc=$(ldd --version 2>/dev/null | head -n 1)\"')\n    stop_screens = (\"fsim\",)\n    stop_procs = (\"FireSim-\",)\n    work_procs = (\"FireSim-\",)\n    console = \"fsim0\"\n    XDMA = \"XDMA driver not loaded (lsmod)\"\n\n    def __init__(self, here=None):\n        self._here = here\n\n    @property\n    def here(self):\n        if self._here is None:\n            self._here = local_glibc()\n        return self._here\n\n    def failures(self, p):\n        return [] if p.get(\"xdma\") else [self.XDMA]\n\n    def warnings(self, p):\n        w = glibc_warning(self.here, glibc_version(p.get(\"glibc\", \"\")))\n        return [w] if w else []\n\n    def repair(self, board, ssh, failures):\n        if self.XDMA not in failures:\n            return None\n        try:\n            ssh.run(board[\"host\"], [\"sudo\", \"-n\", RELOAD], timeout=120)\n            return \"tried one XDMA driver reload\"\n        except ssh_mod.SSHError as e:\n            return f\"XDMA driver reload failed: {e}\""
+   "body": "\"\"\"FireSim adapter: what Kotl needs to know so users can run their own FireSim on a board.\n\nUsers run FireSim unchanged inside `kotl run` / `kotl lease`; this adapter only adds:\n\n  checks    XDMA driver loaded (failure); glibc on the PC vs the workstation (warning: drivers\n            built here won't start on an older glibc)\n  repair    one XDMA reload on an IDLE board (kotl-xdma-reload on the PC, loading it exactly as\n            FireSim's infrasetup does, poll_mode=1). Never while a job holds the board: FireSim\n            unloads and reloads XDMA itself during infrasetup.\n  end step  quit FireSim's screen sessions (fsim*) and stop its drivers (FireSim-*)\n  idle      FireSim-* processes count as work for the lease idle guard\n  console   `kotl attach` opens screen session fsim0\n\nIts PC part is deploy/adapters/firesim/ (kotl-xdma-reload and its install). Later, admin only:\nflash a known-good bitstream, recover a board.\n\"\"\"\nimport re\nimport subprocess\n\nfrom kotl import ssh as ssh_mod\nfrom kotl.adapters import Adapter\n\nRELOAD = \"/usr/local/bin/kotl-xdma-reload\"\n\n\ndef glibc_line(text):\n    \"\"\"First line of `ldd --version`, e.g. 'ldd (Ubuntu GLIBC 2.39-0ubuntu8.12) 2.39'.\"\"\"\n    return (text or \"\").strip().splitlines()[0].strip() if (text or \"\").strip() else \"\"\n\n\ndef glibc_version(line):\n    \"\"\"The distro's full glibc version from that line ('2.39-0ubuntu8.12'), or the plain version.\"\"\"\n    m = re.search(r\"GLIBC ([^)\\s]+)\\)\", line)       # Ubuntu/Debian: the full package version\n    if m:\n        return m.group(1)\n    return line.split()[-1] if line else \"\"\n\n\ndef local_glibc():\n    r = subprocess.run([\"ldd\", \"--version\"], capture_output=True, text=True)\n    return glibc_version(glibc_line(r.stdout))\n\n\ndef glibc_warning(here, there):\n    if not there or there == here:\n        return None\n    base_here, base_there = here.split(\"-\")[0], there.split(\"-\")[0]\n    if base_here != base_there:\n        fix = (f\"the PC has an older glibc release ({base_there} vs {base_here}), which a package update \"\n               f\"can't close: remove the bundled glibc after infrasetup (deploy/adapters/firesim/firesim-smoke.sh \"\n               f\"--use-pc-glibc), or bring the PC to the workstation's OS release\")\n    else:\n        fix = \"upgrade libc6 on the PC to match, or remove the bundled glibc after infrasetup (--use-pc-glibc)\"\n    return (f\"glibc differs: workstation {here}, PC {there}. FireSim drivers built on the \"\n            f\"workstation won't start on this PC as they are: {fix}\")\n\n\nclass FireSim(Adapter):\n    name = \"firesim\"\n    probe = ('echo \"xdma=$(lsmod 2>/dev/null | grep -o \"^xdma \")\"; '\n             'echo \"glibc=$(ldd --version 2>/dev/null | head -n 1)\"')\n    stop_screens = (\"fsim\",)\n    stop_procs = (\"FireSim-\",)\n    work_procs = (\"FireSim-\",)\n    console = \"fsim0\"\n    XDMA = \"XDMA driver not loaded (lsmod)\"\n\n    def __init__(self, here=None):\n        self._here = here\n\n    @property\n    def here(self):\n        if self._here is None:\n            self._here = local_glibc()\n        return self._here\n\n    def failures(self, p):\n        return [] if p.get(\"xdma\") else [self.XDMA]\n\n    def warnings(self, p):\n        w = glibc_warning(self.here, glibc_version(p.get(\"glibc\", \"\")))\n        return [w] if w else []\n\n    def repair(self, board, ssh, failures):\n        if self.XDMA not in failures:\n            return None\n        try:\n            ssh.run(board[\"host\"], [\"sudo\", \"-n\", RELOAD], timeout=120)\n            return \"tried one XDMA driver reload\"\n        except ssh_mod.SSHError as e:\n            return f\"XDMA driver reload failed: {e}\""
   },
   "fspcsetup": {
    "name": "pc-setup.sh",
@@ -3019,11 +3038,12 @@
   {
    "id": "users",
    "title": "People",
-   "what": "Who uses Kotl: lab members on the workstation or on their own PC, and the admin. The Kotl plugin in their Claude Code is listed under Kotl › Ways in.",
+   "what": "Who uses Kotl and what they run: lab members on the workstation or their own PC, the admin, and their jobs (any tool). The Kotl plugin in their Claude Code is listed under Kotl › Ways in.",
    "items": [
     "local",
     "remote",
-    "admin"
+    "admin",
+    "job"
    ]
   },
   {
@@ -3123,10 +3143,9 @@
   {
    "id": "outside",
    "title": "Off the shelf",
-   "what": "Other parts Kotl relies on but doesn't own: the workstation's OS and each user's own FireSim.",
+   "what": "Other parts Kotl relies on but doesn't own: the workstation's OS (sudo, OpenSSH, systemd).",
    "items": [
-    "os",
-    "firesim"
+    "os"
    ]
   },
   {

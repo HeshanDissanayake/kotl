@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "updated": "2026-11-24T08:41:14Z",
-  "repo_commit": "a1ff57c58d59d899057ce6689e5d1db32db69134",
+  "updated": "2026-11-24T09:20:07Z",
+  "repo_commit": "0f0041991ff366b523947058112da1dba8e46219",
   "watch": [
     "deploy/",
     "kotl/",
@@ -50,14 +50,14 @@
         "unit": {
           "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-24T08:41:13Z"
+          "ran_at": "2026-11-24T09:19:54Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "48fea272733b4dd67e0b073279dbd29ea6c40e0b",
-        "message": "next.sh logs everything to .kotl/next.log; a local hook shows Claude what's new",
-        "date": "2026-11-23T20:05:43+11:00"
+        "hash": "5d0572dbcc89bca0d40ce77ed66a89eb56283dd2",
+        "message": "View redesign: Sidebar, Canvas, Inspector; groups that collapse",
+        "date": "2026-11-24T19:57:09+11:00"
       },
       "issues": [],
       "log": [
@@ -96,7 +96,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-24T08:41:13Z"
+          "ran_at": "2026-11-24T09:19:54Z"
         },
         "hardware": null
       },
@@ -134,7 +134,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-24T08:41:13Z"
+          "ran_at": "2026-11-24T09:19:54Z"
         },
         "hardware": null
       },
@@ -179,7 +179,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-24T08:41:13Z"
+          "ran_at": "2026-11-24T09:19:54Z"
         },
         "hardware": null
       },
@@ -212,7 +212,7 @@
         "unit": {
           "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-24T08:41:13Z"
+          "ran_at": "2026-11-24T09:19:54Z"
         },
         "hardware": null
       },
@@ -254,7 +254,7 @@
         "unit": {
           "passed": 14,
           "failed": 0,
-          "ran_at": "2026-11-24T08:41:13Z"
+          "ran_at": "2026-11-24T09:19:54Z"
         },
         "hardware": null
       },
@@ -291,51 +291,6 @@
         }
       ]
     },
-    "firesim": {
-      "title": "Users' FireSim (check, no install)",
-      "status": "tested",
-      "milestone": "M1",
-      "now": "Installed on comparch and the PC; verify-m1.sh passed.",
-      "code": [
-        "deploy/firesim/"
-      ],
-      "tests": {
-        "unit": {
-          "passed": 2,
-          "failed": 0,
-          "ran_at": "2026-11-24T08:41:13Z"
-        },
-        "hardware": {
-          "passed": 2,
-          "failed": 0,
-          "ran_at": "2026-11-24T08:41:13Z"
-        }
-      },
-      "last_commit": {
-        "hash": "ce7c72864fa89b4304fd198c018493fdf73088f8",
-        "message": "M1: deploy scripts for the workstation and PC (not yet run)",
-        "date": "2026-11-22T01:39:10+11:00"
-      },
-      "issues": [],
-      "log": [
-        {
-          "date": "2026-11-22",
-          "text": "Design: each user's own FireSim in their own Chipyard, not one shared install."
-        },
-        {
-          "date": "2026-11-22",
-          "text": "No shared install: M1 now only checks that the PC side works with a user's FireSim 1.18.0."
-        },
-        {
-          "date": "2026-11-22",
-          "text": "deploy/firesim/check.sh: read-only check of kotl login, Xilinx card, XDMA, PC account."
-        },
-        {
-          "date": "2026-11-22",
-          "text": "Admin ran the M1 scripts; deploy/verify-m1.sh: all checks passed."
-        }
-      ]
-    },
     "key": {
       "title": "kotl SSH key",
       "status": "tested",
@@ -348,12 +303,12 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-24T08:41:13Z"
+          "ran_at": "2026-11-24T09:19:54Z"
         },
         "hardware": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-24T08:41:13Z"
+          "ran_at": "2026-11-24T09:19:54Z"
         }
       },
       "last_commit": {
@@ -393,18 +348,18 @@
         "unit": {
           "passed": 4,
           "failed": 0,
-          "ran_at": "2026-11-24T08:41:13Z"
+          "ran_at": "2026-11-24T09:19:54Z"
         },
         "hardware": {
-          "passed": 1,
+          "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-24T08:41:13Z"
+          "ran_at": "2026-11-24T09:19:54Z"
         }
       },
       "last_commit": {
-        "hash": "346c02b3953c9a4acd4d4242e73d9f14b4a88301",
-        "message": "Health: reload XDMA only on idle boards, the way FireSim loads it (poll_mode=1)",
-        "date": "2026-11-23T21:44:51+11:00"
+        "hash": "7c471bb71fc7b204a811d1f533ea7ab3bf32cb39",
+        "message": "FireSim out of the generic core, into the FireSim adapter",
+        "date": "2026-11-24T19:41:14+11:00"
       },
       "issues": [],
       "log": [
@@ -455,9 +410,9 @@
         "hardware": null
       },
       "last_commit": {
-        "hash": "346c02b3953c9a4acd4d4242e73d9f14b4a88301",
-        "message": "Health: reload XDMA only on idle boards, the way FireSim loads it (poll_mode=1)",
-        "date": "2026-11-23T21:44:51+11:00"
+        "hash": "7c471bb71fc7b204a811d1f533ea7ab3bf32cb39",
+        "message": "FireSim out of the generic core, into the FireSim adapter",
+        "date": "2026-11-24T19:41:14+11:00"
       },
       "issues": [],
       "log": [
@@ -479,7 +434,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-24T08:41:13Z"
+          "ran_at": "2026-11-24T09:19:54Z"
         },
         "hardware": null
       },
@@ -533,14 +488,14 @@
         "unit": {
           "passed": 37,
           "failed": 0,
-          "ran_at": "2026-11-24T08:41:13Z"
+          "ran_at": "2026-11-24T09:19:54Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "a1ff57c58d59d899057ce6689e5d1db32db69134",
-        "message": "kotl setup and the client bundle; a New user tab as the view's intro",
-        "date": "2026-11-24T19:28:43+11:00"
+        "hash": "7c471bb71fc7b204a811d1f533ea7ab3bf32cb39",
+        "message": "FireSim out of the generic core, into the FireSim adapter",
+        "date": "2026-11-24T19:41:14+11:00"
       },
       "issues": [],
       "log": [
@@ -607,14 +562,14 @@
         "unit": {
           "passed": 19,
           "failed": 0,
-          "ran_at": "2026-11-24T08:41:13Z"
+          "ran_at": "2026-11-24T09:19:54Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "a1ff57c58d59d899057ce6689e5d1db32db69134",
-        "message": "kotl setup and the client bundle; a New user tab as the view's intro",
-        "date": "2026-11-24T19:28:43+11:00"
+        "hash": "7c471bb71fc7b204a811d1f533ea7ab3bf32cb39",
+        "message": "FireSim out of the generic core, into the FireSim adapter",
+        "date": "2026-11-24T19:41:14+11:00"
       },
       "issues": [],
       "log": [
@@ -680,7 +635,7 @@
         "unit": {
           "passed": 4,
           "failed": 0,
-          "ran_at": "2026-11-24T08:41:13Z"
+          "ran_at": "2026-11-24T09:19:54Z"
         },
         "hardware": null
       },
@@ -707,21 +662,25 @@
       "milestone": "M5",
       "now": "FireSim's checks, repair, cleanup and console moved out of the core into this adapter; on in kotl.conf (adapters = firesim). Later: flash, recover (admin).",
       "code": [
-        "kotl/adapters/firesim/",
-        "deploy/adapters/firesim/"
+        "deploy/adapters/firesim/",
+        "kotl/adapters/firesim/"
       ],
       "tests": {
         "unit": {
-          "passed": 3,
+          "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-24T08:41:13Z"
+          "ran_at": "2026-11-24T09:19:54Z"
         },
-        "hardware": null
+        "hardware": {
+          "passed": 1,
+          "failed": 0,
+          "ran_at": "2026-11-24T09:19:54Z"
+        }
       },
       "last_commit": {
-        "hash": "d7d5eac7e8d0cbade72b95fd64d600323a26b90a",
-        "message": "Generic redesign: users run their own tools inside kotl run / kotl lease",
-        "date": "2026-11-22T03:09:03+11:00"
+        "hash": "7c471bb71fc7b204a811d1f533ea7ab3bf32cb39",
+        "message": "FireSim out of the generic core, into the FireSim adapter",
+        "date": "2026-11-24T19:41:14+11:00"
       },
       "issues": [],
       "log": [
@@ -756,6 +715,10 @@
         {
           "date": "2026-11-24",
           "text": "View: removed the arrow from the FireSim adapter to Your FireSim. The adapter never talks to a user's FireSim; it acts on the PC through the health check and the end step, which have their own arrows."
+        },
+        {
+          "date": "2026-11-24",
+          "text": "User decision: the FireSim adapter is the only FireSim-specific part. The M1 FireSim check (check.sh) and the smoke example (firesim-smoke.sh) moved into deploy/adapters/firesim/; the 'Your FireSim' box became a generic 'Your job' (any tool)."
         }
       ]
     },
@@ -773,14 +736,14 @@
         "unit": {
           "passed": 21,
           "failed": 0,
-          "ran_at": "2026-11-24T08:41:13Z"
+          "ran_at": "2026-11-24T09:19:54Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "346c02b3953c9a4acd4d4242e73d9f14b4a88301",
-        "message": "Health: reload XDMA only on idle boards, the way FireSim loads it (poll_mode=1)",
-        "date": "2026-11-23T21:44:51+11:00"
+        "hash": "7c471bb71fc7b204a811d1f533ea7ab3bf32cb39",
+        "message": "FireSim out of the generic core, into the FireSim adapter",
+        "date": "2026-11-24T19:41:14+11:00"
       },
       "issues": [
         "The PC's XDMA may still be loaded without poll_mode=1 from the earlier reloads: check and reload it once (deploy/next.sh)."
@@ -861,7 +824,7 @@
         "unit": {
           "passed": 6,
           "failed": 0,
-          "ran_at": "2026-11-24T08:41:13Z"
+          "ran_at": "2026-11-24T09:19:54Z"
         },
         "hardware": null
       },
@@ -898,14 +861,14 @@
         "unit": {
           "passed": 7,
           "failed": 0,
-          "ran_at": "2026-11-24T08:41:13Z"
+          "ran_at": "2026-11-24T09:19:54Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "7c3773b547e4d240bd2e4a525a02d56ba9a0ee65",
-        "message": "M4: health check takes broken boards down, notifier, kotl attach (not yet installed)",
-        "date": "2026-11-23T19:30:06+11:00"
+        "hash": "7c471bb71fc7b204a811d1f533ea7ab3bf32cb39",
+        "message": "FireSim out of the generic core, into the FireSim adapter",
+        "date": "2026-11-24T19:41:14+11:00"
       },
       "issues": [],
       "log": [
@@ -942,7 +905,7 @@
         "unit": {
           "passed": 18,
           "failed": 0,
-          "ran_at": "2026-11-24T08:41:13Z"
+          "ran_at": "2026-11-24T09:19:54Z"
         },
         "hardware": null
       },
@@ -1107,18 +1070,18 @@
         "unit": {
           "passed": 27,
           "failed": 0,
-          "ran_at": "2026-11-24T08:41:13Z"
+          "ran_at": "2026-11-24T09:19:54Z"
         },
         "hardware": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-24T08:41:13Z"
+          "ran_at": "2026-11-24T09:19:54Z"
         }
       },
       "last_commit": {
-        "hash": "42e81e40a7afb1a6fe0945141b8cabfef737be75",
-        "message": "kotl-keys busy: count remote work only, not the PC's desktop login",
-        "date": "2026-11-23T20:08:29+11:00"
+        "hash": "7c471bb71fc7b204a811d1f533ea7ab3bf32cb39",
+        "message": "FireSim out of the generic core, into the FireSim adapter",
+        "date": "2026-11-24T19:41:14+11:00"
       },
       "issues": [
         "The PC runs glibc 2.35 (Ubuntu 22.04), the workstation 2.39 (24.04): FireSim runs need --use-pc-glibc (or the same removal by hand). kotl board check reports it."
@@ -1166,7 +1129,7 @@
         },
         {
           "date": "2026-11-23",
-          "text": "Job 47: Kotl part correct (ended when runworkload returned, key removed), but the simulation itself failed: glibc mismatch workstation 8.12 vs PC. Smoke check tightened: deploy/examples/firesim-smoke.sh prints KOTL RESULT only on a real power-off."
+          "text": "Job 47: Kotl part correct (ended when runworkload returned, key removed), but the simulation itself failed: glibc mismatch workstation 8.12 vs PC. Smoke check tightened: deploy/adapters/firesim/firesim-smoke.sh prints KOTL RESULT only on a real power-off."
         },
         {
           "date": "2026-11-23",
@@ -1234,7 +1197,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-24T08:41:13Z"
+          "ran_at": "2026-11-24T09:19:54Z"
         },
         "hardware": null
       },
@@ -1280,7 +1243,7 @@
         "unit": {
           "passed": 7,
           "failed": 0,
-          "ran_at": "2026-11-24T08:41:13Z"
+          "ran_at": "2026-11-24T09:19:54Z"
         },
         "hardware": null
       },
@@ -1311,7 +1274,7 @@
         "unit": {
           "passed": 7,
           "failed": 0,
-          "ran_at": "2026-11-24T08:41:13Z"
+          "ran_at": "2026-11-24T09:19:54Z"
         },
         "hardware": null
       },

@@ -52,10 +52,10 @@ kotl run --eta 30m -- sh -c "firesim infrasetup -c CFG && firesim runworkload -c
   `poweroff`); otherwise `runworkload` waits until `--max` stops the job.
 - `runworkload` reports "completed" even when the driver failed to start: check the uartlog in
   `results-workload/<newest>/*/uartlog` and print `KOTL RESULT: PASS` only if it shows the real
-  end (e.g. `reboot: Power down`). The lab's `deploy/examples/firesim-smoke.sh` does this.
+  end (e.g. `reboot: Power down`). The lab's `deploy/adapters/firesim/firesim-smoke.sh` does this.
 - If `kotl board list` warns that glibc differs between the workstation and the PC, FireSim's
   bundled glibc must be removed on the PC after infrasetup: use
-  `deploy/examples/firesim-smoke.sh --use-pc-glibc CFG`, or
+  `deploy/adapters/firesim/firesim-smoke.sh --use-pc-glibc CFG`, or
   `ssh "$KOTL_PC" "cd <sim dir>/sim_slot_0 && rm -f libc.so.6 libm.so.6 libpthread.so.0 libdl.so.2 librt.so.1"`
   between the two commands.
 

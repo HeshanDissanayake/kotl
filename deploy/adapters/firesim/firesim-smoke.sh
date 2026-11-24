@@ -1,7 +1,7 @@
 #!/bin/sh
 # Example: a FireSim run with a verdict Kotl can read. Run it from your FireSim deploy/ folder:
 #
-#   kotl run --eta 30m -- ~/working_dir/kotl/deploy/examples/firesim-smoke.sh [--use-pc-glibc] config_runtime_kotl_smoke.yaml
+#   kotl run --eta 30m -- ~/working_dir/kotl/deploy/adapters/firesim/firesim-smoke.sh [--use-pc-glibc] config_runtime_kotl_smoke.yaml
 #
 # --use-pc-glibc: after infrasetup, delete the glibc libraries FireSim bundled from the
 #   workstation, so the driver uses the PC's own glibc (the fix when their versions differ).
