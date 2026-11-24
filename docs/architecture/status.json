@@ -72,6 +72,10 @@
         {
           "date": "2026-11-23",
           "text": "tools/next_log_hook.sh: a Claude Code UserPromptSubmit hook (local settings) shows Claude what's new in .kotl/next.log, which deploy/next.sh now writes."
+        },
+        {
+          "date": "2026-11-24",
+          "text": "View redesigned as a three-pane window (Sidebar · Canvas · Inspector): parts grouped in architecture.json groups, Slurm and Later collapse into one box with a count, labels show on selection, status and history behind disclosures, Overview/Progress/Guides. status.py check: every box in exactly one group."
         }
       ],
       "drawn": false

@@ -84,6 +84,30 @@ def check(staged_only):
         if n.get("owner") not in {"user", "kotl", "slurm", "outside", "hardware"}:
             problems.append(f"box '{n['id']}' has an unknown owner '{n.get('owner')}'")
 
+    # groups (the view's sidebar and collapsible boxes): every box in exactly one group
+    def leaf_items(gs):
+        for g in gs:
+            yield from g.get("items", [])
+            yield from leaf_items(g.get("children", []))
+    if "groups" in arch:
+        grouped = list(leaf_items(arch["groups"]))
+        by_key = {}
+        for n in nodes:
+            by_key.setdefault(node_key(n), []).append(n["id"])
+        in_group = set()
+        for i in grouped:
+            if i in idset:
+                in_group.add(i)
+            elif i in by_key:
+                in_group.update(by_key[i])
+            else:
+                problems.append(f"group item '{i}' is not a box or details key in architecture.json")
+        for i in sorted({i for i in grouped if grouped.count(i) > 1}):
+            problems.append(f"'{i}' is in more than one group")
+        for n in nodes:
+            if n["id"] not in in_group:
+                problems.append(f"box '{n['id']}' is in no group: add it to a group's items in architecture.json")
+
     # every drawn feature has a box
     for k, f in feats.items():
         if f.get("drawn", True) and k not in keyset:
