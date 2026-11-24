@@ -80,6 +80,10 @@
         {
           "date": "2026-11-24",
           "text": "View: Kotl's Ways in, Board lease and Background services fold into one box each; one click opens a group, a background click or Esc folds everything back; fade/scale transitions; arrows to a folded group are redrawn to its box; guide steps open only the groups they need."
+        },
+        {
+          "date": "2026-11-24",
+          "text": "Arrow audit: every arrow points from the part that acts to what it acts on, and carries a 'why' shown on hover (status.py check enforces it). Removed the notifier→users, results→remote and top→registry arrows; the notifier now reads the queue and writes the registry; added CLI→results, daemon→registry, health→FireSim adapter. Folded groups no longer redraw planned parts' links, and never draw a line through another box."
         }
       ],
       "drawn": false

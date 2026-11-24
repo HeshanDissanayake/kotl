@@ -195,6 +195,16 @@ svg.diagram { position: absolute; inset: 0; width: 100%; height: 100%; display: 
 svg.labels .e-label, .e-label.hot, .e-label.near { opacity: 1; }
 .e-label.hot { fill: var(--hot); font-weight: 600; }
 .e-label.near { fill: var(--tint); font-weight: 600; }
+.hit { fill: none; stroke: transparent; stroke-width: 14; pointer-events: stroke; cursor: help; }
+.edge.hover { stroke: var(--tint); stroke-width: 2.4; marker-end: url(#arr-tint); }
+.e-label.hover { opacity: 1; fill: var(--tint); font-weight: 600; }
+.tip { position: absolute; z-index: 5; max-width: 320px; pointer-events: none; background: var(--window); color: var(--label); border: 1px solid var(--sep); border-radius: 10px; box-shadow: var(--shadow); padding: 9px 12px; font-size: 12.5px; line-height: 1.45; }
+.tip[hidden] { display: none; }
+.tip .ft { font-weight: 600; display: block; margin-bottom: 2px; }
+.tip .ft i { font-style: normal; color: var(--tint); margin: 0 4px; }
+.tip .lb { font-family: var(--mono); font-size: 11.5px; color: var(--label-2); display: block; margin-bottom: 4px; }
+.tip .kind { font-size: 11px; color: var(--label-3); display: block; margin-top: 4px; }
+.tip hr { border: 0; border-top: 1px solid var(--sep); margin: 6px 0; }
 .ah { fill: var(--edge); } .ah-hot { fill: var(--hot); } .ah-sl { fill: var(--slurm); } .ah-tint { fill: var(--tint); }
 .gone { opacity: 0 !important; visibility: hidden; pointer-events: none; }
 .node.gone, .gbox.gone { transform: scale(.94); }
@@ -377,7 +387,8 @@ details.file pre { margin: 0; padding: 10px 12px; background: var(--code-bg); fo
             <marker id="arr-tint" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path class="ah-tint" d="M0,0 L10,5 L0,10 z"/></marker>
           </defs>
         </svg>
-        <span class="hintline" id="hintline">Click a box to inspect it · click a group to open it · click the background to fold everything back</span>
+        <span class="hintline" id="hintline">Click a box to inspect it · click a group to open it · click the background to fold everything back · hover an arrow for what it means</span>
+        <div class="tip" id="tip" hidden></div>
         <div class="keypop" id="keypop" hidden>
           <span><i class="swb" style="border-color:var(--kotl);background:var(--kotl-tint)"></i>Kotl (ours)</span>
           <span><i class="sd s-tested"></i>tested</span>
@@ -393,6 +404,7 @@ details.file pre { margin: 0; padding: 10px 12px; background: var(--code-bg); fo
           <span><i class="sd s-later"></i>later · parked</span>
           <span><svg viewBox="0 0 26 10"><line x1="0" y1="5" x2="26" y2="5" stroke="var(--hot)" stroke-width="2.4"/></svg>current guide step</span>
           <span><svg viewBox="0 0 26 10"><rect x="1" y="1" width="24" height="8" rx="2" fill="none" stroke="var(--label-3)" stroke-dasharray="3 2"/></svg>collapsed group</span>
+          <span style="grid-column:1/-1;margin-top:4px">An arrow starts at the part that acts and points at what it acts on (calls, reads, starts, writes to). Hover one for why it's there.</span>
         </div>
       </div>
     </section>
@@ -416,7 +428,27 @@ const NODE_GROUP = {};    // node id -> innermost group id
 let collapsed = {};       // group id -> bool (diagram)
 let tempOpen = new Set(); // groups a guide step opens for the moment
 const KEEP = new Set();   // nodes a collapsed group leaves on the map (e.g. a plugin chip inside a user box)
-let synthLayer = null;
+let synthLayer = null, hitLayer = null;
+const tip = document.getElementById("tip");
+function nodeTitle(id) { const n = A.nodes.find(n => n.id === id); return n ? (n.title || titleOf(nodeKey(n))) : id; }
+function kindOf(e) { return e.style === "fut" ? "later" : e.style === "bg" ? "background, on a timer or a check" : "on the job path"; }
+function wireHit(h, list, path) {
+  const lbl = () => labelEls.filter(l => list.some(e => l._e.id === e.id));
+  h.addEventListener("mouseenter", () => {
+    path.classList.add("hover"); lbl().forEach(l => l.classList.add("hover"));
+    tip.innerHTML = list.map(e => '<span class="ft">' + esc(nodeTitle(e.from)) + '<i>→</i>' + esc(nodeTitle(e.to)) + '</span>' +
+      (e.label && e.label.text ? '<span class="lb">' + esc(e.label.text) + '</span>' : '') + esc(e.why || "") + '<span class="kind">' + kindOf(e) + '</span>').join('<hr>');
+    tip.hidden = false;
+  });
+  h.addEventListener("mousemove", ev => {
+    const b = tip.parentElement.getBoundingClientRect();
+    let x = ev.clientX - b.left + 14, y = ev.clientY - b.top + 14;
+    if (x + tip.offsetWidth > b.width - 8) x = ev.clientX - b.left - tip.offsetWidth - 14;
+    if (y + tip.offsetHeight > b.height - 8) y = ev.clientY - b.top - tip.offsetHeight - 14;
+    tip.style.left = Math.max(4, x) + "px"; tip.style.top = Math.max(4, y) + "px";
+  });
+  h.addEventListener("mouseleave", () => { path.classList.remove("hover"); lbl().forEach(l => l.classList.remove("hover")); tip.hidden = true; });
+}
 let openRows = {};        // group id -> bool (sidebar outline)
 
 const $ = id => document.getElementById(id);
@@ -472,6 +504,31 @@ function hiddenBy(nodeId) {  // the outermost collapsed group hiding this node, 
   return found;
 }
 function nodeRect(id) { const n = A.nodes.find(n => n.id === id); return n && { x: n.x, y: n.y, w: n.w, h: n.h }; }
+function visibleRects(skip) {
+  const out = [];
+  A.nodes.forEach(n => { if (!hiddenBy(n.id) && !skip.includes(n.id)) out.push(n); });
+  Object.entries(groupEls).forEach(([k, g]) => { if (!k.includes(":") && !g.classList.contains("gone") && !skip.includes("g:" + k)) out.push(g._rect); });
+  return out;
+}
+function crossings(d, rects) {   // how many boxes an orthogonal path runs through
+  const pts = []; let x = 0, y = 0;
+  d.replace(/([MHV])(-?[\d.]+)(?:,(-?[\d.]+))?/g, (_, c, p, q) => { if (c === "M") { x = +p; y = +q; } else if (c === "H") x = +p; else y = +p; pts.push([x, y]); });
+  let n = 0;
+  rects.forEach(r => {
+    for (let i = 1; i < pts.length; i++) {
+      const [x1, y1] = pts[i - 1], [x2, y2] = pts[i];
+      if (Math.max(x1, x2) > r.x + 2 && Math.min(x1, x2) < r.x + r.w - 2 && Math.max(y1, y2) > r.y + 2 && Math.min(y1, y2) < r.y + r.h - 2) { n++; break; }
+    }
+  });
+  return n;
+}
+function bestRoute(a, b, rects) {
+  const acx = a.x + a.w / 2, acy = a.y + a.h / 2, bcx = b.x + b.w / 2, bcy = b.y + b.h / 2;
+  const cands = [route(a, b),
+    `M${acx < bcx ? a.x + a.w : a.x},${Math.round(acy)} H${Math.round(bcx)} V${acy < bcy ? b.y : b.y + b.h}`,
+    `M${Math.round(acx)},${acy < bcy ? a.y + a.h : a.y} V${Math.round(bcy)} H${acx < bcx ? b.x : b.x + b.w}`];
+  return cands.map(d => [crossings(d, rects), d]).sort((p, q) => p[0] - q[0])[0];
+}
 function route(a, b) {       // an orthogonal path from box a to box b, ending on b's edge
   const ox0 = Math.max(a.x, b.x), ox1 = Math.min(a.x + a.w, b.x + b.w), oy0 = Math.max(a.y, b.y), oy1 = Math.min(a.y + a.h, b.y + b.h);
   const acx = a.x + a.w / 2, acy = a.y + a.h / 2, bcx = b.x + b.w / 2, bcy = b.y + b.h / 2;
@@ -506,6 +563,8 @@ function draw() {
     const p = el("path", { class: "edge" + (e.style === "bg" ? " bg" : e.style === "fut" ? " fut" : "") + (e.slurm ? " sl" : ""), id: e.id, d: e.d });
     p._e = e; return p;
   });
+  hitLayer = el("g", { class: "hit-layer" });
+  edgeEls.forEach(p => { const h = el("path", { class: "hit", d: p._e.d }, hitLayer); h._edge = p; p._hit = h; wireHit(h, [p._e], p); });
   labelEls = (A.edges || []).filter(e => e.label).map(e => {
     const t = el("text", Object.assign({ class: "e-label" + (e.slurm ? " sl" : ""), "data-edge": e.id, "text-anchor": e.label.anchor || "start" }, rotated(e.label)), null, e.label.text);
     t._e = e; return t;
@@ -595,7 +654,7 @@ function applyCollapse() {
   });
   const chip = x => x && GINDEX[x].g.collapse === "chip";
   const hidden = e => { const a = hiddenBy(e.from), b = hiddenBy(e.to); return chip(a) || chip(b) || (a && a === b); };
-  edgeEls.forEach(p => p.classList.toggle("gone", hidden(p._e)));
+  edgeEls.forEach(p => { p.classList.toggle("gone", hidden(p._e)); p._hit.classList.toggle("gone", hidden(p._e)); });
   labelEls.forEach(t => t.classList.toggle("gone", hidden(t._e)));
   // arrows into a collapsed group are redrawn to its box, one per pair
   synthLayer.innerHTML = "";
@@ -603,15 +662,21 @@ function applyCollapse() {
   (A.edges || []).forEach(e => {
     const a = hiddenBy(e.from), b = hiddenBy(e.to);
     if (!(chip(a) || chip(b)) || (a && a === b)) return;
+    if (e.style === "fut") return;      // links of planned parts mean nothing while they're folded away
     const k = (a ? "g:" + a : e.from) + ">" + (b ? "g:" + b : e.to);
-    (pairs[k] = pairs[k] || { a, b, from: e.from, to: e.to, ids: [], bg: true }).ids.push(e.id);
+    (pairs[k] = pairs[k] || { a, b, from: e.from, to: e.to, ids: [], edges: [], bg: true }).ids.push(e.id);
+    pairs[k].edges.push(e);
     if (e.style !== "bg" && e.style !== "fut") pairs[k].bg = false;
   });
   Object.values(pairs).forEach(p => {
     const ra = p.a ? groupEls[p.a]._rect : nodeRect(p.from), rb = p.b ? groupEls[p.b]._rect : nodeRect(p.to);
     if (!ra || !rb) return;
-    const path = el("path", { class: "edge synth" + (p.bg ? " bg" : ""), d: route(ra, rb) }, synthLayer);
+    const [n, d] = bestRoute(ra, rb, visibleRects([p.a ? "g:" + p.a : p.from, p.b ? "g:" + p.b : p.to]));
+    if (n > 0) return;                  // no clean path: leave it out rather than suggest a link that isn't there
+    const path = el("path", { class: "edge synth" + (p.bg ? " bg" : ""), d }, synthLayer);
     path._ids = p.ids; path._ends = [p.a ? "g:" + p.a : p.from, p.b ? "g:" + p.b : p.to];
+    const h = el("path", { class: "hit", d }, synthLayer);
+    wireHit(h, p.edges, path);
   });
   renderGroupDots();
 }

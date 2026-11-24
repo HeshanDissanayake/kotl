@@ -514,21 +514,36 @@
     "x": 250,
     "y": 297,
     "anchor": "middle"
-   }
+   },
+   "why": "A user on their own PC (or Claude there) runs kotl commands on the workstation over SSH."
   },
   {
    "id": "e-admin-cli",
    "from": "admin",
    "to": "cli",
    "d": "M220,690 H258 V335 H281",
-   "style": "solid"
+   "style": "solid",
+   "label": {
+    "text": "kotl board …",
+    "x": 226,
+    "y": 684,
+    "anchor": "start"
+   },
+   "why": "The admin manages boards through kotl: board add, drain, resume, check."
   },
   {
    "id": "e-local-cli",
    "from": "local",
    "to": "cli",
    "d": "M220,500 H258 V335 H281",
-   "style": "solid"
+   "style": "solid",
+   "label": {
+    "text": "kotl …",
+    "x": 226,
+    "y": 494,
+    "anchor": "start"
+   },
+   "why": "A user on the workstation runs kotl: run, lease, release, status, fetch, notices."
   },
   {
    "id": "e-cli-queue",
@@ -542,7 +557,8 @@
     "x": 374,
     "y": 205,
     "anchor": "start"
-   }
+   },
+   "why": "kotl run and kotl lease submit a Slurm job (sbatch); kotl cancel uses scancel; kotl status reads squeue."
   },
   {
    "id": "e-queue-starter",
@@ -550,7 +566,14 @@
    "to": "starter",
    "d": "M451,125 H477",
    "style": "solid",
-   "slurm": true
+   "slurm": true,
+   "label": {
+    "text": "board free",
+    "x": 464,
+    "y": 118,
+    "anchor": "middle"
+   },
+   "why": "When a board's license is free and the job is first in line, Slurm starts it."
   },
   {
    "id": "e-starter-launch",
@@ -564,7 +587,8 @@
     "x": 570,
     "y": 205,
     "anchor": "start"
-   }
+   },
+   "why": "Slurm runs job.sh, which calls Kotl's launcher to claim a board; a cancel or a time limit reaches the launcher as a signal."
   },
   {
    "id": "e-runner-health",
@@ -578,29 +602,17 @@
     "x": 766,
     "y": 205,
     "anchor": "start"
-   }
-  },
-  {
-   "id": "e-acct-notify",
-   "from": "acct",
-   "to": "notifier",
-   "d": "M954,160 V280",
-   "style": "solid",
-   "slurm": true,
-   "label": {
-    "text": "squeue",
-    "x": 962,
-    "y": 205,
-    "anchor": "start"
-   }
+   },
+   "why": "Slurm runs Kotl's health.sh every 5 minutes (HealthCheckProgram)."
   },
   {
    "id": "e-acct-dash",
-   "from": "acct",
-   "to": "dashboard",
-   "d": "M869,140 H856 V435 H869",
+   "from": "dashboard",
+   "to": "acct",
+   "d": "M869,435 H856 V125 H869",
    "style": "fut",
-   "slurm": true
+   "slurm": true,
+   "why": "Later: the usage dashboard reads job history from Slurm's accounting (sacct)."
   },
   {
    "id": "e-cli-attach",
@@ -613,7 +625,8 @@
     "x": 374,
     "y": 380,
     "anchor": "start"
-   }
+   },
+   "why": "kotl attach opens your running job's console."
   },
   {
    "id": "e-launch-registry",
@@ -626,7 +639,8 @@
     "x": 570,
     "y": 380,
     "anchor": "start"
-   }
+   },
+   "why": "The launcher claims an idle, healthy board in the registry, and frees it at the end step."
   },
   {
    "id": "e-health-registry",
@@ -639,7 +653,8 @@
     "x": 628,
     "y": 374,
     "anchor": "start"
-   }
+   },
+   "why": "The health check marks a failing idle board down (and back up), and records its warnings."
   },
   {
    "id": "e-health-bus",
@@ -652,21 +667,24 @@
     "x": 1165,
     "y": 369,
     "anchor": "middle"
-   }
+   },
+   "why": "Every 5 minutes the health check probes each board's PC over Kotl's own SSH key."
   },
   {
    "id": "e-power-registry",
    "from": "power",
    "to": "registry",
    "d": "M673,435 H647",
-   "style": "fut"
+   "style": "fut",
+   "why": "Later: the power monitor records each board's power draw in the registry."
   },
   {
    "id": "e-power-bus",
    "from": "power",
    "to": "key",
    "d": "M758,470 V495 H1280",
-   "style": "fut"
+   "style": "fut",
+   "why": "Later: the power monitor reads each board's power over the SSH path."
   },
   {
    "id": "e-attach-bus",
@@ -679,28 +697,38 @@
     "x": 1165,
     "y": 489,
     "anchor": "middle"
-   }
+   },
+   "why": "kotl attach connects to the board's PC with your job key and opens the console session."
   },
   {
    "id": "e-launch-program",
    "from": "launcher",
    "to": "program",
    "d": "M477,330 H464 V630 H562 V650",
-   "style": "fut"
+   "style": "fut",
+   "why": "Later: a maintenance lease runs the program/reset adapter."
   },
   {
    "id": "e-launch-drv",
    "from": "launcher",
    "to": "drvtest",
    "d": "M477,330 H464 V630 H758 V650",
-   "style": "fut"
+   "style": "fut",
+   "why": "Later: a maintenance lease runs the board-tests adapter."
   },
   {
    "id": "e-launch-results",
    "from": "launcher",
    "to": "results",
    "d": "M477,330 H464 V555 H451",
-   "style": "solid"
+   "style": "solid",
+   "label": {
+    "text": "writes job folder",
+    "x": 458,
+    "y": 540,
+    "anchor": "end"
+   },
+   "why": "The launcher creates the job's folder and writes its status, logs and outputs."
   },
   {
    "id": "e-launch-fs",
@@ -709,33 +737,43 @@
    "d": "M477,330 H464 V630 H954 V650",
    "style": "bg",
    "label": {
-    "text": "adapter hooks",
+    "text": "end step · console",
     "x": 461,
     "y": 430,
     "rotate": -90,
     "anchor": "middle"
-   }
+   },
+   "why": "The end step stops what the enabled adapters name (FireSim: its screens and drivers); kotl attach gets its console name."
   },
   {
    "id": "e-job-bus",
    "from": "job",
    "to": "key",
    "d": "M1250,685 H1280",
-   "style": "solid"
+   "style": "solid",
+   "label": {
+    "text": "job key",
+    "x": 1265,
+    "y": 678,
+    "anchor": "middle"
+   },
+   "why": "Your command reaches the board's PC with the job key in its ssh-agent; nothing else does."
   },
   {
    "id": "e-program-bus",
    "from": "program",
    "to": "key",
    "d": "M562,720 V745 H1280",
-   "style": "fut"
+   "style": "fut",
+   "why": "Later: the program/reset adapter loads a bitstream on the board's PC."
   },
   {
    "id": "e-drv-bus",
    "from": "drvtest",
    "to": "key",
    "d": "M758,720 V745 H1280",
-   "style": "fut"
+   "style": "fut",
+   "why": "Later: the board-tests adapter runs deep checks on the board's PC."
   },
   {
    "id": "e-os-notify",
@@ -748,69 +786,38 @@
     "x": 1178,
     "y": 262,
     "anchor": "start"
-   }
-  },
-  {
-   "id": "e-notify-admin",
-   "from": "notifier",
-   "to": "admin",
-   "d": "M1039,330 H1052 V775 H130 V740",
-   "style": "solid"
-  },
-  {
-   "id": "e-notify-local",
-   "from": "notifier",
-   "to": "local",
-   "d": "M1039,330 H1052 V775 H14 V580 H40",
-   "style": "solid"
-  },
-  {
-   "id": "e-notify-remote",
-   "from": "notifier",
-   "to": "remote",
-   "d": "M1039,330 H1052 V775 H14 V380 H40",
-   "style": "solid",
-   "label": {
-    "text": "notices",
-    "x": 640,
-    "y": 770,
-    "anchor": "middle"
-   }
-  },
-  {
-   "id": "e-results-remote",
-   "from": "results",
-   "to": "remote",
-   "d": "M281,565 H236 V390 H220",
-   "style": "solid",
-   "label": {
-    "text": "kotl fetch",
-    "x": 230,
-    "y": 440,
-    "rotate": -90,
-    "anchor": "middle"
-   }
+   },
+   "why": "A systemd timer starts the notifier once a minute."
   },
   {
    "id": "e-bus-more",
    "from": "key",
    "to": "more",
    "d": "M1292,710 H1340",
-   "style": "fut"
+   "style": "fut",
+   "why": "Later: more boards join the same SSH path."
   },
   {
    "id": "e-bus-pc2",
    "from": "key",
    "to": "pc2",
    "d": "M1292,550 H1340",
-   "style": "fut"
+   "style": "fut",
+   "why": "Later: the second VCU118 PC joins the same SSH path."
   },
   {
    "id": "e-bus-pc1",
    "from": "key",
    "to": "pc1",
    "d": "M1292,370 H1340",
-   "style": "solid"
+   "style": "solid",
+   "label": {
+    "text": "ssh",
+    "x": 1316,
+    "y": 363,
+    "anchor": "middle"
+   },
+   "why": "Every connection to the board's PC (Kotl's key or a job key) ends here: sshd as virtex-host."
   },
   {
    "id": "e-launch-access",
@@ -823,7 +830,8 @@
     "x": 958,
     "y": 515,
     "anchor": "start"
-   }
+   },
+   "why": "At job start the launcher grants this job's key on the claimed board's PC; at the end step it revokes it."
   },
   {
    "id": "e-access-bus",
@@ -836,20 +844,8 @@
     "x": 1165,
     "y": 549,
     "anchor": "middle"
-   }
-  },
-  {
-   "id": "e-top-registry",
-   "from": "top",
-   "to": "registry",
-   "d": "M690,520 V485 H620 V470",
-   "style": "solid",
-   "label": {
-    "text": "reads",
-    "x": 655,
-    "y": 481,
-    "anchor": "middle"
-   }
+   },
+   "why": "kotl-keys on the PC adds or removes the job key (and stops what adapters name) over Kotl's own SSH key."
   },
   {
    "id": "e-daemon-queue",
@@ -864,20 +860,96 @@
     "y": 470,
     "rotate": -90,
     "anchor": "middle"
-   }
+   },
+   "why": "Every second the daemon reads the queue (squeue) for the shared status file."
   },
   {
    "id": "e-daemon-top",
-   "from": "daemon",
-   "to": "top",
-   "d": "M366,720 V735 H660 V600 H690 V590",
+   "from": "top",
+   "to": "daemon",
+   "d": "M690,590 V600 H660 V735 H366 V720",
    "style": "bg",
    "label": {
-    "text": "status file",
+    "text": "reads status file",
     "x": 520,
     "y": 731,
     "anchor": "middle"
-   }
+   },
+   "why": "kotl top reads the daemon's status file every second (kotl status, the Claude band and VS Code read it too)."
+  },
+  {
+   "id": "e-notify-queue",
+   "from": "notifier",
+   "to": "queue",
+   "d": "M900,280 V195 H420 V160",
+   "style": "bg",
+   "slurm": true,
+   "label": {
+    "text": "squeue · every minute",
+    "x": 905,
+    "y": 208,
+    "anchor": "start"
+   },
+   "why": "Each minute the notifier asks Slurm (squeue) how long running jobs have run and when queued jobs will start."
+  },
+  {
+   "id": "e-notify-registry",
+   "from": "notifier",
+   "to": "registry",
+   "d": "M910,350 V390 H630 V400",
+   "style": "solid",
+   "label": {
+    "text": "writes notices",
+    "x": 915,
+    "y": 384,
+    "anchor": "start"
+   },
+   "why": "The notifier writes ETA and start-time notices into each user's inbox in the registry; kotl, the Claude band and VS Code show them."
+  },
+  {
+   "id": "e-cli-results",
+   "from": "cli",
+   "to": "results",
+   "d": "M281,345 H246 V560 H281",
+   "style": "solid",
+   "label": {
+    "text": "fetch · logs",
+    "x": 243,
+    "y": 455,
+    "rotate": -90,
+    "anchor": "middle"
+   },
+   "why": "kotl fetch, logs and history read your job folders (through the launcher; only your own)."
+  },
+  {
+   "id": "e-daemon-registry",
+   "from": "daemon",
+   "to": "registry",
+   "d": "M451,700 H470 V435 H477",
+   "style": "bg",
+   "label": {
+    "text": "reads boards",
+    "x": 474,
+    "y": 560,
+    "rotate": -90,
+    "anchor": "middle"
+   },
+   "why": "Every second the daemon reads the boards and unread-notice counts from the registry for the status file."
+  },
+  {
+   "id": "e-health-fs",
+   "from": "health",
+   "to": "fsmod",
+   "d": "M843,340 H860 V640 H930 V650",
+   "style": "bg",
+   "label": {
+    "text": "checks · repair",
+    "x": 866,
+    "y": 440,
+    "rotate": -90,
+    "anchor": "middle"
+   },
+   "why": "The health check asks each enabled adapter for its checks and one repair; FireSim's: XDMA loaded, glibc, one XDMA reload on an idle board."
   }
  ],
  "flows": {
@@ -981,11 +1053,12 @@
       "launcher",
       "results",
       "remote",
-      "local"
+      "local",
+      "cli"
      ],
      "edges": [
       "e-launch-results",
-      "e-results-remote"
+      "e-cli-results"
      ],
      "detail": "nu-results"
     },
@@ -1098,12 +1171,14 @@
       "os",
       "notifier",
       "remote",
-      "plugin-r"
+      "plugin-r",
+      "queue",
+      "registry"
      ],
      "edges": [
-      "e-acct-notify",
+      "e-notify-queue",
       "e-os-notify",
-      "e-notify-remote"
+      "e-notify-registry"
      ]
     },
     {
@@ -1116,13 +1191,14 @@
       "pc1",
       "notifier",
       "remote",
-      "plugin-r"
+      "plugin-r",
+      "registry"
      ],
      "edges": [
       "e-launch-access",
       "e-access-bus",
       "e-bus-pc1",
-      "e-notify-remote"
+      "e-notify-registry"
      ]
     },
     {
@@ -1153,11 +1229,12 @@
       "launcher",
       "results",
       "remote",
-      "plugin-r"
+      "plugin-r",
+      "cli"
      ],
      "edges": [
       "e-launch-results",
-      "e-results-remote"
+      "e-cli-results"
      ]
     },
     {
@@ -1238,12 +1315,14 @@
       "os",
       "notifier",
       "local",
-      "plugin-l"
+      "plugin-l",
+      "queue",
+      "registry"
      ],
      "edges": [
-      "e-acct-notify",
+      "e-notify-queue",
       "e-os-notify",
-      "e-notify-local"
+      "e-notify-registry"
      ]
     },
     {
@@ -1280,13 +1359,14 @@
       "pc1",
       "notifier",
       "local",
-      "plugin-l"
+      "plugin-l",
+      "registry"
      ],
      "edges": [
       "e-launch-access",
       "e-access-bus",
       "e-bus-pc1",
-      "e-notify-local"
+      "e-notify-registry"
      ]
     }
    ]
@@ -1366,7 +1446,7 @@
      ],
      "edges": [
       "e-health-registry",
-      "e-notify-admin"
+      "e-notify-registry"
      ]
     }
    ]

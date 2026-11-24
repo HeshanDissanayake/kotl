@@ -73,6 +73,12 @@ def check(staged_only):
     for i in sorted({i for i in eids if eids.count(i) > 1}):
         problems.append(f"edge id '{i}' is used twice in architecture.json")
     idset, keyset = set(ids), {node_key(n) for n in nodes}
+    for e in edges:
+        if not (e.get("why") or "").strip():
+            problems.append(f"arrow '{e['id']}' has no 'why' in architecture.json (one line: why it's there, shown on hover)")
+        for end in ("from", "to"):
+            if e.get(end) not in idset:
+                problems.append(f"arrow '{e['id']}' has an unknown '{end}' box '{e.get(end)}'")
 
     # every box has details; every non-user box has a status entry
     for n in nodes:
