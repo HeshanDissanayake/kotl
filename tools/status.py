@@ -73,6 +73,17 @@ def check(staged_only):
     for i in sorted({i for i in eids if eids.count(i) > 1}):
         problems.append(f"edge id '{i}' is used twice in architecture.json")
     idset, keyset = set(ids), {node_key(n) for n in nodes}
+    # arrows: routed live by the view; check every fold state routes cleanly (tools/arrows.py)
+    if staged_only is not None:
+        try:
+            sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+            import arrows
+            probs, note = arrows.check_states()
+            problems.extend(probs)
+            if note:
+                print(f"warning: {note}")
+        except Exception as ex:   # never hide a broken check
+            problems.append(f"arrow check failed to run: {ex}")
     for e in edges:
         if not (e.get("why") or "").strip():
             problems.append(f"arrow '{e['id']}' has no 'why' in architecture.json (one line: why it's there, shown on hover)")

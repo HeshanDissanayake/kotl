@@ -414,6 +414,7 @@ details.file pre { margin: 0; padding: 10px 12px; background: var(--code-bg); fo
   </div>
 </div>
 
+<script src="router.js"></script>
 <script>
 /* ============================================================
    Renderer. No content lives here: it all comes from
@@ -428,12 +429,13 @@ const NODE_GROUP = {};    // node id -> innermost group id
 let collapsed = {};       // group id -> bool (diagram)
 let tempOpen = new Set(); // groups a guide step opens for the moment
 const KEEP = new Set();   // nodes a collapsed group leaves on the map (e.g. a plugin chip inside a user box)
-let synthLayer = null, hitLayer = null;
+let edgeLayer = null, labelLayer = null, hitLayer = null;
+const ROUTES = {};          // fold state -> routed arrows (cached)
 const tip = document.getElementById("tip");
 function nodeTitle(id) { const n = A.nodes.find(n => n.id === id); return n ? (n.title || titleOf(nodeKey(n))) : id; }
 function kindOf(e) { return e.style === "fut" ? "later" : e.style === "bg" ? "background, on a timer or a check" : "on the job path"; }
 function wireHit(h, list, path) {
-  const lbl = () => labelEls.filter(l => list.some(e => l._e.id === e.id));
+  const lbl = () => path._label ? [path._label] : [];
   h.addEventListener("mouseenter", () => {
     path.classList.add("hover"); lbl().forEach(l => l.classList.add("hover"));
     tip.innerHTML = list.map(e => '<span class="ft">' + esc(nodeTitle(e.from)) + '<i>→</i>' + esc(nodeTitle(e.to)) + '</span>' +
@@ -503,40 +505,6 @@ function hiddenBy(nodeId) {  // the outermost collapsed group hiding this node, 
   for (let g = NODE_GROUP[nodeId]; g; g = GINDEX[g].parent) if (isCollapsed(g)) found = g;
   return found;
 }
-function nodeRect(id) { const n = A.nodes.find(n => n.id === id); return n && { x: n.x, y: n.y, w: n.w, h: n.h }; }
-function visibleRects(skip) {
-  const out = [];
-  A.nodes.forEach(n => { if (!hiddenBy(n.id) && !skip.includes(n.id)) out.push(n); });
-  Object.entries(groupEls).forEach(([k, g]) => { if (!k.includes(":") && !g.classList.contains("gone") && !skip.includes("g:" + k)) out.push(g._rect); });
-  return out;
-}
-function crossings(d, rects) {   // how many boxes an orthogonal path runs through
-  const pts = []; let x = 0, y = 0;
-  d.replace(/([MHV])(-?[\d.]+)(?:,(-?[\d.]+))?/g, (_, c, p, q) => { if (c === "M") { x = +p; y = +q; } else if (c === "H") x = +p; else y = +p; pts.push([x, y]); });
-  let n = 0;
-  rects.forEach(r => {
-    for (let i = 1; i < pts.length; i++) {
-      const [x1, y1] = pts[i - 1], [x2, y2] = pts[i];
-      if (Math.max(x1, x2) > r.x + 2 && Math.min(x1, x2) < r.x + r.w - 2 && Math.max(y1, y2) > r.y + 2 && Math.min(y1, y2) < r.y + r.h - 2) { n++; break; }
-    }
-  });
-  return n;
-}
-function bestRoute(a, b, rects) {
-  const acx = a.x + a.w / 2, acy = a.y + a.h / 2, bcx = b.x + b.w / 2, bcy = b.y + b.h / 2;
-  const cands = [route(a, b),
-    `M${acx < bcx ? a.x + a.w : a.x},${Math.round(acy)} H${Math.round(bcx)} V${acy < bcy ? b.y : b.y + b.h}`,
-    `M${Math.round(acx)},${acy < bcy ? a.y + a.h : a.y} V${Math.round(bcy)} H${acx < bcx ? b.x : b.x + b.w}`];
-  return cands.map(d => [crossings(d, rects), d]).sort((p, q) => p[0] - q[0])[0];
-}
-function route(a, b) {       // an orthogonal path from box a to box b, ending on b's edge
-  const ox0 = Math.max(a.x, b.x), ox1 = Math.min(a.x + a.w, b.x + b.w), oy0 = Math.max(a.y, b.y), oy1 = Math.min(a.y + a.h, b.y + b.h);
-  const acx = a.x + a.w / 2, acy = a.y + a.h / 2, bcx = b.x + b.w / 2, bcy = b.y + b.h / 2;
-  if (ox1 - ox0 > 12) { const x = Math.round((ox0 + ox1) / 2); return acy < bcy ? `M${x},${a.y + a.h} V${b.y}` : `M${x},${a.y} V${b.y + b.h}`; }
-  if (oy1 - oy0 > 12) { const y = Math.round((oy0 + oy1) / 2); return acx < bcx ? `M${a.x + a.w},${y} H${b.x}` : `M${a.x},${y} H${b.x + b.w}`; }
-  const sx = acx < bcx ? a.x + a.w : a.x;
-  return `M${sx},${Math.round(acy)} H${Math.round(bcx)} V${acy < bcy ? b.y : b.y + b.h}`;
-}
 function titleOf(key) { return (D[key] && D[key].title) || (STATUS && STATUS.features && STATUS.features[key] && STATUS.features[key].title) || (A.nodes.find(n => nodeKey(n) === key) || {}).title || key; }
 function statusOf(key) { return STATUS && STATUS.features && STATUS.features[key]; }
 
@@ -559,18 +527,10 @@ function draw() {
   (A.texts || []).forEach(t => el("text", { class: t.class || "zone-label", x: t.x, y: t.y }, null, t.text));
   (A.dividers || []).forEach(d => el("line", { class: "divider", x1: d.x1, y1: d.y1, x2: d.x2, y2: d.y2 }));
 
-  edgeEls = (A.edges || []).map(e => {
-    const p = el("path", { class: "edge" + (e.style === "bg" ? " bg" : e.style === "fut" ? " fut" : "") + (e.slurm ? " sl" : ""), id: e.id, d: e.d });
-    p._e = e; return p;
-  });
+  // arrows are routed live (router.js) for whatever is on the map: see layoutEdges()
+  edgeLayer = el("g", { class: "edge-layer" });
+  labelLayer = el("g", { class: "label-layer" });
   hitLayer = el("g", { class: "hit-layer" });
-  edgeEls.forEach(p => { const h = el("path", { class: "hit", d: p._e.d }, hitLayer); h._edge = p; p._hit = h; wireHit(h, [p._e], p); });
-  labelEls = (A.edges || []).filter(e => e.label).map(e => {
-    const t = el("text", Object.assign({ class: "e-label" + (e.slurm ? " sl" : ""), "data-edge": e.id, "text-anchor": e.label.anchor || "start" }, rotated(e.label)), null, e.label.text);
-    t._e = e; return t;
-  });
-
-  synthLayer = el("g", { class: "synth-layer" });
   (A.nodes || []).forEach(n => {
     const g = el("g", {
       class: "node" + (n.later ? " later" : ""), "data-id": n.id, "data-key": nodeKey(n),
@@ -652,33 +612,51 @@ function applyCollapse() {
     groupEls[g.id].classList.toggle("gone", !shown);
     if (groupEls[g.id + ":ctl"]) groupEls[g.id + ":ctl"].classList.toggle("gone", isCollapsed(g.id) || !!hiddenByGroupOf(g.id));
   });
-  const chip = x => x && GINDEX[x].g.collapse === "chip";
-  const hidden = e => { const a = hiddenBy(e.from), b = hiddenBy(e.to); return chip(a) || chip(b) || (a && a === b); };
-  edgeEls.forEach(p => { p.classList.toggle("gone", hidden(p._e)); p._hit.classList.toggle("gone", hidden(p._e)); });
-  labelEls.forEach(t => t.classList.toggle("gone", hidden(t._e)));
-  // arrows into a collapsed group are redrawn to its box, one per pair
-  synthLayer.innerHTML = "";
-  const pairs = {};
-  (A.edges || []).forEach(e => {
-    const a = hiddenBy(e.from), b = hiddenBy(e.to);
-    if (!(chip(a) || chip(b)) || (a && a === b)) return;
-    if (e.style === "fut") return;      // links of planned parts mean nothing while they're folded away
-    const k = (a ? "g:" + a : e.from) + ">" + (b ? "g:" + b : e.to);
-    (pairs[k] = pairs[k] || { a, b, from: e.from, to: e.to, ids: [], edges: [], bg: true }).ids.push(e.id);
-    pairs[k].edges.push(e);
-    if (e.style !== "bg" && e.style !== "fut") pairs[k].bg = false;
-  });
-  Object.values(pairs).forEach(p => {
-    const ra = p.a ? groupEls[p.a]._rect : nodeRect(p.from), rb = p.b ? groupEls[p.b]._rect : nodeRect(p.to);
-    if (!ra || !rb) return;
-    const [n, d] = bestRoute(ra, rb, visibleRects([p.a ? "g:" + p.a : p.from, p.b ? "g:" + p.b : p.to]));
-    if (n > 0) return;                  // no clean path: leave it out rather than suggest a link that isn't there
-    const path = el("path", { class: "edge synth" + (p.bg ? " bg" : ""), d }, synthLayer);
-    path._ids = p.ids; path._ends = [p.a ? "g:" + p.a : p.from, p.b ? "g:" + p.b : p.to];
-    const h = el("path", { class: "hit", d }, synthLayer);
-    wireHit(h, p.edges, path);
-  });
+  layoutEdges();
   renderGroupDots();
+}
+/* Every arrow between two things on the map, routed so that no two share a start point, an end
+   point or a line (router.js). An arrow whose end is folded away goes to the folded group's box;
+   several such arrows between the same two boxes become one. Links of planned parts aren't drawn
+   while those parts are folded away. */
+function layoutEdges() {
+  const vis = id => { const g = hiddenBy(id); return g ? "g:" + g : id; };
+  const boxes = A.nodes.filter(n => !hiddenBy(n.id)).map(n => ({ id: n.id, x: n.x, y: n.y, w: n.w, h: n.h }));
+  Object.entries(groupEls).forEach(([k, g]) => { if (!k.includes(":") && !g.classList.contains("gone")) boxes.push(Object.assign({ id: "g:" + k }, g._rect)); });
+  const pairs = {}, list = [];
+  (A.edges || []).forEach(e => {
+    const a = vis(e.from), b = vis(e.to);
+    if (a === b) return;
+    if (e.style === "fut" && (a !== e.from || b !== e.to)) return;
+    const k = a + ">" + b;
+    if (!pairs[k]) { pairs[k] = { from: a, to: b, edges: [] }; list.push(pairs[k]); }
+    pairs[k].edges.push(e);
+  });
+  list.forEach(p => {
+    const st = p.edges.map(e => e.style || "solid");
+    p.kind = st.includes("solid") ? "solid" : st.includes("bg") ? "bg" : "fut";
+    p.slurm = p.edges.some(e => e.slurm);
+    p.id = p.edges.map(e => e.id).join("+");
+  });
+  const key = boxes.map(b => b.id).join(",");
+  const routed = ROUTES[key] || (ROUTES[key] = KotlRouter.route({ w: A.canvas.w, h: A.canvas.h, step: 5, boxes, edges: list }));
+  if (routed.failed.length) console.warn("arrows without a clean route:", routed.failed);
+  edgeLayer.innerHTML = labelLayer.innerHTML = hitLayer.innerHTML = "";
+  edgeEls = []; labelEls = [];
+  list.forEach((p, i) => {
+    const rt = routed.routes[i];
+    if (!rt) return;
+    const path = el("path", { class: "edge" + (p.kind === "bg" ? " bg" : p.kind === "fut" ? " fut" : "") + (p.slurm ? " sl" : ""), d: rt.d, "data-edges": p.id }, edgeLayer);
+    path._edges = p.edges; path._ends = [p.from, p.to];
+    const texts = [...new Set(p.edges.map(e => e.label && e.label.text).filter(Boolean))];
+    if (texts.length) {
+      const l = rt.label;
+      path._label = el("text", Object.assign({ class: "e-label" + (p.slurm ? " sl" : ""), "text-anchor": "middle" }, rotated(l)), labelLayer, texts.join(" · "));
+      labelEls.push(path._label);
+    }
+    wireHit(el("path", { class: "hit", d: rt.d }, hitLayer), p.edges, path);
+    edgeEls.push(path);
+  });
 }
 function hiddenByGroupOf(gid) { for (let x = GINDEX[gid].parent; x; x = GINDEX[x].parent) if (isCollapsed(x)) return x; return null; }
 function collapseAll() {
@@ -910,9 +888,11 @@ function refresh() {
     const s = f.steps[step - 1];
     const on = new Set(s.nodes.map(visual).filter(Boolean));
     [...Object.values(nodeEls), ...Object.values(groupEls).filter(g => g.classList.contains("gbox"))].forEach(n => { n.classList.toggle("hot", on.has(n)); n.classList.toggle("dim", !on.has(n)); });
-    edgeEls.forEach(e => { const x = s.edges.includes(e.id); e.classList.toggle("hot", x); e.classList.toggle("dim", !x); if (x) svg.insertBefore(e, synthLayer); });
-    synthLayer.querySelectorAll("path").forEach(e => { const x = e._ids.some(i => s.edges.includes(i)); e.classList.toggle("hot", x); e.classList.toggle("dim", !x); });
-    labelEls.forEach(l => { const x = s.edges.includes(l._e.id); l.classList.toggle("hot", x); l.classList.toggle("dim", !x); });
+    edgeEls.forEach(e => {
+      const x = e._edges.some(o => s.edges.includes(o.id));
+      [e, e._label].filter(Boolean).forEach(z => { z.classList.toggle("hot", x); z.classList.toggle("dim", !x); });
+      if (x) edgeLayer.appendChild(e);
+    });
   }
   if (current && current.startsWith("g:")) {
     const gid = current.slice(2);
@@ -924,13 +904,11 @@ function refresh() {
       if (!f) Object.keys(groupEls).filter(k => !k.includes(":") && k !== gid).forEach(k => groupEls[k].classList.add("dim"));
     }
     if (groupEls[gid]) groupEls[gid].classList.add("selected");
-    synthLayer.querySelectorAll("path").forEach(e => { if (e._ends.includes("g:" + gid)) e.classList.add("near"); });
+    edgeEls.forEach(e => { if (e._ends.includes("g:" + gid)) [e, e._label].filter(Boolean).forEach(z => z.classList.add("near")); });
   } else if (current) {
     const ids = A.nodes.filter(n => nodeKey(n) === current).map(n => n.id);
     ids.forEach(id => { const v = visual(id); if (v) v.classList.add("selected"); });
-    edgeEls.forEach(e => { if (ids.includes(e._e.from) || ids.includes(e._e.to)) { e.classList.add("near"); } });
-    labelEls.forEach(l => { if (ids.includes(l._e.from) || ids.includes(l._e.to)) l.classList.add("near"); });
-    synthLayer.querySelectorAll("path").forEach(e => { if (e._ends.some(x => ids.includes(x))) e.classList.add("near"); });
+    edgeEls.forEach(e => { if (e._ends.some(x => ids.includes(x))) [e, e._label].filter(Boolean).forEach(z => z.classList.add("near")); });
   }
   renderSidebar();
 }

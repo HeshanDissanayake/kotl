@@ -84,6 +84,10 @@
         {
           "date": "2026-11-24",
           "text": "Arrow audit: every arrow points from the part that acts to what it acts on, and carries a 'why' shown on hover (status.py check enforces it). Removed the notifier→users, results→remote and top→registry arrows; the notifier now reads the queue and writes the registry; added CLI→results, daemon→registry, health→FireSim adapter. Folded groups no longer redraw planned parts' links, and never draw a line through another box."
+        },
+        {
+          "date": "2026-11-24",
+          "text": "Arrows are routed by the view (docs/architecture/router.js): each has its own start and end point, no two share a line, none runs through a box, in every fold state. architecture.json keeps only from/to/style/label/why. status.py check runs tools/arrows.py (node) over all 32 fold states."
         }
       ],
       "drawn": false
