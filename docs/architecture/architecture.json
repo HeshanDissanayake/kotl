@@ -1546,6 +1546,7 @@
     "<b>Skill:</b> <code>kotl run</code> (preferred) and <code>kotl lease</code> with an ETA and an exit plan; FireSim through Kotl, with an honest <code>KOTL RESULT</code> and the glibc workaround; fetch, then read <code>status.json</code> first.",
     "<b>SessionStart hook:</b> the queue, the boards and your unread notices (shown, not marked read).",
     "<b>PreToolUse hook (Bash):</b> asks before <code>firesim infrasetup/runworkload/kill</code> runs outside <code>kotl run</code>/<code>lease</code>, and says how to run it through the queue. A suggestion with a question, not a block.",
+    "<b>Every Claude session on the workstation</b>, plugin or not: <code>install.sh</code> publishes Kotl's rules as Claude Code's managed <code>/etc/claude-code/CLAUDE.md</code> (use boards only through Kotl; never stop board work that isn't your job's, say who runs it, how long, and that it's outside Kotl). An admin's own file there is left alone.",
     "<b>kotl-band</b> (a second, optional plugin): a live Kotl band above the Claude Code prompt, from <code>kotl status --json</code> every 30 s. Line 1: each board, who holds it, the job's kind and time used of its ETA, how many wait. Line 2: your jobs: how many, each running one's time of its ETA, each waiting one's estimated start and place in line; unread notices. <code>/kotl-band</code> refreshes, <code>/kotl-band hide</code> hides. Read-only.",
     "<b>VS Code extension</b> (<code>kotl.kotl-status</code>): the same in VS Code's status bar, in any window: each board, who holds it and their time of ETA, how many wait, your job count, unread notices; the hover lists the queue with estimated starts and your place in line; a click opens <code>kotl top</code>. Install: <code>code --install-extension /opt/kotl/kotl-status.vsix</code>.",
     "<b>Anywhere:</b> on the workstation it runs <code>kotl</code>; on a user's own PC it runs <code>ssh $KOTL_SSH kotl …</code> (set <code>KOTL_SSH</code> in <code>~/.claude/settings.json</code> under <code>env</code>)."
@@ -1553,7 +1554,8 @@
    "files": [
     "skill",
     "hooks",
-    "marketplace"
+    "marketplace",
+    "claudemd"
    ],
    "note": "Convenience only. The SSH lockdown and the end step are the real enforcement.",
    "term": [
@@ -3050,6 +3052,13 @@
    "ext": "sudo",
    "desc": "kotl may run only kotl-firesim-stop, as root, with no arguments",
    "body": "# managed by kotl (deploy/adapters/firesim/pc-setup.sh)\nkotl ALL=(root) NOPASSWD: /usr/local/bin/kotl-firesim-stop \"\", /usr/local/bin/kotl-firesim-stop [0-9]*"
+  },
+  "claudemd": {
+   "name": "CLAUDE.md",
+   "path": "/etc/claude-code/CLAUDE.md (from deploy/claude/CLAUDE.md)",
+   "ext": "md",
+   "desc": "Kotl's rules, read by every Claude Code session on the workstation",
+   "body": "<!-- managed by kotl (deploy/kotl/install.sh). Read by every Claude Code session on this workstation. -->\n# The lab's FPGA boards are shared through Kotl\n\nThis workstation's FPGA boards (VCU118 and their PCs, e.g. `vcu118-pc1`) are shared by everyone\nthrough Kotl, a queue. Before anything that uses a board (FireSim `infrasetup`/`runworkload`,\nflashing a bitstream, a driver test, ssh to an FPGA PC), go through Kotl:\n\n- `kotl status`: the boards, the queue and who holds each board now.\n- `kotl run --eta <estimate> -- <command>`: runs the command with a board, frees it after.\n- `kotl lease --eta <estimate>`, then `ssh <board>`; `kotl release` when done.\n- `kotl --help`; the full guide is `/opt/kotl/plugin/skills/kotl/SKILL.md` (read it first).\n  `kotl setup` adds Kotl's Claude Code plugin and VS Code extension for this person.\n\nNever use a board outside Kotl: it can break another person's run, and Kotl can't protect work it\ndoesn't know about.\n\nIf a board looks busy (a FireSim `fsim*` screen or a `FireSim-*` driver on its PC) and it isn't\nyour Kotl job: it is someone else's work, or work outside Kotl. Don't stop it. Tell the person who\nseems to run it and for how long, and that it is outside Kotl. If the person's own run outside\nKotl stopped, check `kotl status` and `kotl history`: a Kotl job may have taken the board.\n"
   }
  },
  "groups": [

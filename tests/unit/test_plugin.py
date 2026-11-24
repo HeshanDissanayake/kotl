@@ -91,7 +91,7 @@ esac
 ''')
     r = sh("session-start.sh", path_dirs=[k])
     assert r.returncode == 0
-    assert "Kotl (the lab's FPGA board queue) right now:" in r.stdout and "vcu118-pc1   idle" in r.stdout
+    assert "Kotl right now:" in r.stdout and "never stop board work" in r.stdout and "vcu118-pc1   idle" in r.stdout
     assert "job 52 passed its ETA" in r.stdout and "not marked read" in r.stdout
 
 

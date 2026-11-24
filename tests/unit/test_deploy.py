@@ -339,6 +339,26 @@ def test_install_publishes_the_plugin(tmp_path):
     assert not (tmp_path / "opt/kotl/plugin").exists()
 
 
+@pytest.mark.feature("plugin")
+def test_install_gives_every_claude_session_kotls_rules(tmp_path):
+    dry("kotl/install.sh", root=tmp_path)
+    rules = (tmp_path / "etc/claude-code/CLAUDE.md").read_text()
+    assert "managed by kotl" in rules and "kotl run" in rules and "Don't stop it" in rules
+    dry("kotl/install.sh", "--undo", root=tmp_path)
+    assert not (tmp_path / "etc/claude-code/CLAUDE.md").exists()
+
+
+@pytest.mark.feature("plugin")
+def test_install_leaves_the_admins_own_claude_rules_alone(tmp_path):
+    own = tmp_path / "etc/claude-code/CLAUDE.md"
+    own.parent.mkdir(parents=True)
+    own.write_text("the admin's rules\n")
+    r = dry("kotl/install.sh", root=tmp_path)
+    assert own.read_text() == "the admin's rules\n" and "left /etc/claude-code/CLAUDE.md" in r.stdout
+    dry("kotl/install.sh", "--undo", root=tmp_path)
+    assert own.read_text() == "the admin's rules\n"
+
+
 @pytest.mark.feature("fsmod")
 def test_xdma_reload_loads_it_the_way_firesim_does():
     text = (DEPLOY / "adapters/firesim/kotl-xdma-reload").read_text()

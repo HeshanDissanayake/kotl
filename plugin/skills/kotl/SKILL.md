@@ -92,9 +92,23 @@ result, how long it took against the ETA, and anything odd.
 guard stopped it), `idle` (a lease with nothing running), `released`, `cancelled`, `killed`
 (ended by Slurm's backup), `no_access` (the board's PC couldn't be reached).
 
+## A board that is busy, or a run that stopped
+
+- Signs that a machine or board is Kotl's: `kotl` on the workstation's PATH, files on an FPGA PC
+  that start with "managed by kotl" (`/usr/local/bin/kotl-*`, `/etc/sudoers.d/kotl*`), and
+  `kotl-job-N` keys in the board account's `~/.ssh/authorized_keys`. If you see them, every use of
+  that board goes through Kotl.
+- A FireSim `fsim*` screen or `FireSim-*` driver on a board's PC that isn't your job's is someone
+  else's work, or work outside Kotl. **Never stop it.** Tell the person who seems to run it, for
+  how long, and that it is outside Kotl. `kotl board list` and `kotl status` show the same.
+- Kotl itself never stops work it didn't start: a job's end step stops only what started during
+  that job. If the person's run outside Kotl stopped anyway, look at `kotl status` and
+  `kotl history` (a Kotl job may have taken the board), then move the run into `kotl run`.
+
 ## Don'ts
 
 - Don't run FireSim or touch an FPGA PC outside a Kotl job or lease.
+- Don't stop FireSim, screens or processes on a board's PC that aren't your own job's.
 - Don't cancel other people's jobs (Kotl won't let you anyway).
 - Don't leave a lease running: release it.
 - Don't guess an ETA of hours for a minutes-long run: ETAs order the queue for everyone.

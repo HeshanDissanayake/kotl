@@ -31,6 +31,10 @@ When the person asks to test FireSim, the FPGA or Kotl with this package:
 4. Report: PASS or FAIL, how long it took against the 15 minute ETA, and for a FAIL the step it
    stopped at and the last uartlog lines.
 
+If step 1 says FireSim is already running outside Kotl, stop there: don't stop that run and
+don't retry around it. Report what it printed (how long it has run, who is connected) and that it
+is outside Kotl, and suggest asking that person to use `kotl run` or `kotl lease`.
+
 Common failures, from step 1: XDMA loaded without `poll_mode=1`, or a board account without
 passwordless sudo. These are board setup problems for the admin, not something to work around.
 Never run FireSim or ssh to the FPGA PC outside `kotl run`.

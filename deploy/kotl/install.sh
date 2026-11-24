@@ -7,7 +7,8 @@
 #       an SSH client entry per board (/etc/ssh/ssh_config.d/kotl.conf: your job key during a lease),
 #       the Kotl daemon (kotl-daemon.service: kotld, Kotl's one always-running process),
 #       the Claude Code plugin (/opt/kotl/plugin, a marketplace at /opt/kotl: users add it with
-#       /plugin marketplace add /opt/kotl), the notifier's systemd timer (every minute), adds each board to the registry, and makes
+#       /plugin marketplace add /opt/kotl), Kotl's rules for every Claude Code session
+#       (/etc/claude-code/CLAUDE.md, kept as is if the admin wrote their own), the notifier's systemd timer (every minute), adds each board to the registry, and makes
 #       kotl a Slurm admin (its guards cancel hung jobs; its health check holds a down board's
 #       license with a reservation). Re-run after every update of the repo.
 #   kotl/install.sh --adapters firesim   also switches adapters on (kotl.conf `adapters =`;
@@ -18,7 +19,7 @@
 source "$(dirname "$0")/../lib.sh"
 
 REPO=$(cd "$DEPLOY_DIR/.." && pwd)
-usage() { sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//'; exit "${1:-0}"; }
+usage() { sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'; exit "${1:-0}"; }
 
 py_wrapper() {  # py_wrapper MODULE   -> a tiny entry script; -I ignores the caller's Python env
   cat <<EOF
@@ -101,6 +102,13 @@ install_all() {
     run sacctmgr -i modify user name=kotl set adminlevel=Admin
   fi
 
+  # Kotl's rules for every Claude Code session here, plugin or not (Claude Code's managed CLAUDE.md)
+  if [ -e "$(p /etc/claude-code/CLAUDE.md)" ] && ! grep -q "$MARK" "$(p /etc/claude-code/CLAUDE.md)"; then
+    say "left /etc/claude-code/CLAUDE.md as it is (not Kotl's); add $DEPLOY_DIR/claude/CLAUDE.md to it by hand"
+  else
+    put_file /etc/claude-code/CLAUDE.md 644 root:root <"$DEPLOY_DIR/claude/CLAUDE.md"
+  fi
+
   # the ETA notifier: one pass a minute, as kotl
   put_file /etc/systemd/system/kotl-notifier.service 644 root:root <"$DEPLOY_DIR/systemd/kotl-notifier.service"
   put_file /etc/systemd/system/kotl-notifier.timer 644 root:root <"$DEPLOY_DIR/systemd/kotl-notifier.timer"
@@ -140,6 +148,7 @@ undo_all() {
   remove_file /opt/kotl/.claude-plugin/marketplace.json
   remove_file /opt/kotl/kotl-status.vsix
   remove_file /opt/kotl/client/install.sh
+  if grep -qs "$MARK" "$(p /etc/claude-code/CLAUDE.md)"; then remove_file /etc/claude-code/CLAUDE.md; fi
   remove_file /opt/kotl/launch
   remove_file /opt/kotl/bin/kotl
   remove_file /etc/ssh/ssh_config.d/kotl.conf
