@@ -2,7 +2,7 @@
 # Build the Kotl FireSim test package: one self-contained folder that boots Linux on a VCU118
 # through Kotl, for users with no Chipyard. Reads a Chipyard (never changes it), writes OUT.
 #
-#   make-test-package.sh --chipyard /research/heshds/chipyard --out /research/heshds/kotl-firesim-test
+#   make-test-package.sh --chipyard ~/chipyard --out /shared/kotl-firesim-test
 #
 # Defaults are the combination that booted Linux on vcu118-pc1 (Kotl job 49): the
 # xilinx_vcu118_firesim_rocket_singlecore_4GB_no_nic bitstream, its FireSimRocket32KBL1NoL2Config
@@ -57,7 +57,8 @@ args=$(grep -o "sudo ./FireSim-xilinx_vcu118 [^&']*" "$SIMRUN" | sed 's#^sudo ./
 [ -n "$args" ] || { echo "no driver arguments found in $SIMRUN" >&2; exit 1; }
 printf '# the FireSim driver arguments (from %s)\nSIM_ARGS="%s"\n' "$SIMRUN" "$args" >"$tmp/payload/sim/args.sh"
 cp "$HERE/test-package/run.sh" "$tmp/run.sh"
-cp "$HERE/test-package/README.md" "$tmp/README.md"
+abs_out="$(cd "$(dirname "$OUT")" && pwd)/$(basename "$OUT")"
+sed "s#@PACKAGE@#$abs_out#g" "$HERE/test-package/README.md" >"$tmp/README.md"
 chmod 755 "$tmp/run.sh" "$tmp/payload/sim/FireSim-xilinx_vcu118"
 {
   echo "Kotl FireSim test package, built $(date -Is) by $(id -un) on $(hostname -s)"

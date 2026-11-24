@@ -738,7 +738,7 @@
         },
         {
           "date": "2026-11-24",
-          "text": "FireSim test package: make-test-package.sh builds a self-contained folder (driver + libs without workstation glibc, bitstream, linux-poweroff, run.sh, README for people and Claude) from the job-49 combination; built at /research/heshds/kotl-firesim-test (623 MB). Not yet run on the board."
+          "text": "FireSim test package: make-test-package.sh builds a self-contained folder (driver + libs without workstation glibc, bitstream, linux-poweroff, run.sh, README for people and Claude) from the job-49 combination; built at <shared folder>/kotl-firesim-test (623 MB). Not yet run on the board."
         }
       ]
     },

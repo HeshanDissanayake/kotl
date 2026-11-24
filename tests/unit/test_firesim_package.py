@@ -62,7 +62,9 @@ def test_builds_a_self_contained_folder(chipyard, tmp_path):
     assert (sim / "poweroffnode-br-base-bin-dwarf").read_bytes() == b"DWARF"
     args = (sim / "args.sh").read_text()
     assert 'SIM_ARGS="+permissive +macaddr0=00:12:6D:00:00:02 +blkdev0=poweroffnode-poweroffnode.ext2"' in args
-    assert os.access(out / "run.sh", os.X_OK) and "For Claude" in (out / "README.md").read_text()
+    readme = (out / "README.md").read_text()
+    assert os.access(out / "run.sh", os.X_OK) and "For Claude" in readme
+    assert f"kotl run --eta 15m -- {out}/run.sh" in readme and "@PACKAGE@" not in readme
     assert "payload/sim/args.sh" in (out / "MANIFEST").read_text()
 
 

@@ -9,7 +9,7 @@ need Chipyard, FireSim, conda or any setup beyond a Kotl account.
 From any folder you can write to (results go to `./firesim-test-results/<job>/`):
 
 ```sh
-kotl run --eta 15m -- /research/heshds/kotl-firesim-test/run.sh
+kotl run --eta 15m -- @PACKAGE@/run.sh
 ```
 
 - It waits in Kotl's queue for a board, then flashes the FPGA, boots Linux and waits for it to

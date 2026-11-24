@@ -25,7 +25,7 @@ step() {
 log "=== next.sh started by $(id -un) (deploy/next.sh $(git rev-parse --short HEAD 2>/dev/null))"
 
 if ask "1. Run the FireSim test package on the board through Kotl (about 5-15 min; the board is busy meanwhile)"; then
-  step "mkdir -p /research/heshds/kotl-test-runs && cd /research/heshds/kotl-test-runs && kotl run --eta 15m -- /research/heshds/kotl-firesim-test/run.sh"
+  step "mkdir -p /research/$USER/kotl-test-runs && cd /research/$USER/kotl-test-runs && kotl run --eta 15m -- /research/$USER/kotl-firesim-test/run.sh"
 fi
 
 log "=== next.sh finished"
