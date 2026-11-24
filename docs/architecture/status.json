@@ -558,6 +558,10 @@
         {
           "date": "2026-11-24",
           "text": "Adapter interface (kotl/adapters/__init__.py); install.sh --adapters sets kotl.conf; the end step and idle guard pass the adapters' names to kotl-keys."
+        },
+        {
+          "date": "2026-11-24",
+          "text": "install.sh replaces the .vsix outright (no .kotl-orig backup)."
         }
       ]
     },
@@ -731,6 +735,10 @@
         {
           "date": "2026-11-24",
           "text": "User decision: the FireSim adapter is the only FireSim-specific part. The M1 FireSim check (check.sh) and the smoke example (firesim-smoke.sh) moved into deploy/adapters/firesim/; the 'Your FireSim' box became a generic 'Your job' (any tool)."
+        },
+        {
+          "date": "2026-11-24",
+          "text": "FireSim test package: make-test-package.sh builds a self-contained folder (driver + libs without workstation glibc, bitstream, linux-poweroff, run.sh, README for people and Claude) from the job-49 combination; built at /research/heshds/kotl-firesim-test (623 MB). Not yet run on the board."
         }
       ]
     },

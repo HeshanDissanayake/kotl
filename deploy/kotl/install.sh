@@ -87,6 +87,8 @@ install_all() {
   # the VS Code extension, as a .vsix anyone can install (code --install-extension)
   local vsix
   vsix=$(python3 "$REPO/vscode-kotl/build_vsix.py" "$(mktemp -d)")
+  # a .vsix (zip) can't carry the "managed by kotl" mark either: replace it outright
+  rm -f "$(p /opt/kotl/kotl-status.vsix)" "$(p /opt/kotl/kotl-status.vsix.kotl-orig)"
   put_file /opt/kotl/kotl-status.vsix 644 root:root <"$vsix"
   make_dir /opt/kotl/client 755 root:root
   put_file /opt/kotl/client/install.sh 755 root:root <"$DEPLOY_DIR/client/install.sh"

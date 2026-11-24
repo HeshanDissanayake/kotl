@@ -24,22 +24,8 @@ step() {
 
 log "=== next.sh started by $(id -un) (deploy/next.sh $(git rev-parse --short HEAD 2>/dev/null))"
 
-if ask "1. Update Kotl here (sudo) with the FireSim adapter switched on (adapters = firesim)"; then
-  step "sudo deploy/kotl/install.sh --adapters firesim --board vcu118-pc1=vcu118@vcu118-pc1" &&
-  step "grep -E '^adapters' /etc/kotl/kotl.conf"
-fi
-
-if ask "2. Update the PC (sudo there): the generic kotl-keys, and the FireSim adapter's PC part"; then
-  step "scp deploy/pc/setup.sh deploy/pc/kotl-keys deploy/adapters/firesim/pc-setup.sh deploy/adapters/firesim/kotl-xdma-reload $PC:/tmp/" &&
-  step "ssh -t $PC 'sudo bash /tmp/setup.sh --keys-helper /tmp/kotl-keys && sudo bash /tmp/pc-setup.sh && rm /tmp/setup.sh /tmp/kotl-keys /tmp/pc-setup.sh /tmp/kotl-xdma-reload'"
-fi
-
-if ask "3. Check the board with the adapter (as admin; read-only on the PC)"; then
-  step "kotl board check"
-fi
-
-if ask "4. Run kotl setup for yourself (Claude plugins + VS Code extension; no sudo)"; then
-  step "kotl setup"
+if ask "1. Run the FireSim test package on the board through Kotl (about 5-15 min; the board is busy meanwhile)"; then
+  step "mkdir -p /research/heshds/kotl-test-runs && cd /research/heshds/kotl-test-runs && kotl run --eta 15m -- /research/heshds/kotl-firesim-test/run.sh"
 fi
 
 log "=== next.sh finished"
