@@ -412,3 +412,36 @@ def test_firesim_stop_stops_only_the_jobs_driver(tmp_path, stubborn):
     assert running.read_text() == "777 5000 FireSim-xilinx_\n"                 # someone else's run survives
     assert ("killed" in r.stdout) == stubborn
     assert subprocess.run(["sh", helper, "6x"], capture_output=True, env=env).returncode == 2
+
+
+# ---- kotl/update.sh (launcher): the workstation, then every board's PC
+def update_dry(tmp_path, *args, adapters="firesim"):
+    (tmp_path / "etc/kotl").mkdir(parents=True)
+    (tmp_path / "etc/kotl/kotl.conf").write_text(f"pc_account = boardacct\nadapters = {adapters}\n")
+    (tmp_path / "etc/ssh/ssh_config.d").mkdir(parents=True)
+    (tmp_path / "etc/ssh/ssh_config.d/kotl.conf").write_text(
+        "# managed by kotl\n\nHost b1\n  HostName 10.0.0.7\n  User boardacct\n")
+    env = dict(os.environ, KOTL_ROOT=str(tmp_path))
+    return subprocess.run(["bash", str(DEPLOY / "kotl/update.sh"), "--dry-run", *args],
+                          capture_output=True, text=True, env=env)
+
+
+@pytest.mark.feature("launcher")
+def test_update_installs_the_workstation_then_each_pc(tmp_path):
+    r = update_dry(tmp_path)
+    assert r.returncode == 0, r.stdout + r.stderr
+    out = r.stdout
+    assert f"would run: sudo bash {DEPLOY}/kotl/install.sh\n" in out      # no options: keeps boards, adapters
+    assert "ssh boardacct@10.0.0.7" in out and "pc adapters/firesim" in out
+    assert "pc/setup.sh --account boardacct --keys-helper $d/pc/kotl-keys" in out
+    assert "sudo bash $d/adapters/firesim/pc-setup.sh" in out
+    assert out.index("install.sh") < out.index("10.0.0.7") and "kotl setup" in out
+
+
+@pytest.mark.feature("launcher")
+def test_update_options(tmp_path):
+    r = update_dry(tmp_path, "--no-pc", adapters="")
+    assert r.returncode == 0 and "10.0.0.7" not in r.stdout
+    r = subprocess.run(["bash", str(DEPLOY / "kotl/update.sh"), "--dry-run", "--pc", "a@b;rm"],
+                       capture_output=True, text=True, env=dict(os.environ, KOTL_ROOT=str(tmp_path)))
+    assert r.returncode != 0 and "USER@ADDRESS" in r.stderr

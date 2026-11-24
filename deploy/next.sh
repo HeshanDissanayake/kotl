@@ -24,15 +24,11 @@ step() {
 
 log "=== next.sh started by $(id -un) (deploy/next.sh $(git rev-parse --short HEAD 2>/dev/null))"
 
-if ask "1. Update Kotl here (sudo): every Claude session on the workstation gets Kotl's rules"; then
-  step "sudo deploy/kotl/install.sh --adapters firesim --board vcu118-pc1=vcu118@vcu118-pc1"
-fi
-
-if ask "2. Show what Claude sessions now read"; then
-  step "cat /etc/claude-code/CLAUDE.md"
+if ask "1. Update Kotl everywhere with the new update script (sudo here, then sudo on the PC)"; then
+  step "bash deploy/kotl/update.sh"
 fi
 
 log "=== next.sh finished"
 echo
 echo "Done. Everything is in .kotl/next.log, and Claude sees it with your next message."
-echo "Then start a NEW Claude Code session and ask it: how do I use the FPGA board? (deploy/NEXT.md step 3)."
+echo "From now on, this one script updates Kotl: bash deploy/kotl/update.sh"

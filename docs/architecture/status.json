@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "updated": "2026-11-24T13:33:41Z",
-  "repo_commit": "c136deebe90ccff1cc683a48115082ce3ef4afb0",
+  "updated": "2026-11-24T13:56:58Z",
+  "repo_commit": "ac4797eafeec33600b5acd88e879008da22ca6a0",
   "watch": [
     "deploy/",
     "kotl/",
@@ -50,7 +50,7 @@
         "unit": {
           "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-24T13:33:40Z"
+          "ran_at": "2026-11-24T13:56:58Z"
         },
         "hardware": null
       },
@@ -108,7 +108,7 @@
         "unit": {
           "passed": 4,
           "failed": 0,
-          "ran_at": "2026-11-24T13:33:40Z"
+          "ran_at": "2026-11-24T13:56:58Z"
         },
         "hardware": null
       },
@@ -146,7 +146,7 @@
         "unit": {
           "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-24T13:33:40Z"
+          "ran_at": "2026-11-24T13:56:58Z"
         },
         "hardware": null
       },
@@ -191,7 +191,7 @@
         "unit": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-24T13:33:40Z"
+          "ran_at": "2026-11-24T13:56:58Z"
         },
         "hardware": null
       },
@@ -224,7 +224,7 @@
         "unit": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-24T13:33:40Z"
+          "ran_at": "2026-11-24T13:56:58Z"
         },
         "hardware": null
       },
@@ -266,7 +266,7 @@
         "unit": {
           "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-24T13:33:40Z"
+          "ran_at": "2026-11-24T13:56:58Z"
         },
         "hardware": null
       },
@@ -315,7 +315,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-24T13:33:40Z"
+          "ran_at": "2026-11-24T13:56:58Z"
         },
         "hardware": {
           "passed": 1,
@@ -360,7 +360,7 @@
         "unit": {
           "passed": 4,
           "failed": 0,
-          "ran_at": "2026-11-24T13:33:40Z"
+          "ran_at": "2026-11-24T13:56:58Z"
         },
         "hardware": {
           "passed": 2,
@@ -446,7 +446,7 @@
         "unit": {
           "passed": 7,
           "failed": 0,
-          "ran_at": "2026-11-24T13:33:40Z"
+          "ran_at": "2026-11-24T13:56:58Z"
         },
         "hardware": null
       },
@@ -498,16 +498,16 @@
       ],
       "tests": {
         "unit": {
-          "passed": 34,
+          "passed": 36,
           "failed": 0,
-          "ran_at": "2026-11-24T13:33:40Z"
+          "ran_at": "2026-11-24T13:56:58Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "c136deebe90ccff1cc683a48115082ce3ef4afb0",
-        "message": "Never stop work outside Kotl: the end step stops only the job's own; say who and how long",
-        "date": "2026-11-24T22:41:15+11:00"
+        "hash": "ac4797eafeec33600b5acd88e879008da22ca6a0",
+        "message": "Claude sessions know Kotl up front: skill, session start and a workstation-wide CLAUDE.md; daemon and plugin built",
+        "date": "2026-11-25T00:34:24+11:00"
       },
       "issues": [],
       "log": [
@@ -566,6 +566,10 @@
         {
           "date": "2026-11-24",
           "text": "End step runs the adapters' end_commands on the PC after removing the job key (the epilog too), logged as 'end step: ...'."
+        },
+        {
+          "date": "2026-11-25",
+          "text": "deploy/kotl/update.sh (user request): one update for everything. The workstation via install.sh (no options: keeps boards and adapters), then each PC from ssh_config.d/kotl.conf: pc/setup.sh --keys-helper and each enabled adapter's pc-setup.sh, copied to a temporary folder and removed after. --no-pc, --pc, --dry-run."
         }
       ]
     },
@@ -582,7 +586,7 @@
         "unit": {
           "passed": 17,
           "failed": 0,
-          "ran_at": "2026-11-24T13:33:40Z"
+          "ran_at": "2026-11-24T13:56:58Z"
         },
         "hardware": null
       },
@@ -655,7 +659,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-24T13:33:40Z"
+          "ran_at": "2026-11-24T13:56:58Z"
         },
         "hardware": null
       },
@@ -689,7 +693,7 @@
         "unit": {
           "passed": 11,
           "failed": 0,
-          "ran_at": "2026-11-24T13:33:40Z"
+          "ran_at": "2026-11-24T13:56:58Z"
         },
         "hardware": {
           "passed": 1,
@@ -698,9 +702,9 @@
         }
       },
       "last_commit": {
-        "hash": "c136deebe90ccff1cc683a48115082ce3ef4afb0",
-        "message": "Never stop work outside Kotl: the end step stops only the job's own; say who and how long",
-        "date": "2026-11-24T22:41:15+11:00"
+        "hash": "ac4797eafeec33600b5acd88e879008da22ca6a0",
+        "message": "Claude sessions know Kotl up front: skill, session start and a workstation-wide CLAUDE.md; daemon and plugin built",
+        "date": "2026-11-25T00:34:24+11:00"
       },
       "issues": [],
       "log": [
@@ -773,7 +777,7 @@
         "unit": {
           "passed": 22,
           "failed": 0,
-          "ran_at": "2026-11-24T13:33:40Z"
+          "ran_at": "2026-11-24T13:56:58Z"
         },
         "hardware": null
       },
@@ -865,7 +869,7 @@
         "unit": {
           "passed": 6,
           "failed": 0,
-          "ran_at": "2026-11-24T13:33:40Z"
+          "ran_at": "2026-11-24T13:56:58Z"
         },
         "hardware": null
       },
@@ -902,7 +906,7 @@
         "unit": {
           "passed": 7,
           "failed": 0,
-          "ran_at": "2026-11-24T13:33:40Z"
+          "ran_at": "2026-11-24T13:56:58Z"
         },
         "hardware": null
       },
@@ -947,14 +951,14 @@
         "unit": {
           "passed": 20,
           "failed": 0,
-          "ran_at": "2026-11-24T13:33:40Z"
+          "ran_at": "2026-11-24T13:56:58Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "80c66f9bbb30d2dcbf184c2dfeb33953bc8b8ab0",
-        "message": "Only the FireSim adapter is FireSim-specific",
-        "date": "2026-11-24T20:20:07+11:00"
+        "hash": "ac4797eafeec33600b5acd88e879008da22ca6a0",
+        "message": "Claude sessions know Kotl up front: skill, session start and a workstation-wide CLAUDE.md; daemon and plugin built",
+        "date": "2026-11-25T00:34:24+11:00"
       },
       "issues": [],
       "log": [
@@ -1116,7 +1120,7 @@
         "unit": {
           "passed": 28,
           "failed": 0,
-          "ran_at": "2026-11-24T13:33:40Z"
+          "ran_at": "2026-11-24T13:56:58Z"
         },
         "hardware": {
           "passed": 2,
@@ -1247,7 +1251,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-24T13:33:40Z"
+          "ran_at": "2026-11-24T13:56:58Z"
         },
         "hardware": null
       },
@@ -1293,7 +1297,7 @@
         "unit": {
           "passed": 7,
           "failed": 0,
-          "ran_at": "2026-11-24T13:33:40Z"
+          "ran_at": "2026-11-24T13:56:58Z"
         },
         "hardware": null
       },
@@ -1328,7 +1332,7 @@
         "unit": {
           "passed": 7,
           "failed": 0,
-          "ran_at": "2026-11-24T13:33:40Z"
+          "ran_at": "2026-11-24T13:56:58Z"
         },
         "hardware": null
       },
