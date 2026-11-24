@@ -24,17 +24,17 @@ step() {
 
 log "=== next.sh started by $(id -un) (deploy/next.sh $(git rev-parse --short HEAD 2>/dev/null))"
 
-if ask "1. Update Kotl here (sudo): the end step runs the FireSim adapter's root cleanup"; then
+if ask "1. Look (read-only): what FireSim runs on the PC now, and what job 68's end step did"; then
+  step "ssh $PC 'echo \"screens:\"; screen -ls 2>&1 | grep fsim || echo \"  none\"; echo \"FireSim drivers:\"; ps -eo user,etime,args | grep \"[F]ireSim-\" | cut -c1-110 || echo \"  none\"'"
+  step "mkdir -p /research/$USER/kotl-test-runs && cd /research/$USER/kotl-test-runs && kotl fetch 68 >/dev/null && tail -n 8 kotl-results/68/launcher.log"
+fi
+
+if ask "2. Run the FireSim test package again (about 5-15 min; the board is busy meanwhile)"; then
+  step "cd /research/$USER/kotl-test-runs && kotl run --eta 15m -- /research/$USER/kotl-firesim-test/run.sh"
+fi
+
+if ask "3. Update Kotl here (sudo; small: the client installer's backup copy)"; then
   step "sudo deploy/kotl/install.sh --adapters firesim --board vcu118-pc1=vcu118@vcu118-pc1"
-fi
-
-if ask "2. Update the PC (sudo there): install kotl-firesim-stop (root cleanup) next to kotl-xdma-reload"; then
-  step "scp deploy/adapters/firesim/pc-setup.sh deploy/adapters/firesim/kotl-xdma-reload deploy/adapters/firesim/kotl-firesim-stop $PC:/tmp/" &&
-  step "ssh -t $PC 'sudo bash /tmp/pc-setup.sh && rm /tmp/pc-setup.sh /tmp/kotl-xdma-reload /tmp/kotl-firesim-stop'"
-fi
-
-if ask "3. Run the FireSim test package on the board through Kotl (about 5-15 min; the board is busy meanwhile)"; then
-  step "mkdir -p /research/$USER/kotl-test-runs && cd /research/$USER/kotl-test-runs && kotl run --eta 15m -- /research/$USER/kotl-firesim-test/run.sh"
 fi
 
 log "=== next.sh finished"

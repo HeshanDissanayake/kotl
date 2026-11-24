@@ -43,7 +43,14 @@ pm=$(cat /sys/module/xdma/parameters/poll_mode 2>/dev/null || echo unknown)
 lsmod | grep -q '^xvsec ' || { echo "the xvsec driver isn't loaded (needed to flash the FPGA)"; exit 1; }
 command -v xvsecctl >/dev/null || { echo "xvsecctl isn't installed on the PC"; exit 1; }
 sudo -n true 2>/dev/null || { echo "the board account can't use sudo without a password (FireSim needs it)"; exit 1; }
-if screen -ls 2>/dev/null | grep -q '\.fsim0'; then echo "a FireSim console (fsim0) is already running"; exit 1; fi
+if screen -ls 2>/dev/null | grep -q '\.fsim0'; then
+  echo "a FireSim console (fsim0) is already running on the PC, outside this job:"
+  screen -ls 2>/dev/null | grep '\.fsim' | sed 's/^/  screen: /'
+  ps -eo user,etime,args 2>/dev/null | grep '[F]ireSim-' | cut -c1-100 | sed 's/^/  driver: /'
+  echo "Either a leftover from an earlier run, or someone running FireSim outside Kotl. This job's end"
+  echo "step stops it (Kotl holds the board now); if it was a leftover, just run the test again."
+  exit 1
+fi
 echo "ok: XDMA poll_mode=1, xvsec, xvsecctl, sudo"
 EOF
 

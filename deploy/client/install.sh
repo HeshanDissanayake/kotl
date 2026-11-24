@@ -1,4 +1,5 @@
 #!/bin/sh
+# managed by kotl (deploy/client/install.sh)
 # Kotl on your own PC: the Claude Code plugins (kotl, kotl-band) and the VS Code extension,
 # reading Kotl over ssh from the workstation. Get this folder with:
 #
@@ -18,7 +19,7 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --ssh) SSH=${2:-}; shift ;;
     --undo) UNDO=1 ;;
-    -h|--help) sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help) sed -n '3,15p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "unknown option $1" >&2; exit 2 ;;
   esac
   shift

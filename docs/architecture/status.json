@@ -747,6 +747,10 @@
         {
           "date": "2026-11-24",
           "text": "Root cleanup: FireSim's driver runs as root (via sudo), so the board account couldn't stop it at the end step. New adapter hook end_commands; FireSim's runs kotl-firesim-stop on the PC (root, one sudoers line, no arguments) after the job key is removed. Needs the PC update (pc-setup.sh)."
+        },
+        {
+          "date": "2026-11-24",
+          "text": "Job 68 (first test-package run) stopped at its check: an fsim0 console was already running on the PC outside any job. run.sh now shows the screens and driver ages in that case."
         }
       ]
     },
@@ -1317,6 +1321,10 @@
         {
           "date": "2026-11-24",
           "text": "New (user request): kotl setup installs the Claude plugins and the VS Code extension for whoever runs it (into their VS Code server); kotl client-bundle + install.sh does the same on a user's own PC over ssh. Both have --undo. accounts.sh add-user tells the new user."
+        },
+        {
+          "date": "2026-11-24",
+          "text": "The client installer carries Kotl's mark; install.sh drops the stale .kotl-orig."
         }
       ]
     }

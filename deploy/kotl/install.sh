@@ -91,6 +91,7 @@ install_all() {
   rm -f "$(p /opt/kotl/kotl-status.vsix)" "$(p /opt/kotl/kotl-status.vsix.kotl-orig)"
   put_file /opt/kotl/kotl-status.vsix 644 root:root <"$vsix"
   make_dir /opt/kotl/client 755 root:root
+  rm -f "$(p /opt/kotl/client/install.sh.kotl-orig)"     # an earlier install's backup of our own file
   put_file /opt/kotl/client/install.sh 755 root:root <"$DEPLOY_DIR/client/install.sh"
 
   # kotl cancels hung jobs (guards) and holds a down board's license (reservations): Slurm admin
