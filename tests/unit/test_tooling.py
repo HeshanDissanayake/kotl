@@ -18,8 +18,9 @@ def run(cwd, *args, check=True):
 @pytest.fixture
 def repo(tmp_path):
     """A throwaway git repo with the shipped tooling and the hook enabled."""
-    for rel in ("tools/status.py", ".githooks/pre-commit",
-                "docs/architecture/architecture.json", "docs/architecture/status.json"):
+    for rel in ("tools/status.py", "tools/arrows.py", "tools/arrows-check.js", ".githooks/pre-commit",
+                "docs/architecture/architecture.json", "docs/architecture/status.json",
+                "docs/architecture/router.js"):
         (tmp_path / rel).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(ROOT / rel, tmp_path / rel)
     run(tmp_path, "git", "init", "-q")

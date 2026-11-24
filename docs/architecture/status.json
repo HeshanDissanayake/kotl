@@ -88,6 +88,10 @@
         {
           "date": "2026-11-24",
           "text": "Arrows are routed by the view (docs/architecture/router.js): each has its own start and end point, no two share a line, none runs through a box, in every fold state. architecture.json keeps only from/to/style/label/why. status.py check runs tools/arrows.py (node) over all 32 fold states."
+        },
+        {
+          "date": "2026-11-24",
+          "text": "Tooling tests copy the arrow checker and router into their throwaway repo."
         }
       ],
       "drawn": false
