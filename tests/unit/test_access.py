@@ -198,9 +198,11 @@ def test_end_step_runs_the_firesim_root_stop_only_with_the_adapter(world):
         L = make("alice", ssh)
         L.start(job, "run", pubkey=KEY)
         L.end(job, signal=True)
-        stop = ("vcu118-pc1", ["sudo", "-n", "/usr/local/bin/kotl-firesim-stop"])
-        assert (stop in ssh.calls) == expect
+        stops = [c for c in ssh.calls if "/usr/local/bin/kotl-firesim-stop" in c[1]]
+        assert bool(stops) == expect
+        stop = stops[0] if stops else None
         if expect:
             remove = next(i for i, c in enumerate(ssh.calls) if "remove" in c[1])
             assert ssh.calls.index(stop) > remove                    # after the key is out
-            assert ssh.calls[remove][1][-4:] == ["--screen", "fsim", "--proc", "FireSim-"]
+            assert ssh.calls[remove][1][-6:] == ["--max-age", stop[1][-1], "--screen", "fsim", "--proc", "FireSim-"]
+            assert stop[1][-1].isdigit()                             # the job's age: only its own work

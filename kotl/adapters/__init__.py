@@ -11,8 +11,9 @@ about any tool. An adapter adds what one tool needs, through these hooks, all op
   stop_procs   process patterns the end step stops (pkill -f, as the PC account)
   work_procs   process name prefixes that count as work for the lease idle guard
   console      the screen session `kotl attach` opens
-  end_commands commands the end step runs on the board's PC (as kotl, over its SSH key) after the
-               job's key is removed, e.g. a root helper that stops what the board account can't
+  end_commands(age)  commands the end step runs on the board's PC (as kotl, over its SSH key)
+               after the job's key is removed, e.g. a root helper that stops what the board account
+               can't; age is the job's age in seconds (stop only what started during the job)
 
 Adapters are switched on in /etc/kotl/kotl.conf: `adapters = firesim` (comma-separated).
 With none, Kotl still runs leases and jobs on any board, with only the generic checks.
@@ -32,7 +33,8 @@ class Adapter:
     stop_procs = ()
     work_procs = ()
     console = ""
-    end_commands = ()
+    def end_commands(self, age):
+        return []
 
     def failures(self, p):
         return []
@@ -65,9 +67,10 @@ def _safe(values):
     return [v for v in values if SAFE.match(v)]
 
 
-def stop_args(adapters):
-    """kotl-keys arguments for the end step: --screen PREFIX / --proc PATTERN for each adapter."""
-    args = []
+def stop_args(adapters, age=None):
+    """kotl-keys arguments for the end step: --max-age (the job's age: stop only what started
+    during the job), then --screen PREFIX / --proc PREFIX for each adapter."""
+    args = ["--max-age", str(int(age))] if adapters and age is not None else []
     for a in adapters:
         for s in _safe(a.stop_screens):
             args += ["--screen", s]
@@ -81,9 +84,9 @@ def work_args(adapters):
     return [x for a in adapters for p in _safe(a.work_procs) for x in ("--proc", p)]
 
 
-def end_commands(adapters):
+def end_commands(adapters, age=None):
     """Every adapter's end-step commands, in order (argv lists run on the PC)."""
-    return [list(c) for a in adapters for c in a.end_commands]
+    return [list(c) for a in adapters for c in a.end_commands(age)]
 
 
 def console(adapters):

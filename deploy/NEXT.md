@@ -3,14 +3,14 @@
 This file always holds only the current steps. **To run them: `bash ~/working_dir/kotl/deploy/next.sh`**
 (it asks before each step and logs everything to `.kotl/next.log`).
 
-Job 68 stopped at its first check: a FireSim console (`fsim0`) was already running on the PC,
-outside any Kotl job (the 22:25 health check had warned about it too). Job 68's end step most
-likely stopped it, since the end step stops every FireSim screen and driver on the board's PC.
+Someone ran FireSim directly on the PC (outside Kotl), and job 69's end step most likely ended it:
+the cleanup stopped every FireSim screen and driver on the PC. That's fixed: the end step now stops
+only what started during the job, and work outside Kotl is left running and reported with **who**
+(their workstation account, from their open connections to the PC) and **how long**.
 
-1. **Look (read-only):** what FireSim runs on the PC now, and the end of job 68's `launcher.log`
-   (it should show `end step: kotl-firesim-stop: ...`).
-2. **Run the test package again.** If the console was a leftover, this run should pass.
-3. **Update Kotl (sudo, small):** the client installer now carries Kotl's mark, so installs stop
-   keeping a stale `.kotl-orig` copy.
-
-If someone was running FireSim directly on the PC (outside Kotl), their run was ended by job 68.
+1. **Update Kotl (sudo).**
+2. **Update the PC (sudo there):** the new `kotl-keys` and `kotl-firesim-stop` (and its sudoers line,
+   which now also accepts the job's age). Also fixes job 68's `exit 255`: the old cleanup matched its
+   own command line and killed itself.
+3. **`kotl board check`:** shows any work outside Kotl, with who and how long.
+4. **Run the FireSim test package**, once step 3 shows nothing outside Kotl.

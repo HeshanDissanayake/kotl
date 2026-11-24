@@ -371,21 +371,24 @@ def test_install_publishes_the_client_installer_and_replaces_json(tmp_path):
 
 @pytest.mark.feature("fsmod")
 @pytest.mark.parametrize("stubborn", [False, True])
-def test_firesim_stop_stops_the_root_driver(tmp_path, stubborn):
-    # stand-in pgrep/pkill: a "driver" is running while the state file exists
-    state, bindir = tmp_path / "running", tmp_path / "bin"
+def test_firesim_stop_stops_only_the_jobs_driver(tmp_path, stubborn):
+    # stand-in ps/kill: driver 4242 started during the job (30 s old), 777 long before (5000 s)
+    running, bindir = tmp_path / "running", tmp_path / "bin"
     bindir.mkdir()
-    state.write_text("4242 ./FireSim-xilinx_vcu118 +permissive\n")
-    (bindir / "pgrep").write_text(f'#!/bin/sh\n[ -f {state} ] || exit 1\ncase "$1" in -a) cat {state};; *) echo 4242;; esac\n')
-    kill_on = "-KILL" if stubborn else "-TERM"
-    (bindir / "pkill").write_text(f'#!/bin/sh\necho "$1" >> {tmp_path}/signals\n[ "$1" = {kill_on} ] && rm -f {state}\nexit 0\n')
+    running.write_text("4242 30 FireSim-xilinx_\n777 5000 FireSim-xilinx_\n")
+    (bindir / "ps").write_text(f"#!/bin/sh\ncat {running}\n")
+    dies_on = "-KILL" if stubborn else "-TERM"
+    (bindir / "kill").write_text(f'#!/bin/sh\nsig=$1; shift\necho "$sig $*" >> {tmp_path}/signals\n'
+                                 f'[ "$sig" = {dies_on} ] && for p in "$@"; do grep -v "^$p " {running} > {running}.n; mv {running}.n {running}; done\nexit 0\n')
     (bindir / "sleep").write_text("#!/bin/sh\nexit 0\n")
     for f in bindir.iterdir():
         f.chmod(0o755)
     env = dict(os.environ, PATH=f"{bindir}:/usr/bin:/bin")
-    r = subprocess.run(["sh", str(DEPLOY / "adapters/firesim/kotl-firesim-stop")], capture_output=True, text=True, env=env)
+    helper = str(DEPLOY / "adapters/firesim/kotl-firesim-stop")
+    r = subprocess.run(["sh", helper, "60"], capture_output=True, text=True, env=env)
     assert r.returncode == 0, r.stdout + r.stderr
-    assert "stopping: 4242 ./FireSim-xilinx_vcu118" in r.stdout and not state.exists()
+    assert "stopping: 4242" in r.stdout and "777" not in (tmp_path / "signals").read_text()
+    assert "left running (older than this job, outside Kotl)" in r.stdout and "777(5000s)" in r.stdout
+    assert running.read_text() == "777 5000 FireSim-xilinx_\n"                 # someone else's run survives
     assert ("killed" in r.stdout) == stubborn
-    r = subprocess.run(["sh", str(DEPLOY / "adapters/firesim/kotl-firesim-stop")], capture_output=True, text=True, env=env)
-    assert "no FireSim driver running" in r.stdout
+    assert subprocess.run(["sh", helper, "6x"], capture_output=True, env=env).returncode == 2

@@ -160,16 +160,18 @@ class Launcher:
         b = self.reg.board(board_name)
         account = self.cfg.get("pc_account")
         mode = "full" if self.cfg.get("lockdown") == "full" else "soft"
+        # the job's age (plus a margin): the end step stops only what started during the job
+        age = int(self.clock() - j["started"]) + 10 if j.get("started") else None
         try:
             from kotl.adapters import stop_args
-            self.ssh.run(b["host"], ["sudo", "-n", "-u", account, KEYS_HELPER, "remove", str(job_id), mode,
-                                     *stop_args(self.adapters)])
-            note = f"access: job key removed ({mode} lockdown)"
+            out = self.ssh.run(b["host"], ["sudo", "-n", "-u", account, KEYS_HELPER, "remove", str(job_id), mode,
+                                           *stop_args(self.adapters, age)]).strip()
+            note = f"access: job key removed ({mode} lockdown)" + (f"; {out}" if out else "")
         except ssh_mod.SSHError as e:
             note = f"access: could not remove the job key: {e} (it names the job, so the next start or admin can)"
         results.log(self.dir_for(j), note)
         from kotl.adapters import end_commands
-        for argv in end_commands(self.adapters):
+        for argv in end_commands(self.adapters, age):
             try:
                 out = self.ssh.run(b["host"], argv, timeout=60).strip()
                 results.log(self.dir_for(j), f"end step: {out or ' '.join(argv)}")

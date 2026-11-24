@@ -25,6 +25,13 @@ DIR="kotl-firesim-test-$JOB"             # on the PC, in the board account's hom
 step() { echo; echo "== $(date +%H:%M:%S) $*"; }
 fail() { echo "KOTL RESULT: FAIL ($*)"; exit 1; }
 pc() { ssh -o BatchMode=yes -o ConnectTimeout=15 "$KOTL_PC" "$@"; }
+who_connected() {   # workstation accounts with an SSH connection to the PC now (the kernel's table)
+  local ip=${KOTL_PC#*@} hex
+  hex=$(echo "$ip" | awk -F. 'NF == 4 { printf "%02X%02X%02X%02X:0016", $4, $3, $2, $1 }')
+  [ -n "$hex" ] || return 0
+  awk -v h="$hex" 'NR > 1 && $3 == h && $4 == "01" { print $8 }' /proc/net/tcp 2>/dev/null | sort | uniq -c |
+    while read -r n uid; do u=$(getent passwd "$uid" | cut -d: -f1); [ "$u" = kotl ] || printf '%s%s ' "${u:-uid $uid}" "$([ "$n" -gt 1 ] && echo " ($n)")"; done
+}
 
 [ -n "${KOTL_PC:-}" ] || fail "run me inside a Kotl job: kotl run --eta 15m -- $0"
 [ -d "$HERE/payload/sim" ] && [ -f "$HERE/payload/bitstream/firesim.bit" ] || fail "payload/ is incomplete; rebuild the package"
@@ -32,27 +39,38 @@ mkdir -p "$OUT" || fail "can't write results to $OUT (run from a folder you can 
 . "$HERE/payload/sim/args.sh"            # SIM_ARGS: the driver's arguments (from the FireSim run it came from)
 
 step "1/6 checking the board's PC ($KOTL_PC)"
-pc bash -s <<'EOF' || fail "the board's PC isn't ready (see above)"
+PC_CHECK=$(cat <<'EOF'
 set -e
 card=$(lspci -nd 10ee: | head -n 1)
 [ -n "$card" ] || { echo "no Xilinx card on PCI"; exit 1; }
 echo "card: $card"
+if screen -ls 2>/dev/null | grep -q '\.fsim0'; then
+  echo "OUTSIDE KOTL: FireSim is already running on the PC, and it isn't a Kotl job:"
+  screen -ls 2>/dev/null | grep '\.fsim' | awk '{print "  screen " $1}'
+  ps -eo user,etime,comm 2>/dev/null | awk '$3 ~ /^FireSim-/ { print "  driver running for " $2 " (as " $1 ")" }'
+  echo "BUSY-OUTSIDE"
+  exit 1
+fi
 lsmod | grep -q '^xdma ' || { echo "the XDMA driver isn't loaded (Kotl's health check reloads it on an idle board)"; exit 1; }
 pm=$(cat /sys/module/xdma/parameters/poll_mode 2>/dev/null || echo unknown)
 [ "$pm" = 1 ] || { echo "XDMA is loaded with poll_mode=$pm; FireSim needs 1 (admin: sudo /usr/local/bin/kotl-xdma-reload on an idle board)"; exit 1; }
 lsmod | grep -q '^xvsec ' || { echo "the xvsec driver isn't loaded (needed to flash the FPGA)"; exit 1; }
 command -v xvsecctl >/dev/null || { echo "xvsecctl isn't installed on the PC"; exit 1; }
 sudo -n true 2>/dev/null || { echo "the board account can't use sudo without a password (FireSim needs it)"; exit 1; }
-if screen -ls 2>/dev/null | grep -q '\.fsim0'; then
-  echo "a FireSim console (fsim0) is already running on the PC, outside this job:"
-  screen -ls 2>/dev/null | grep '\.fsim' | sed 's/^/  screen: /'
-  ps -eo user,etime,args 2>/dev/null | grep '[F]ireSim-' | cut -c1-100 | sed 's/^/  driver: /'
-  echo "Either a leftover from an earlier run, or someone running FireSim outside Kotl. This job's end"
-  echo "step stops it (Kotl holds the board now); if it was a leftover, just run the test again."
-  exit 1
-fi
 echo "ok: XDMA poll_mode=1, xvsec, xvsecctl, sudo"
 EOF
+)
+check=$(pc bash -s <<<"$PC_CHECK" 2>&1); ok=$?
+echo "$check" | grep -v '^BUSY-OUTSIDE$'
+if [ $ok -ne 0 ]; then
+  if echo "$check" | grep -q '^BUSY-OUTSIDE$'; then
+    who=$(who_connected)
+    echo "  connected to the PC from the workstation now: ${who:-nobody (a leftover, or started and left running)}"
+    echo "  Kotl leaves it running. Ask them to use kotl run / kotl lease, then run this test again."
+    fail "FireSim is running on the board outside Kotl"
+  fi
+  fail "the board's PC isn't ready (see above)"
+fi
 
 step "2/6 copying the package to the PC (~/$DIR)"
 tar -C "$HERE/payload" -cf - . | pc "rm -rf '$DIR' && mkdir -p '$DIR' && tar -C '$DIR' -xf -" || fail "copying to the PC"

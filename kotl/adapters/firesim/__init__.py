@@ -9,7 +9,9 @@ Users run FireSim unchanged inside `kotl run` / `kotl lease`; this adapter only 
             unloads and reloads XDMA itself during infrasetup.
   end step  quit FireSim's screen sessions (fsim*) and stop its drivers (FireSim-*); then, as root,
             kotl-firesim-stop: FireSim starts its driver through sudo, so the driver runs as
-            root and the board account can't stop it
+            root and the board account can't stop it. Both stop only what started during the
+            job (the job's age is passed); older FireSim work on the PC isn't the job's: it is
+            left running and reported (who, how long, outside Kotl)
   idle      FireSim-* processes count as work for the lease idle guard
   console   `kotl attach` opens screen session fsim0
 
@@ -66,7 +68,8 @@ class FireSim(Adapter):
     stop_procs = ("FireSim-",)
     work_procs = ("FireSim-",)
     console = "fsim0"
-    end_commands = (("sudo", "-n", STOP),)
+    def end_commands(self, age):
+        return [["sudo", "-n", STOP] + ([str(int(age))] if age is not None else [])]
     XDMA = "XDMA driver not loaded (lsmod)"
 
     def __init__(self, here=None):

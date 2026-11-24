@@ -69,8 +69,22 @@ def check_board(board, ssh=ssh_mod, adapters=()):
     return failures_of(board, p, adapters) + warnings_of(p, adapters)
 
 
+def outside_note(board, account, running, ssh=ssh_mod, connected=None):
+    """The warning for work on an idle board's PC: who (from the workstation), how long, outside Kotl."""
+    from kotl.core import outside
+    what, _, age = running.partition("; for ")
+    try:
+        address = ssh.address(board["host"])
+    except Exception:
+        address = ""
+    who = outside.describe(connected(address) if connected else outside.connected_users(address)) if address else ""
+    how_long = f" for {outside.duration(int(age))}" if age.strip().isdigit() and int(age) > 0 else ""
+    return (f"outside Kotl: work runs on the PC as {account}{how_long} with no Kotl job holding the board: {what}"
+            + (f"; connected from the workstation now: {who}" if who else "; nobody connected from the workstation now"))
+
+
 def pc_busy(board, account, ssh=ssh_mod, adapters=()):
-    """'' when nothing of the account runs on the PC, else what runs ('screen, sshd x2'), or 'busy'."""
+    """'' when nothing of the account runs on the PC, else what runs ('screen, sshd x2; for 300'), or 'busy'."""
     try:
         out = ssh.run(board["host"], ["sudo", "-n", "-u", account, KEYS, "busy", *work_args(adapters)],
                       timeout=30).strip()
@@ -78,10 +92,10 @@ def pc_busy(board, account, ssh=ssh_mod, adapters=()):
         return ""
     if not out.startswith("busy"):
         return ""
-    names = [n.strip() for n in out.split(":", 1)[1].split(",")] if ":" in out else []
-    if len(names) > 8:
-        return ", ".join(names[:8]) + f" and {len(names) - 8} more"
-    return ", ".join(names) or "busy"
+    body, _, age = out.split(":", 1)[1].partition("; for ") if ":" in out else ("", "", "")
+    names = [n.strip() for n in body.split(",") if n.strip()]
+    text = ", ".join(names[:8]) + (f" and {len(names) - 8} more" if len(names) > 8 else "") if names else "busy"
+    return text + (f"; for {age.strip()}" if age.strip() else "")
 
 
 def run(registry, ssh=ssh_mod, slurm=slurm_mod, admin="", account="virtex-host", now=time.time, adapters=()):
@@ -107,7 +121,7 @@ def run(registry, ssh=ssh_mod, slurm=slurm_mod, admin="", account="virtex-host",
         running = (pc_busy(b, account, ssh, adapters)
                    if not fails and b["state"] == "idle" and not b["job_id"] else "")
         if running:
-            warnings.append(f"something runs as {account} on the PC with no Kotl job holding the board: {running}")
+            warnings.append(outside_note(b, account, running, ssh))
 
         hold = f"kotl-down-{name}"
         if fails:

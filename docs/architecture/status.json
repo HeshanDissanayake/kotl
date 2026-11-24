@@ -751,6 +751,10 @@
         {
           "date": "2026-11-24",
           "text": "Job 68 (first test-package run) stopped at its check: an fsim0 console was already running on the PC outside any job. run.sh now shows the screens and driver ages in that case."
+        },
+        {
+          "date": "2026-11-24",
+          "text": "User decision: never stop work outside Kotl; show who and how long and warn. Job 69's end step likely ended a colleague's direct FireSim run. Now the end step stops only what started during the job (job age passed to kotl-keys --max-age and kotl-firesim-stop N), older work is left and logged as outside Kotl. Fixed: pkill -f matched kotl-keys' own arguments and killed it (job 68's 'exit 255'); matching is by process name now."
         }
       ]
     },
@@ -762,7 +766,8 @@
       "code": [
         "deploy/M4-SETUP.md",
         "deploy/health.sh",
-        "kotl/core/health.py"
+        "kotl/core/health.py",
+        "kotl/core/outside.py"
       ],
       "tests": {
         "unit": {
@@ -840,6 +845,10 @@
         {
           "date": "2026-11-24",
           "text": "Generic now: reachable and the board type's card; adapters add their probe lines, failures, warnings and one repair."
+        },
+        {
+          "date": "2026-11-24",
+          "text": "Outside-Kotl warning names who is connected to the PC from the workstation (kernel connection table) and how long the work has run."
         }
       ]
     },
@@ -1170,6 +1179,10 @@
         {
           "date": "2026-11-24",
           "text": "kotl-keys knows no tool: remove/busy take --screen/--proc names from the adapters (plain words only). Needs updating on the PC."
+        },
+        {
+          "date": "2026-11-24",
+          "text": "kotl-keys remove --max-age (only what started during the job; matched by process name, never by command line); busy reports how long. Needs updating on the PC."
         }
       ]
     },

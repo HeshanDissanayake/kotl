@@ -6,6 +6,7 @@
 #                                    kotl may run only that script, as root, with no arguments
 #                                    kotl-xdma-reload:  the health check's one XDMA reload (idle board)
 #                                    kotl-firesim-stop: the end step stops FireSim's root driver
+#                                    (it may also pass the job's age: a number, the script checks it)
 #   sudo bash pc-setup.sh --undo     removes them
 #
 # Needs Kotl's own PC setup first (deploy/pc/setup.sh: the kotl account). Add --dry-run to preview.
@@ -35,13 +36,15 @@ if [ "$ACTION" = undo ]; then
   exit 0
 fi
 
-# install_helper NAME SUDOERS-FILE: /usr/local/bin/NAME, and "kotl may run it as root, no arguments"
+# install_helper NAME SUDOERS-FILE [any]: /usr/local/bin/NAME, and "kotl may run it as root" with
+# no arguments (or, with "any", also with arguments, which the script itself checks)
 install_helper() {
   local src="$HERE/$1" rule
   [ -f "$src" ] || die "copy $1 next to this script"
   head -n 3 "$src" | grep -q 'managed by kotl' || die "$src is not Kotl's $1"
   run install -m 755 -o root -g root "$src" "/usr/local/bin/$1"
   rule="kotl ALL=(root) NOPASSWD: /usr/local/bin/$1 \"\""
+  [ "${3:-}" = any ] && rule="kotl ALL=(root) NOPASSWD: /usr/local/bin/$1 \"\", /usr/local/bin/$1 [0-9]*"
   if [ "$DRY" = 1 ]; then
     say "would write /etc/sudoers.d/$2 (440): $rule"
   else
@@ -51,10 +54,10 @@ install_helper() {
     install -m 440 -o root -g root "$tmp" "/etc/sudoers.d/$2"
     rm -f "$tmp"
   fi
-  say "$1 installed; kotl may run it as root, with no arguments"
+  say "$1 installed; kotl may run it as root$([ "${3:-}" = any ] && echo ", with a number of seconds or nothing" || echo ", with no arguments")"
 }
 
 modinfo xdma >/dev/null 2>&1 || [ -f "/lib/modules/$(uname -r)/extra/xdma.ko" ] ||
   say "WARNING: no xdma module found here, so the reload can't work"
 install_helper kotl-xdma-reload kotl-driver
-install_helper kotl-firesim-stop kotl-firesim-stop
+install_helper kotl-firesim-stop kotl-firesim-stop any

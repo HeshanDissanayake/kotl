@@ -5,12 +5,14 @@
 # adapters, as --screen/--proc arguments; this script knows no tool.
 #
 #   kotl-keys add JOB 'ssh-ed25519 KEY'   let this job's key in (no forwarding; a terminal is allowed)
-#   kotl-keys remove JOB [soft|full] [--screen PREFIX]... [--proc PATTERN]...
+#   kotl-keys remove JOB [soft|full] [--max-age SECONDS] [--screen PREFIX]... [--proc PREFIX]...
 #                                         take the key out, quit the named screen sessions and stop
-#                                         the named processes; full lockdown ends every process
-#                                         of this account
+#                                         the named processes (by process name); with --max-age only
+#                                         those that started during the job (younger than SECONDS),
+#                                         older ones are left and reported. Full lockdown ends every
+#                                         process of this account
 #   kotl-keys list                        jobs whose keys are in
-#   kotl-keys busy [--proc PREFIX]...     "busy: NAME, NAME" if remote work of this account runs here
+#   kotl-keys busy [--proc PREFIX]...     "busy: NAME, NAME; for SECONDS" if remote work of this account runs here
 #                                         (SSH sessions and what they started, screen, tmux, and the
 #                                         named processes; not a local desktop login), else "idle":
 #                                         the lease idle guard and the health check's warning
@@ -36,10 +38,13 @@ strip() {   # drop this job's lines, keep everything else and the file itself
 }
 
 # --screen/--proc NAME pairs after the fixed arguments; names are plain words only
-SCREENS="" PROCS=""
+SCREENS="" PROCS="" MAXAGE=""
 names() {
   while [ $# -gt 0 ]; do
     case "$1" in
+      --max-age)
+        case "${2:-}" in ''|*[!0-9]*) die "bad --max-age '${2:-}'" ;; esac
+        MAXAGE=$2; shift 2 ;;
       --screen|--proc)
         case "${2:-}" in ''|*[!A-Za-z0-9_.-]*) die "bad name '${2:-}' for $1" ;; esac
         if [ "$1" = --screen ]; then SCREENS="$SCREENS $2"; else PROCS="$PROCS $2"; fi
@@ -67,14 +72,25 @@ case "${1:-}" in
     case "${1:-}" in soft|full) MODE=$1; shift ;; esac
     names "$@"
     strip "$JOB"
-    [ -z "${KOTL_KEYS_TEST_HOME:-}" ] || { echo "would stop screens:${SCREENS:- none} procs:${PROCS:- none}"; exit 0; }
-    # stop what the adapters named: their screen sessions, then their processes
+    [ -z "${KOTL_KEYS_TEST_HOME:-}" ] || { echo "would stop screens:${SCREENS:- none} procs:${PROCS:- none} max-age:${MAXAGE:-none}"; exit 0; }
+    # stop what the adapters named: their screen sessions, then their processes (matched by
+    # process name, never by command line: this script's own arguments name them too).
+    # With --max-age, only what started during the job; older work isn't this job's.
+    young() { [ -z "$MAXAGE" ] || [ "$(ps -o etimes= -p "$1" 2>/dev/null | tr -d ' ')" -le "$MAXAGE" ] 2>/dev/null; }
+    stopped="" left=""
     for p in $SCREENS; do
-      screen -ls 2>/dev/null | awk -v p="$p" '$1 ~ "^[0-9]+\\." p { print $1 }' | while read -r s; do
-        screen -S "$s" -X quit 2>/dev/null || true
+      for s in $(screen -ls 2>/dev/null | awk -v p="$p" '$1 ~ "^[0-9]+\\." p { print $1 }'); do
+        if young "${s%%.*}"; then screen -S "$s" -X quit 2>/dev/null || true; stopped="$stopped screen:$s"
+        else left="$left screen:$s"; fi
       done
     done
-    for p in $PROCS; do pkill -u "$ME" -f "$p" 2>/dev/null || true; done
+    for p in $PROCS; do
+      for pid in $(ps -u "$ME" -o pid=,comm= | awk -v p="$p" -v me="$$" '$1 != me && index($2, p) == 1 { print $1 }'); do
+        if young "$pid"; then kill "$pid" 2>/dev/null || true; stopped="$stopped $pid"
+        else left="$left $pid"; fi
+      done
+    done
+    echo "stopped:${stopped:- nothing}; left running (older than this job, outside Kotl):${left:- nothing}"
     if [ "$MODE" = full ]; then
       exec pkill -KILL -u "$ME"   # full lockdown: nothing of this account outlives the job
     fi
@@ -87,13 +103,14 @@ case "${1:-}" in
     names "$@"
     mysid=$(ps -o sid= -p $$ | tr -d ' ')
     sshsids=$(ps -u "$ME" -o sid=,comm= | awk '$2 == "sshd" {print $1}' | sort -u | tr '\n' ' ')
-    found=$(ps -u "$ME" -o sid=,comm=,args= | awk -v me="$mysid" -v ss=" $sshsids" -v procs="$PROCS" '
+    counted=$(ps -u "$ME" -o sid=,etimes=,comm=,args= | awk -v me="$mysid" -v ss=" $sshsids" -v procs="$PROCS" '
         BEGIN { n = split(procs, pp, " ") }
         $1 == me { next }
-        index(ss, " " $1 " ") || $2 == "screen" || $2 == "SCREEN" || $2 ~ /^tmux/ { print $2; next }
-        { for (i = 1; i <= n; i++) if (index($2, pp[i]) == 1 || index($0, " " pp[i]) || index($0, "/" pp[i])) { print $2; next } }' \
-      | sort | uniq -c | awk '{print $2 ($1 > 1 ? " x" $1 : "")}' | paste -sd, - | sed 's/,/, /g')
-    if [ -n "$found" ]; then echo "busy: $found"; else echo idle; fi
+        index(ss, " " $1 " ") || $3 == "screen" || $3 == "SCREEN" || $3 ~ /^tmux/ { print $2, $3; next }
+        { for (i = 1; i <= n; i++) if (index($3, pp[i]) == 1 || index($0, " " pp[i]) || index($0, "/" pp[i])) { print $2, $3; next } }')
+    found=$(printf '%s\n' "$counted" | awk 'NF { print $2 }' | sort | uniq -c | awk '{print $2 ($1 > 1 ? " x" $1 : "")}' | paste -sd, - | sed 's/,/, /g')
+    oldest=$(printf '%s\n' "$counted" | awk 'NF && $1 > m { m = $1 } END { print m + 0 }')
+    if [ -n "$found" ]; then echo "busy: $found; for $oldest"; else echo idle; fi
     ;;
   list)
     sed -n 's/.* kotl-job-\([0-9][0-9]*\)$/\1/p' "$AK"

@@ -142,7 +142,8 @@ def test_glibc_and_unleased_work_are_warnings(reg):
     found = run(reg, pc, holds)["vcu118-pc1"]
     assert reg.board("vcu118-pc1")["state"] == "idle"
     assert any("older glibc release (2.35 vs 2.39)" in f and "--use-pc-glibc" in f for f in found)
-    assert any(f.endswith("no Kotl job holding the board: screen, FireSim-xilinx_vcu118") for f in found)
+    assert any(f.startswith("outside Kotl: work runs on the PC as virtex-host with no Kotl job holding the board: "
+                            "screen, FireSim-xilinx_vcu118") for f in found)
 
 
 def test_patch_gap_suggests_upgrade():
@@ -223,3 +224,31 @@ def test_core_has_no_firesim_knowledge():
         text = f.read_text()
         for word in ("xdma", "glibc", "fsim0", "FireSim-"):
             assert word not in text, f"kotl/core/{f.name} mentions {word}"
+
+
+# ---- work outside Kotl: who (from the workstation's connection table) and how long; never acted on
+
+def test_connected_users_reads_the_connection_table(tmp_path):
+    import os, pwd
+    from kotl.core import outside
+    me = pwd.getpwuid(os.getuid())
+    pc = "0201A8C0:0016"                                   # 192.168.1.2:22, little-endian hex
+    table = tmp_path / "tcp"
+    table.write_text("  sl  local_address rem_address   st tx_queue rx_queue tr tm->when retrnsmt   uid\n"
+                     f"   0: 0101A8C0:D431 {pc} 01 00000000:00000000 00:00000000 00000000 {me.pw_uid} 0 1\n"
+                     f"   1: 0101A8C0:D432 {pc} 01 00000000:00000000 00:00000000 00000000 {me.pw_uid} 0 1\n"
+                     f"   2: 0101A8C0:D433 {pc} 06 00000000:00000000 00:00000000 00000000 {me.pw_uid} 0 1\n"
+                     f"   3: 0101A8C0:D434 0301A8C0:0016 01 00000000:00000000 00:00000000 00000000 {me.pw_uid} 0 1\n")
+    assert outside.connected_users("192.168.1.2", tables=[str(table)]) == {me.pw_name: 2}   # closed and other PCs don't count
+    assert outside.describe({me.pw_name: 2, "zed": 1}) == f"{me.pw_name} (2 connections), zed"
+    assert outside.connected_users("not-an-ip", tables=[str(table)]) == {}
+
+
+def test_outside_note_says_who_and_how_long():
+    class PC:
+        def address(self, host):
+            return "192.168.1.2"
+    note = health.outside_note({"host": "vcu118-pc1"}, "virtex-host", "screen, FireSim-xilinx_vcu118; for 750", PC(),
+                               connected=lambda a: {"alice": 2})
+    assert note == ("outside Kotl: work runs on the PC as virtex-host for 12m with no Kotl job holding the board: "
+                    "screen, FireSim-xilinx_vcu118; connected from the workstation now: alice (2 connections)")
