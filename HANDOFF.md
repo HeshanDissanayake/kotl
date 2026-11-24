@@ -30,7 +30,7 @@ Click any box for its commands and config files. The tabs show what Kotl is, whe
   4. The notifier and dashboard read `squeue` / `sacct`.
 - **Other off-the-shelf parts (gray):** each user's own FireSim (in their own Chipyard), and the workstation's sudo, systemd timers and OpenSSH.
 - **FPGA PCs.** Only the workstation can reach them, and only with keys: Kotl's `kotl` key, plus a job key that Kotl adds when a job starts and removes when it ends. No Kotl code runs on them besides a small key helper.
-- **No always-running Kotl process.** The CLI runs per command, the launcher runs per job, and timers start the notifier.
+- **One always-running Kotl process: the Kotl daemon (kotld)** (decided 2026-11-24, replacing "no always-running process"). A systemd service, run as kotl, that runs small tasks on their own intervals; more join later. Its first task writes `/run/kotl/status.json` every second for every display. Everything else stays per use: the CLI per command, the launcher per job, timers for the notifier.
 
 ## 3. Decisions already made (don't reopen without asking)
 

@@ -19,6 +19,7 @@ test('the band shows the board, who holds it, the queue and unread notices', asy
   on('clock.every', () => ({ value: undefined }))
   on('clock.now', () => ({ value: 1_000 }))
   on('process.run', () => ({ value: { exitCode: 0, stdout: JSON.stringify(SNAP), stderr: '' } }))
+  on('fs.read', () => { throw new Error('ENOENT') })
   on('session.start', (_, e) => ({ cwd: e.cwd }))
 
   await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
@@ -43,6 +44,7 @@ test('/kotl-band hide hides the band', async ($, on) => {
   on('clock.every', () => ({ value: undefined }))
   on('clock.now', () => ({ value: 1_000 }))
   on('process.run', () => ({ value: { exitCode: 0, stdout: JSON.stringify(SNAP), stderr: '' } }))
+  on('fs.read', () => { throw new Error('ENOENT') })
   on('session.start', (_, e) => ({ cwd: e.cwd }))
   on('ui.render', ($, e) => {
     const { Text } = $.ui.resolve(e)
@@ -62,6 +64,7 @@ test('without Kotl the band says so instead of guessing', async ($, on) => {
   on('clock.every', () => ({ value: undefined }))
   on('clock.now', () => ({ value: 1_000 }))
   on('process.run', () => ({ value: { exitCode: 127, stdout: '', stderr: 'not found' } }))
+  on('fs.read', () => { throw new Error('ENOENT') })
   on('session.start', (_, e) => ({ cwd: e.cwd }))
 
   await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
@@ -78,6 +81,7 @@ test('a terminal that can\'t reach Kotl is told why', async ($, on) => {
   on('clock.now', () => ({ value: 1_000 }))
   const s = { ...SNAP, boards: [], problem: "this terminal can't reach Kotl: not in kotl-users yet (log in again, or restart tmux)" }
   on('process.run', () => ({ value: { exitCode: 0, stdout: JSON.stringify(s), stderr: '' } }))
+  on('fs.read', () => { throw new Error('ENOENT') })
   on('session.start', (_, e) => ({ cwd: e.cwd }))
 
   await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
@@ -95,6 +99,7 @@ test('your own running job shows as you, with its time against its ETA', async (
   const s = { ...SNAP, queue: [{ job: '41', user: 'alice', name: 'kotl-run', state: 'RUNNING', eta: '1:30:00', used: '1:05:10', start: 'N/A', reason: 'None' }],
               boards: [{ name: 'vcu118-pc1', state: 'busy', job_id: 41 }], unread: 0 }
   on('process.run', () => ({ value: { exitCode: 0, stdout: JSON.stringify(s), stderr: '' } }))
+  on('fs.read', () => { throw new Error('ENOENT') })
   on('session.start', (_, e) => ({ cwd: e.cwd }))
   await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
   await $.command.run({ command: 'kotl-band', args: '' })
@@ -112,11 +117,32 @@ test('a refused command never stops the band (the kotl plugin owns /kotl)', asyn
   on('clock.now', () => ({ value: 1_000 }))
   on('process.run', () => ({ value: { exitCode: 0, stdout: JSON.stringify(SNAP), stderr: '' } }))
   on('ui.log', () => ({ value: undefined }))
+  on('fs.read', () => { throw new Error('ENOENT') })
   on('session.start', (_, e) => ({ cwd: e.cwd }))
 
   await $.session.start({ cwd: '/', surface: 'vscode', isInteractive: true })
   await new Promise(resolve => setTimeout(resolve, 20))
   const ui = await $.ui.mount({ ...BAND, surface: 'vscode' })
   expect((await ui.find({ type: 'Text', text: /vcu118-pc1/ }))).toBeTruthy()
+  await ui.unmount()
+})
+
+
+test('reads the Kotl daemon\'s shared file, with no process per refresh', async ($, on) => {
+  let runs = 0
+  const doc = { updated: 1_000, boards: SNAP.boards, queue: SNAP.queue, unread: { alice: 3, bob: 1 } }
+  on('command.register', () => ({ value: { command: 'kotl-band' } }))
+  on('clock.every', () => ({ value: undefined }))
+  on('clock.now', () => ({ value: 1_000_500 }))              // 0.5 s after the file was written
+  on('fs.read', () => ({ value: JSON.stringify(doc) }))
+  on('process.run', (_, e) => { runs += e.argv[0] === 'id' ? 0 : 1; return { value: { exitCode: 0, stdout: 'alice\n', stderr: '' } } })
+  on('session.start', (_, e) => ({ cwd: e.cwd }))
+
+  await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+  await $.command.run({ command: 'kotl-band', args: '' })
+  const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect((await ui.find({ type: 'Text', text: /you: 2 jobs/ }))).toBeTruthy()
+  expect((await ui.find({ type: 'Text', text: /3 unread notices/ }))).toBeTruthy()
+  expect(runs).toBe(0)                                          // only `id -un`, once
   await ui.unmount()
 })

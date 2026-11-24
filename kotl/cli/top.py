@@ -13,7 +13,8 @@ import time
 from kotl import slurm
 from kotl.cli import main as cli
 
-REFRESH = 2.0
+REFRESH = 1.0          # boards and queue: from the Kotl daemon's status file, cheap
+PRIVATE_EVERY = 10.0   # your history and notice texts: through the launcher, less often
 
 
 def me():
@@ -30,15 +31,21 @@ def launch_json(*args):
         return []
 
 
+_private = {"at": 0.0, "mine": [], "notices": [], "unread": -1}
+
+
 def snapshot():
-    """Everything the screen shows, gathered once per refresh."""
-    try:
-        queue = [r for r in slurm.queue() if r["name"].startswith("kotl-")]
-    except slurm.SlurmError:
-        queue = []
-    return {"user": me(), "boards": launch_json("boards"), "queue": queue,
-            "mine": launch_json("history", "--limit", "8"), "when": time.strftime("%H:%M:%S"),
-            "notices": launch_json("notices", "--unread")}
+    """Everything the screen shows. Boards, queue and the unread count come from the Kotl
+    daemon's file each second (or kotl status --json when it's down); your history and notice
+    texts come through the launcher every PRIVATE_EVERY seconds, or at once when the count changes."""
+    s = cli.status_json()
+    now = time.time()
+    if now - _private["at"] >= PRIVATE_EVERY or s.get("unread", 0) != _private["unread"]:
+        _private.update(at=now, unread=s.get("unread", 0), mine=launch_json("history", "--limit", "8"),
+                        notices=launch_json("notices", "--unread") if s.get("unread") else [])
+    return {"user": s.get("user") or me(), "boards": s.get("boards", []), "queue": s.get("queue", []),
+            "mine": _private["mine"], "when": time.strftime("%H:%M:%S"), "notices": _private["notices"],
+            "problem": s.get("problem")}
 
 
 def wrap(text, width, first, rest):

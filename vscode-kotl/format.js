@@ -97,4 +97,15 @@ function tree(s) {
   ];
 }
 
-module.exports = { minutes, fmt, statusText, tooltip, tree };
+// The Kotl daemon's shared status file (/run/kotl/status.json), seen by one user; null when stale.
+function fromShared(doc, user, nowMs, maxAgeMs = 5000) {
+  if (!doc || typeof doc.updated !== 'number' || nowMs - doc.updated * 1000 > maxAgeMs) return null;
+  const queue = doc.queue || [];
+  return {
+    user, boards: doc.boards || [], queue, problem: null,
+    running_mine: queue.filter(q => q.user === user && q.state === 'RUNNING').map(q => ({ job_id: Number(q.job) })),
+    unread: (doc.unread || {})[user] || 0,
+  };
+}
+
+module.exports = { minutes, fmt, statusText, tooltip, tree, fromShared };

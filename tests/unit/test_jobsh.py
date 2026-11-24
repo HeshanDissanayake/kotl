@@ -90,7 +90,8 @@ def test_job_key_made_and_removed(fake):
 @pytest.mark.feature("access")
 def test_refuses_someone_elses_key_folder(fake):
     tmp, calls, log, env = fake
-    (tmp / "keys").mkdir(mode=0o755)
+    (tmp / "keys").mkdir()
+    (tmp / "keys").chmod(0o755)             # explicit: not subject to the process umask
     r = subprocess.run(["bash", str(DEPLOY / "job.sh"), "true"], env=env, capture_output=True, text=True)
     assert r.returncode == 1 and "only you can use" in r.stderr
     assert not lines(calls)

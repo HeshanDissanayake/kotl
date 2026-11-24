@@ -2,7 +2,7 @@
  "schema": 1,
  "title": "Kotl Architecture",
  "intro": "Teal is Kotl, our product. Purple is Slurm. Gray is everything else off the shelf, plus the hardware. The dot on each box is its build status; click a box for exactly what's happening.",
- "latest": "Latest: a VS Code extension puts Kotl in the status bar: who holds each board and their time of ETA, your jobs, notices; the hover has the queue.",
+ "latest": "Latest: the Kotl daemon (kotld), Kotl's one always-running process. Its first task writes a shared status file every second, so the band, the VS Code extension and kotl top refresh every second for almost nothing.",
  "canvas": {
   "w": 1520,
   "h": 820
@@ -59,14 +59,14 @@
   },
   {
    "text": "ADAPTERS · task-specific, on the lease",
-   "x": 256,
+   "x": 470,
    "y": 626,
    "class": "band-label"
   }
  ],
  "dividers": [
   {
-   "x1": 252,
+   "x1": 466,
    "y1": 605,
    "x2": 1048,
    "y2": 605
@@ -488,6 +488,19 @@
    "sub": [
     "live terminal view"
    ]
+  },
+  {
+   "id": "daemon",
+   "owner": "kotl",
+   "x": 281,
+   "y": 650,
+   "w": 170,
+   "h": 70,
+   "slurm": true,
+   "title": "Kotl daemon",
+   "sub": [
+    "kotld · always on"
+   ]
   }
  ],
  "edges": [
@@ -849,6 +862,34 @@
     "text": "reads",
     "x": 655,
     "y": 481,
+    "anchor": "middle"
+   }
+  },
+  {
+   "id": "e-daemon-queue",
+   "from": "daemon",
+   "to": "queue",
+   "d": "M281,670 H270 V140 H281",
+   "style": "bg",
+   "slurm": true,
+   "label": {
+    "text": "squeue · every 1 s",
+    "x": 266,
+    "y": 470,
+    "rotate": -90,
+    "anchor": "middle"
+   }
+  },
+  {
+   "id": "e-daemon-top",
+   "from": "daemon",
+   "to": "top",
+   "d": "M366,720 V735 H660 V600 H690 V590",
+   "style": "bg",
+   "label": {
+    "text": "status file",
+    "x": 520,
+    "y": 731,
     "anchor": "middle"
    }
   }
@@ -1289,7 +1330,7 @@
    "what": "Everything highlighted in teal: the code we write, install and maintain.",
    "bullets": [
     "<b>Entry:</b> the <code>kotl</code> CLI (run, lease, release, status, fetch), console attach, and the Kotl plugin for Claude Code.",
-    "<b>Core:</b> the board lease (launcher + PC access), board registry, health check, ETA notifier, job results, the kotl SSH key. Later: power monitor, usage dashboard. Parked: same-design pick.",
+    "<b>Core:</b> the Kotl daemon (kotld, the one always-running process), the board lease (launcher + PC access), board registry, health check, ETA notifier, job results, the kotl SSH key. Later: power monitor, usage dashboard. Parked: same-design pick.",
     "<b>Adapters</b> (admin, later): FireSim board care, program/reset, board tests. Users need none: <code>kotl run</code> and <code>kotl lease</code> work for any tool."
    ],
    "note": "Not Kotl: Slurm (scheduling), each user's FireSim (simulation), the workstation OS (sudo, systemd timers, OpenSSH) and the FPGA PCs. Kotl only uses their normal commands and config files."
@@ -1303,7 +1344,7 @@
     "<b>Queue ↔ kotl CLI.</b> The CLI submits (<code>sbatch</code>), cancels (<code>scancel</code>) and lists (<code>squeue</code>). Slurm orders the queue by priority and counts boards as licenses.",
     "<b>Job starter → launcher.</b> When a board is free, Slurm runs <code>job.sh</code>, which asks Kotl's launcher to claim it. A cancel arrives as a signal. After the job, Slurm's epilog runs Kotl's end step again as a backup.",
     "<b>Health runner → health check.</b> Slurm runs Kotl's <code>health.sh</code> every 5 minutes.",
-    "<b>Accounting → notifier and dashboard.</b> The notifier asks who is running and when queued jobs will start; the dashboard (later) reads history with <code>sacct</code>."
+    "<b>Accounting → notifier and dashboard.</b> The notifier asks who is running and when queued jobs will start; the dashboard (later) reads history with <code>sacct</code>. The Kotl daemon reads the queue every second (<code>squeue</code>) for the shared status file."
    ],
    "note": "Kotl never changes Slurm's code. It only uses Slurm's commands and a few lines of slurm.conf."
   },
@@ -2187,6 +2228,7 @@
     "<code>/etc/ssh/ssh_config.d/kotl.conf</code>: <code>ssh vcu118-pc1</code> uses your job key during a lease <i>(new · M3)</i>",
     "<code>/etc/kotl/kotl.conf</code>: Kotl settings: lockdown mode, admin, PC account, idle time <i>(new · M1)</i>",
     "<code>/etc/systemd/system/kotl-notifier.{service,timer}</code>: runs the notifier every minute, as kotl <i>(new · M4)</i>",
+    "<code>/etc/systemd/system/kotl-daemon.service</code> and <code>/run/kotl/status.json</code>: the Kotl daemon, always on, and its status file, readable by everyone <i>(new · M5)</i>",
     "<code>/opt/kotl/</code>: Kotl's code. M1: no-op <code>epilog.sh</code>, <code>health.sh</code>. M2: <code>lib/kotl/</code> (the package, root-owned), <code>launch</code>, <code>job.sh</code>, real <code>epilog.sh</code>, <code>bin/kotl</code>. M3: <code>bin/firesim</code>, adapters <i>(new · M1–M3)</i>",
     "<code>/usr/local/bin/kotl</code>: link to <code>/opt/kotl/bin/kotl</code>, so everyone has the command <i>(new · M2, deploy/kotl/install.sh)</i>",
     "<code>/opt/kotl/plugin/</code>, <code>/opt/kotl/plugin-band/</code> + <code>/opt/kotl/.claude-plugin/marketplace.json</code>: the Claude Code plugins, readable by everyone <i>(new · M5)</i>",
@@ -2211,7 +2253,9 @@
     "notifsvc",
     "notiftimer",
     "kotlsshconfig",
-    "registry"
+    "registry",
+    "daemonsvc",
+    "statusfile"
    ]
   },
   "sys-pc": {
@@ -2260,7 +2304,7 @@
     "<b>Boards:</b> state, which job holds each one, its owner, time used and ETA.",
     "<b>Queue:</b> who is waiting, the estimated start, and why (e.g. waiting for the board).",
     "<b>Your jobs:</b> running and recent ones with their results. Keys: <code>l</code> logs, <code>c</code> cancel, <code>r</code> release a lease, <code>f</code> fetch results.",
-    "Read-only for everyone else's jobs. It reads through the launcher's own checks (<code>launch boards --json</code>, <code>history --json</code>) and Slurm's queue, so it can see nothing <code>kotl status</code> can't."
+    "Reads the Kotl daemon's status file every second (no Slurm or launcher call); your history and notice texts come through the launcher's own checks every 10 s."
    ],
    "term": [
     {
@@ -2295,6 +2339,53 @@
       }
      ]
     }
+   ]
+  },
+  "daemon": {
+   "kind": "Kotl · core · Slurm",
+   "kindClass": "ko",
+   "title": "Kotl daemon (kotld)",
+   "what": "Kotl's one always-running process: a small systemd service, run as kotl, that runs tasks on their own intervals. More tasks join it later.",
+   "bullets": [
+    "<b>Task: status</b> (every 1 s): asks Slurm for the queue and the registry for the boards, and writes <code>/run/kotl/status.json</code>, readable by everyone. It holds only what <code>squeue</code> shows anyone, plus each user's <i>count</i> of unread notices (never their text).",
+    "<b>Readers:</b> <code>kotl status</code>, <code>kotl top</code>, the Claude band and the VS Code extension read that file instead of each asking Slurm and the launcher. One <code>squeue</code> a second in all, however many windows are open: no <code>sudo</code>, no Python start-up per viewer.",
+    "<b>Cost:</b> about 1–2 % of one core. The readers refresh every second for almost nothing.",
+    "<b>If it stops:</b> systemd restarts it within 2 s; meanwhile every reader falls back to asking Kotl directly (slower, same answers). A task's error never stops the daemon; it shows in <code>kotl daemon</code>.",
+    "<b>Adding a task later:</b> a small <code>Task</code> class in <code>kotl/core/daemon.py</code> with a name, an interval and a <code>run()</code>."
+   ],
+   "term": [
+    {
+     "host": "you@ws",
+     "lines": [
+      {
+       "c": "kotl daemon"
+      },
+      {
+       "o": "Kotl daemon: running, updated 0.4 s ago"
+      },
+      {
+       "o": "  pid 4242, up 3600 s"
+      },
+      {
+       "o": "  task status   every 1 s · last ok 0.4 s ago"
+      }
+     ]
+    },
+    {
+     "host": "admin@ws",
+     "lines": [
+      {
+       "c": "systemctl status kotl-daemon"
+      },
+      {
+       "c": "journalctl -u kotl-daemon -f      # its log"
+      }
+     ]
+    }
+   ],
+   "files": [
+    "daemonsvc",
+    "statusfile"
    ]
   }
  },
@@ -2508,6 +2599,20 @@
    "ext": "json",
    "desc": "Makes /opt/kotl a plugin marketplace everyone on the workstation can add",
    "body": "{\n  \"name\": \"kotl\",\n  \"owner\": {\n    \"name\": \"Kotl\"\n  },\n  \"plugins\": [\n    {\n      \"name\": \"kotl\",\n      \"source\": \"./plugin\",\n      \"description\": \"Use the lab's FPGA boards through Kotl from Claude Code.\"\n    },\n    {\n      \"name\": \"kotl-band\",\n      \"source\": \"./plugin-band\",\n      \"description\": \"A live Kotl line above the Claude Code prompt: boards, queue, your jobs, notices.\"\n    }\n  ],\n  \"description\": \"The lab's Kotl plugin: use the FPGA board queue from Claude Code.\"\n}"
+  },
+  "daemonsvc": {
+   "name": "kotl-daemon.service",
+   "path": "/etc/systemd/system/",
+   "ext": "unit",
+   "desc": "The Kotl daemon, always on, as kotl; restarts itself if it stops",
+   "body": "# managed by kotl (deploy/kotl/install.sh)\n# The Kotl daemon (kotld): Kotl's one always-running process. It runs small tasks on their own\n# intervals; the first writes /run/kotl/status.json every second for kotl status, kotl top, the\n# Claude band and the VS Code extension. `kotl daemon` shows its state.\n[Unit]\nDescription=Kotl daemon (kotld)\nAfter=network-online.target slurmctld.service\n\n[Service]\nType=simple\nUser=kotl\nExecStart=/opt/kotl/launch daemon\nRestart=always\nRestartSec=2\nRuntimeDirectory=kotl\nRuntimeDirectoryMode=0755\nNice=5\n\n[Install]\nWantedBy=multi-user.target"
+  },
+  "statusfile": {
+   "name": "status.json",
+   "path": "/run/kotl/",
+   "ext": "json",
+   "desc": "Written every second by the daemon; readable by everyone: boards, Kotl's queue, unread counts (never notice texts)",
+   "body": "{\n  \"version\": 1,\n  \"updated\": 1795420943.1,\n  \"daemon\": {\n    \"pid\": 4242,\n    \"started\": 1795420000.0,\n    \"tasks\": {\n      \"status\": {\n        \"every\": 1.0,\n        \"last_ok\": 1795420943.1,\n        \"error\": null\n      }\n    }\n  },\n  \"boards\": [\n    {\n      \"name\": \"vcu118-pc1\",\n      \"host\": \"vcu118-pc1\",\n      \"type\": \"vcu118\",\n      \"state\": \"busy\",\n      \"job_id\": 41,\n      \"last_healthy\": \"2026-11-24 18:30\",\n      \"warnings\": \"[\\\"glibc differs: ...\\\"]\"\n    }\n  ],\n  \"queue\": [\n    {\n      \"job\": \"41\",\n      \"user\": \"bob\",\n      \"name\": \"kotl-run\",\n      \"state\": \"RUNNING\",\n      \"eta\": \"30:00\",\n      \"used\": \"12:03\",\n      \"start\": \"2026-11-24T18:18:00\",\n      \"reason\": \"None\"\n    },\n    {\n      \"job\": \"42\",\n      \"user\": \"alice\",\n      \"name\": \"kotl-lease\",\n      \"state\": \"PENDING\",\n      \"eta\": \"1:00:00\",\n      \"used\": \"0:00\",\n      \"start\": \"2026-11-24T18:48:00\",\n      \"reason\": \"Licenses\"\n    }\n  ],\n  \"unread\": {\n    \"alice\": 2\n  }\n}"
   }
  }
 }

@@ -5,6 +5,7 @@
 #       copies kotl/ to /opt/kotl/lib, installs /opt/kotl/launch, /opt/kotl/job.sh,
 #       /opt/kotl/epilog.sh, the kotl command (/opt/kotl/bin/kotl, linked from /usr/local/bin),
 #       an SSH client entry per board (/etc/ssh/ssh_config.d/kotl.conf: your job key during a lease),
+#       the Kotl daemon (kotl-daemon.service: kotld, Kotl's one always-running process),
 #       the Claude Code plugin (/opt/kotl/plugin, a marketplace at /opt/kotl: users add it with
 #       /plugin marketplace add /opt/kotl), the notifier's systemd timer (every minute), adds each board to the registry, and makes
 #       kotl a Slurm admin (its guards cancel hung jobs; its health check holds a down board's
@@ -97,6 +98,12 @@ install_all() {
   run systemctl daemon-reload
   run systemctl enable --now kotl-notifier.timer
 
+  # the Kotl daemon (kotld): restarted so it runs the code just installed
+  put_file /etc/systemd/system/kotl-daemon.service 644 root:root <"$DEPLOY_DIR/systemd/kotl-daemon.service"
+  run systemctl daemon-reload
+  run systemctl enable kotl-daemon.service
+  run systemctl restart kotl-daemon.service
+
   local b name type host addr account client
   account=$(get_conf /etc/kotl/kotl.conf pc_account); account=${account:-virtex-host}
   client="# $MARK (deploy/kotl/install.sh). During a lease, plain 'ssh <board>' uses your job key."$'\n'
@@ -124,6 +131,8 @@ undo_all() {
   remove_file /opt/kotl/bin/kotl
   remove_file /etc/ssh/ssh_config.d/kotl.conf
   run systemctl disable --now kotl-notifier.timer || true
+  run systemctl disable --now kotl-daemon.service || true
+  remove_file /etc/systemd/system/kotl-daemon.service
   remove_file /etc/systemd/system/kotl-notifier.service
   remove_file /etc/systemd/system/kotl-notifier.timer
   run systemctl daemon-reload

@@ -41,6 +41,10 @@ class Config:
     def jobs(self): return self.path("/srv/kotl/jobs")
     @property
     def out(self): return self.path("/srv/kotl/out")
+    @property
+    def run_dir(self): return self.path("/run/kotl")
+    @property
+    def status_file(self): return self.path("/run/kotl/status.json")
 
     def get(self, key):
         if not self.settings:

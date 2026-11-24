@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "updated": "2026-11-23T10:58:30Z",
-  "repo_commit": "77340ce324e367adb75a7849f91e698d852e108f",
+  "updated": "2026-11-24T07:58:11Z",
+  "repo_commit": "68a1939497019964ad9a7aedd04ca7f800ff69a8",
   "watch": [
     "deploy/",
     "kotl/",
@@ -50,7 +50,7 @@
         "unit": {
           "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-23T10:58:30Z"
+          "ran_at": "2026-11-24T07:58:11Z"
         },
         "hardware": null
       },
@@ -88,7 +88,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-23T10:58:30Z"
+          "ran_at": "2026-11-24T07:58:11Z"
         },
         "hardware": null
       },
@@ -126,7 +126,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-23T10:58:30Z"
+          "ran_at": "2026-11-24T07:58:11Z"
         },
         "hardware": null
       },
@@ -171,7 +171,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-23T10:58:30Z"
+          "ran_at": "2026-11-24T07:58:11Z"
         },
         "hardware": null
       },
@@ -204,7 +204,7 @@
         "unit": {
           "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-23T10:58:30Z"
+          "ran_at": "2026-11-24T07:58:11Z"
         },
         "hardware": null
       },
@@ -246,7 +246,7 @@
         "unit": {
           "passed": 14,
           "failed": 0,
-          "ran_at": "2026-11-23T10:58:30Z"
+          "ran_at": "2026-11-24T07:58:11Z"
         },
         "hardware": null
       },
@@ -291,12 +291,12 @@
         "unit": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-23T10:58:30Z"
+          "ran_at": "2026-11-24T07:58:11Z"
         },
         "hardware": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-23T10:58:30Z"
+          "ran_at": "2026-11-24T07:58:11Z"
         }
       },
       "last_commit": {
@@ -336,12 +336,12 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-23T10:58:30Z"
+          "ran_at": "2026-11-24T07:58:11Z"
         },
         "hardware": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-23T10:58:30Z"
+          "ran_at": "2026-11-24T07:58:11Z"
         }
       },
       "last_commit": {
@@ -381,12 +381,12 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-23T10:58:30Z"
+          "ran_at": "2026-11-24T07:58:11Z"
         },
         "hardware": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-23T10:58:30Z"
+          "ran_at": "2026-11-24T07:58:11Z"
         }
       },
       "last_commit": {
@@ -463,7 +463,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-23T10:58:30Z"
+          "ran_at": "2026-11-24T07:58:11Z"
         },
         "hardware": null
       },
@@ -516,7 +516,7 @@
         "unit": {
           "passed": 37,
           "failed": 0,
-          "ran_at": "2026-11-23T10:58:30Z"
+          "ran_at": "2026-11-24T07:58:11Z"
         },
         "hardware": null
       },
@@ -586,7 +586,7 @@
         "unit": {
           "passed": 19,
           "failed": 0,
-          "ran_at": "2026-11-23T10:58:30Z"
+          "ran_at": "2026-11-24T07:58:11Z"
         },
         "hardware": null
       },
@@ -640,6 +640,10 @@
         {
           "date": "2026-11-23",
           "text": "kotl status --json: 'problem' says why Kotl can't be reached (e.g. not in kotl-users)."
+        },
+        {
+          "date": "2026-11-24",
+          "text": "kotl status and status --json read the daemon's file when fresh; kotl daemon shows it."
         }
       ]
     },
@@ -655,7 +659,7 @@
         "unit": {
           "passed": 4,
           "failed": 0,
-          "ran_at": "2026-11-23T10:58:30Z"
+          "ran_at": "2026-11-24T07:58:11Z"
         },
         "hardware": null
       },
@@ -740,7 +744,7 @@
         "unit": {
           "passed": 20,
           "failed": 0,
-          "ran_at": "2026-11-23T10:58:30Z"
+          "ran_at": "2026-11-24T07:58:11Z"
         },
         "hardware": null
       },
@@ -824,7 +828,7 @@
         "unit": {
           "passed": 6,
           "failed": 0,
-          "ran_at": "2026-11-23T10:58:30Z"
+          "ran_at": "2026-11-24T07:58:11Z"
         },
         "hardware": null
       },
@@ -861,7 +865,7 @@
         "unit": {
           "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-23T10:58:30Z"
+          "ran_at": "2026-11-24T07:58:11Z"
         },
         "hardware": null
       },
@@ -901,14 +905,14 @@
         "unit": {
           "passed": 18,
           "failed": 0,
-          "ran_at": "2026-11-23T10:58:30Z"
+          "ran_at": "2026-11-24T07:58:11Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "77340ce324e367adb75a7849f91e698d852e108f",
-        "message": "VS Code extension 0.2.0: a Kotl panel in the activity bar",
-        "date": "2026-11-23T21:56:51+11:00"
+        "hash": "68a1939497019964ad9a7aedd04ca7f800ff69a8",
+        "message": "kotl-band: /kotl clashed with the kotl plugin's skill and stopped the band",
+        "date": "2026-11-23T21:58:30+11:00"
       },
       "issues": [],
       "log": [
@@ -947,6 +951,10 @@
         {
           "date": "2026-11-23",
           "text": "Bug (from the VS Code Claude log): the band registered /kotl, which the kotl plugin's skill owns; the refusal aborted session.start before polling, so the band never had data anywhere. Now /kotl-band, polling starts first, and a refused command is only logged. Test reproduces it."
+        },
+        {
+          "date": "2026-11-24",
+          "text": "Band (0.1.2) and VS Code extension (0.3.0) read /run/kotl/status.json every second, with a 30 s fallback."
         }
       ]
     },
@@ -1058,12 +1066,12 @@
         "unit": {
           "passed": 21,
           "failed": 0,
-          "ran_at": "2026-11-23T10:58:30Z"
+          "ran_at": "2026-11-24T07:58:11Z"
         },
         "hardware": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-23T10:58:30Z"
+          "ran_at": "2026-11-24T07:58:11Z"
         }
       },
       "last_commit": {
@@ -1181,7 +1189,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-23T10:58:30Z"
+          "ran_at": "2026-11-24T07:58:11Z"
         },
         "hardware": null
       },
@@ -1207,6 +1215,36 @@
         {
           "date": "2026-11-23",
           "text": "Fix: no crash on terminals that can't hide the cursor."
+        },
+        {
+          "date": "2026-11-24",
+          "text": "Refreshes every 1 s from the daemon's file; private parts every 10 s."
+        }
+      ]
+    },
+    "daemon": {
+      "title": "Kotl daemon (kotld)",
+      "status": "in_progress",
+      "milestone": "M5",
+      "now": "Code and unit tests done; waiting for the install (deploy/next.sh).",
+      "code": [
+        "kotl/core/daemon.py",
+        "deploy/systemd/kotl-daemon.service"
+      ],
+      "tests": {
+        "unit": {
+          "passed": 7,
+          "failed": 0,
+          "ran_at": "2026-11-24T07:58:11Z"
+        },
+        "hardware": null
+      },
+      "last_commit": null,
+      "issues": [],
+      "log": [
+        {
+          "date": "2026-11-24",
+          "text": "New part (user decision): Kotl's one always-running process, general so tasks can be added later. First task: /run/kotl/status.json every 1 s (boards, Kotl's queue, unread counts). Readers (kotl status, kotl top, the band, the VS Code extension) use it and fall back to asking directly."
         }
       ]
     }

@@ -1,9 +1,35 @@
-// Kotl in VS Code's status bar. Reads `kotl status --json` (locally, or over ssh with the
-// kotl.ssh setting) every 30 s. Read-only: it never starts or stops a job.
+// Kotl in VS Code: the status bar and the Kotl panel. On the workstation it reads the Kotl
+// daemon's shared status file (/run/kotl/status.json) every second, with no process started;
+// when that file is missing or stale it runs `kotl status --json`, at most every 30 s. With the
+// kotl.ssh setting (your own PC) it reads the same file over ssh every few seconds.
+// Read-only: it never starts or stops a job.
 'use strict';
 const vscode = require('vscode');
+const fs = require('fs');
+const os = require('os');
 const { execFile } = require('child_process');
-const { statusText, tooltip, tree } = require('./format');
+const { statusText, tooltip, tree, fromShared } = require('./format');
+
+const SHARED = '/run/kotl/status.json';
+const USER = os.userInfo().username;
+let lastFallback = 0;
+let lastSnap = null;
+
+async function readSnapshot(ssh) {
+  if (ssh) {
+    const doc = await new Promise(resolve => execFile('ssh', ['-o', 'BatchMode=yes', '-o', 'ConnectTimeout=5', ssh, `cat ${SHARED}; echo; id -un`],
+      { timeout: 10000 }, (err, out) => resolve(err ? null : out)));
+    if (doc) {
+      const lines = doc.trim().split('\n');
+      try { const s = fromShared(JSON.parse(lines.slice(0, -1).join('\n')), lines[lines.length - 1], Date.now()); if (s) return s; } catch (e) { /* fall back */ }
+    }
+  } else {
+    try { const s = fromShared(JSON.parse(await fs.promises.readFile(SHARED, 'utf8')), USER, Date.now()); if (s) return s; } catch (e) { /* fall back */ }
+  }
+  if (lastSnap && Date.now() - lastFallback < 30000) return lastSnap;   // ask directly at most every 30 s
+  lastFallback = Date.now();
+  return readStatus(ssh);
+}
 
 function readStatus(ssh) {
   const [cmd, args] = ssh
@@ -49,7 +75,9 @@ function activate(context) {
   let timer = null;
   const refresh = async () => {
     const cfg = vscode.workspace.getConfiguration('kotl');
-    const s = await readStatus(cfg.get('ssh') || process.env.KOTL_SSH || '');
+    const ssh = cfg.get('ssh') || process.env.KOTL_SSH || '';
+    const s = await readSnapshot(ssh);
+    lastSnap = s;
     item.text = statusText(s);
     panel.set(s);
     const md = new vscode.MarkdownString(tooltip(s, Date.now()));
@@ -59,7 +87,9 @@ function activate(context) {
   };
   const schedule = () => {
     if (timer) clearInterval(timer);
-    const secs = Math.max(10, vscode.workspace.getConfiguration('kotl').get('refreshSeconds') || 30);
+    const cfg = vscode.workspace.getConfiguration('kotl');
+    const remote = cfg.get('ssh') || process.env.KOTL_SSH;
+    const secs = Math.max(remote ? 5 : 1, cfg.get('refreshSeconds') || 1);
     timer = setInterval(refresh, secs * 1000);
   };
   const terminal = (name, cmd) => {

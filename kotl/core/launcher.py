@@ -14,6 +14,7 @@ or from the kotl CLI. Every subcommand checks who is asking:
   boards                     every board's state (and health warnings)
   health                     (kotl, root or admin) run the health checks on every board's PC
   notify                     (kotl only) one pass of the ETA notifier
+  daemon                     (kotl only) the Kotl daemon (kotld): runs forever, under systemd
   notices [--unread] [--read]    your notices; --read marks them read
   board-add NAME TYPE HOST | board-drain NAME | board-resume NAME    admin only
 """
@@ -365,6 +366,7 @@ def main(argv=None):
     sub.add_parser("board-resume").add_argument("name")
     sub.add_parser("health").add_argument("--quiet", action="store_true")
     sub.add_parser("notify")
+    sub.add_parser("daemon")
     no = sub.add_parser("notices"); no.add_argument("--unread", action="store_true")
     no.add_argument("--read", action="store_true"); no.add_argument("--json", action="store_true")
     a = ap.parse_args(argv)
@@ -413,6 +415,11 @@ def main(argv=None):
                     print(f"{name}: " + ("ok" if not ws else "; ".join(ws)))
         elif a.cmd == "notify":
             L.notify()
+        elif a.cmd == "daemon":
+            if L.who != "kotl" or os.environ.get("SUDO_USER"):
+                raise Refused("the Kotl daemon runs as the kotl service (systemctl status kotl-daemon)")
+            from kotl.core.daemon import Daemon
+            Daemon(L.cfg).run_forever()
         elif a.cmd == "notices":
             rows = L.reg.notices(L.who, unread_only=a.unread)
             if a.json:

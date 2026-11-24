@@ -3,6 +3,12 @@
 This file always holds only the current steps. **To run them: `bash ~/working_dir/kotl/deploy/next.sh`**
 (it asks before each step and logs everything to `.kotl/next.log`).
 
+## The Kotl daemon (new)
+
+Step 1 also installs and starts the Kotl daemon (`kotl-daemon.service`, Kotl's one always-running
+process). It writes `/run/kotl/status.json` every second; the band, the VS Code extension and
+`kotl top` then refresh every second for almost nothing. `kotl daemon` shows it.
+
 ## The Claude band: fixed, needs the install
 
 The band never drew anything (CLI or VS Code): its `/kotl` command clashed with the kotl plugin's

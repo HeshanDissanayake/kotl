@@ -24,10 +24,11 @@ step() {
 
 log "=== next.sh started by $(id -un) (deploy/next.sh $(git rev-parse --short HEAD 2>/dev/null))"
 
-if ask "1. Update kotl-xdma-reload on the PC (sudo there) and Kotl here (sudo)"; then
+if ask "1. Update kotl-xdma-reload on the PC (sudo there) and Kotl here (sudo): installs and starts the Kotl daemon"; then
   step "scp deploy/pc/setup.sh deploy/pc/kotl-keys deploy/pc/kotl-xdma-reload $PC:/tmp/" &&
   step "ssh -t $PC 'sudo bash /tmp/setup.sh --keys-helper /tmp/kotl-keys --driver-helper /tmp/kotl-xdma-reload && rm /tmp/setup.sh /tmp/kotl-keys /tmp/kotl-xdma-reload'" &&
-  step "sudo deploy/kotl/install.sh --board vcu118-pc1=vcu118@vcu118-pc1"
+  step "sudo deploy/kotl/install.sh --board vcu118-pc1=vcu118@vcu118-pc1" &&
+  step "sleep 3; kotl daemon"
 fi
 
 if ask "2. Show how XDMA is loaded on the PC now (read-only)"; then

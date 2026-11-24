@@ -2,7 +2,7 @@
   "name": "kotl-status",
   "displayName": "Kotl",
   "description": "The lab's FPGA board queue (Kotl) in the status bar: who holds each board, time against ETA, your jobs, notices.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "publisher": "kotl",
   "license": "UNLICENSED",
   "engines": {
@@ -41,9 +41,9 @@
         },
         "kotl.refreshSeconds": {
           "type": "number",
-          "default": 30,
-          "minimum": 10,
-          "description": "How often to read Kotl's status."
+          "default": 1,
+          "minimum": 1,
+          "description": "How often to refresh (seconds). On the workstation it reads the Kotl daemon's status file, so 1 s is cheap; over ssh it is at least 5 s."
         }
       }
     },

@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert');
-const { minutes, statusText, tooltip, tree } = require('../format');
+const { minutes, statusText, tooltip, tree, fromShared } = require('../format');
 
 const SNAP = {
   user: 'alice',
@@ -59,4 +59,13 @@ test('panel says why when unreachable', () => {
   const t = tree({ problem: 'not in kotl-users yet' });
   assert.equal(t[0].label, "Kotl can't be reached here");
   assert.equal(t[0].children[0].label, 'not in kotl-users yet');
+});
+
+test('the daemon\'s shared file, seen by one user; stale means ask directly', () => {
+  const doc = { updated: 1000, boards: SNAP.boards, queue: SNAP.queue, unread: { alice: 4 } };
+  const s = fromShared(doc, 'alice', 1000 * 1000 + 800);
+  assert.equal(s.unread, 4); assert.equal(s.user, 'alice');
+  assert.equal(statusText(s), '$(circuit-board) Kotl: vcu118-pc1 busy · bob 12m/30m · 2 waiting · you: 2 jobs · $(bell) 4');
+  assert.equal(fromShared(doc, 'alice', 1000 * 1000 + 6000), null);
+  assert.equal(fromShared(null, 'alice', 0), null);
 });

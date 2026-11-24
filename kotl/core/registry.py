@@ -128,6 +128,11 @@ class Registry:
         q = "SELECT * FROM notices WHERE user=?" + (" AND read=0" if unread_only else "")
         return [dict(r) for r in self.db.execute(q + " ORDER BY id DESC LIMIT ?", (user, limit))]
 
+    def unread_counts(self):
+        """{user: number of unread notices} for everyone who has any."""
+        return {r["user"]: r["n"] for r in
+                self.db.execute("SELECT user, COUNT(*) AS n FROM notices WHERE read=0 GROUP BY user")}
+
     def mark_read(self, user):
         self.db.execute("UPDATE notices SET read=1 WHERE user=? AND read=0", (user,))
 

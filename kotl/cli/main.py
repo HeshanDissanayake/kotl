@@ -3,7 +3,8 @@
   kotl run --eta 30m [--max 1h] [--idle 10m] [--no-wait] -- CMD...   hold a board while CMD runs
   kotl lease --eta 1h [--max 2h]       hold a board until you release it
   kotl release [JOB]                   end your lease
-  kotl status                          the queue and every board
+  kotl status                          the queue, every board, and the Kotl daemon
+  kotl daemon                          the Kotl daemon (kotld): running? its tasks
   kotl top                             the same, live, with your jobs (l logs, c cancel, r release, f fetch)
   kotl cancel JOB                      cancel your job (Slurm allows only the owner or root)
   kotl history | logs JOB [-f] | fetch JOB [--to DIR]
@@ -148,10 +149,25 @@ def cmd_release(a):
     return 0
 
 
+def from_shared(doc, user):
+    """The Kotl daemon's shared status file, seen by one user (the same shape as status_json)."""
+    queue = doc.get("queue", [])
+    return {"user": user, "boards": doc.get("boards", []), "queue": queue,
+            "running_mine": [{"job_id": int(q["job"]), "mode": q["name"].replace("kotl-", "")}
+                             for q in queue if q["user"] == user and q["state"] == "RUNNING"],
+            "unread": doc.get("unread", {}).get(user, 0), "problem": None,
+            "daemon": {"updated": doc.get("updated")}}
+
+
 def status_json():
-    """Everything a status display needs, as one JSON document (kotl status --json)."""
+    """Everything a status display needs, as one JSON document (kotl status --json).
+    From the Kotl daemon's status file when it is fresh; otherwise asked directly."""
     import json
     import pwd
+    from kotl.core.daemon import read_status
+    doc = read_status()
+    if doc:
+        return from_shared(doc, pwd.getpwuid(os.getuid()).pw_name)
 
     problems = []
 
@@ -175,7 +191,35 @@ def status_json():
     boards = lj("boards")
     unread = len(lj("notices", "--unread"))
     return {"user": pwd.getpwuid(os.getuid()).pw_name, "boards": boards, "queue": queue,
-            "running_mine": mine, "unread": unread, "problem": problems[0] if problems else None}
+            "running_mine": mine, "unread": unread, "problem": problems[0] if problems else None,
+            "daemon": None}
+
+
+def daemon_line():
+    from kotl.core.daemon import read_status
+    doc = read_status(max_age=10)
+    if not doc:
+        return "Kotl daemon: not running (displays ask Kotl directly; admin: systemctl status kotl-daemon)"
+    import time
+    tasks = doc.get("daemon", {}).get("tasks", {})
+    bad = [f"{n}: {t['error']}" for n, t in tasks.items() if t.get("error")]
+    return (f"Kotl daemon: running, updated {max(0.0, time.time() - doc['updated']):.1f} s ago"
+            + (f"; problems: {'; '.join(bad)}" if bad else ""))
+
+
+def cmd_daemon(a):
+    import json
+    import time
+    from kotl.core.daemon import read_status
+    doc = read_status(max_age=10)
+    print(daemon_line())
+    if doc:
+        d = doc.get("daemon", {})
+        print(f"  pid {d.get('pid')}, up {time.time() - d.get('started', time.time()):.0f} s")
+        for name, t in d.get("tasks", {}).items():
+            ok = f"{time.time() - t['last_ok']:.1f} s ago" if t.get("last_ok") else "never"
+            print(f"  task {name:8} every {t['every']:g} s · last ok {ok}" + (f" · error: {t['error']}" if t.get("error") else ""))
+    return 0 if doc else 1
 
 
 def cmd_status(a):
@@ -194,6 +238,7 @@ def cmd_status(a):
         print("(no Kotl jobs queued or running)")
     print()
     rc = launch("boards")
+    print("\n" + daemon_line())
     n = unread_count()
     if n:
         print(f"\nkotl: {n} unread notice{'s' if n > 1 else ''}: kotl notices")
@@ -274,6 +319,7 @@ def main(argv=None):
     sub.add_parser("release").add_argument("job", nargs="?", type=int)
     sub.add_parser("status").add_argument("--json", action="store_true", help="for status displays")
     sub.add_parser("top", help="live view of boards, queue and your jobs")
+    sub.add_parser("daemon", help="the Kotl daemon: is it running, its tasks")
     sub.add_parser("cancel").add_argument("job", type=int)
     sub.add_parser("attach").add_argument("job", nargs="?", type=int)
     nt = sub.add_parser("notices"); nt.add_argument("--all", action="store_true")
@@ -297,6 +343,8 @@ def main(argv=None):
         return cmd_release(a)
     if a.cmd == "status":
         return cmd_status(a)
+    if a.cmd == "daemon":
+        return cmd_daemon(a)
     if a.cmd == "top":
         from kotl.cli import top
         return top.main()

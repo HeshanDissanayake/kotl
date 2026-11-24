@@ -337,3 +337,15 @@ def test_xdma_reload_loads_it_the_way_firesim_does():
     assert 'insmod "$KO" poll_mode=1' in text and "modprobe xdma poll_mode=1" in text
     assert "/lib/modules/$(uname -r)/extra/xdma.ko" in text
     assert "modprobe xdma\n" not in text                     # never a plain modprobe (no poll_mode)
+
+
+@pytest.mark.feature("daemon")
+def test_install_runs_the_kotl_daemon(tmp_path):
+    r = dry("kotl/install.sh", root=tmp_path)
+    unit = (tmp_path / "etc/systemd/system/kotl-daemon.service").read_text()
+    assert "User=kotl" in unit and "ExecStart=/opt/kotl/launch daemon" in unit
+    assert "Restart=always" in unit and "RuntimeDirectory=kotl" in unit and "RuntimeDirectoryMode=0755" in unit
+    assert "systemctl restart kotl-daemon.service" in r.stdout          # runs the code just installed
+    r = dry("kotl/install.sh", "--undo", root=tmp_path)
+    assert "systemctl disable --now kotl-daemon.service" in r.stdout
+    assert not (tmp_path / "etc/systemd/system/kotl-daemon.service").exists()

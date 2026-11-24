@@ -3,13 +3,18 @@ import type { EngineInterface, Register } from 'claude-code'
 
 import type { KotlSnapshot } from '../types'
 
-// A live Kotl line above the prompt. Reads `kotl status --json` every 30 s: on the workstation
-// directly, on a user's own PC over `ssh $KOTL_SSH`. Read-only: it never starts or stops a job.
+// A live Kotl band above the prompt. Every second it reads the Kotl daemon's shared status file
+// (/run/kotl/status.json), with no process started. When that file is missing or stale (the
+// daemon is down, or this is a user's own PC), it runs `kotl status --json` instead, locally or
+// over `ssh $KOTL_SSH`, at most every 30 s. Read-only: it never starts or stops a job.
 const snapshot = atom({ plugin: 'kotl-band', key: 'snapshot' } as const, null)
 const isHidden = atom({ plugin: 'kotl-band', key: 'isHidden' } as const, false)
 const error = atom({ plugin: 'kotl-band', key: 'error' } as const, null)
 
-const POLL_MS = 30_000
+const POLL_MS = 1_000
+const SHARED = '/run/kotl/status.json'
+const SHARED_MAX_AGE_MS = 5_000
+const FALLBACK_MS = 30_000
 const LOCAL = ['kotl', 'status', '--json']
 const REMOTE = ['sh', '-c', '[ -n "$KOTL_SSH" ] || exit 127; exec ssh -o BatchMode=yes -o ConnectTimeout=5 "$KOTL_SSH" kotl status --json']
 
@@ -40,6 +45,31 @@ function ordinal(n: number): string {
 }
 
 let inflight: Promise<void> | null = null
+let me: string | null = null
+let lastFallback = 0
+
+async function whoAmI($: EngineInterface): Promise<string> {
+  if (me) return me
+  try {
+    const r = await $.process.run(['id', '-un'], { timeoutMs: 5_000 })
+    if (r.exitCode === 0) me = r.stdout.trim()
+  } catch { /* unknown: your own jobs just won't be marked */ }
+  return me ?? ''
+}
+
+// The daemon's file, seen by this user; null when missing or older than SHARED_MAX_AGE_MS
+async function fromShared($: EngineInterface): Promise<Omit<KotlSnapshot, 'at'> | null> {
+  let text: string
+  try { text = await $.fs.read(SHARED) } catch { return null }
+  const doc = JSON.parse(text) as { updated: number; boards: KotlSnapshot['boards']; queue: KotlSnapshot['queue']; unread?: Record<string, number> }
+  if ((await $.clock.now()) - doc.updated * 1000 > SHARED_MAX_AGE_MS) return null
+  const user = await whoAmI($)
+  return {
+    user, boards: doc.boards, queue: doc.queue, problem: null,
+    running_mine: doc.queue.filter(q => q.user === user && q.state === 'RUNNING').map(q => ({ job_id: Number(q.job), mode: q.name.replace('kotl-', '') })),
+    unread: doc.unread?.[user] ?? 0,
+  }
+}
 
 // One poll at a time: a caller during a poll waits for that one's answer.
 function poll($: EngineInterface): Promise<void> {
@@ -49,6 +79,17 @@ function poll($: EngineInterface): Promise<void> {
 
 async function fetchSnapshot($: EngineInterface): Promise<void> {
   try {
+    const shared = await fromShared($).catch(() => null)
+    if (shared) {
+      const at = await $.clock.now()
+      await update($, snapshot, () => ({ ...shared, at }))
+      await update($, error, () => null)
+      return
+    }
+    // no fresh shared file: ask Kotl directly, but not every second
+    const now = await $.clock.now()
+    if (now - lastFallback < FALLBACK_MS && (await read($, snapshot)) !== null) return
+    lastFallback = now
     let out: string | null = null
     for (const argv of [LOCAL, REMOTE]) {
       try {
