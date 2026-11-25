@@ -2,7 +2,7 @@
  "schema": 1,
  "title": "Kotl Architecture",
  "intro": "Teal is Kotl, our product. Purple is Slurm. Gray is everything else off the shelf, plus the hardware. The dot on each box is its build status; click a box for exactly what's happening.",
- "latest": "v1.0.0: Kotl sets up and removes FPGA PCs itself (deploy/kotl/pc.sh), updates everything in one go (deploy/kotl/update.sh), uninstalls completely (deploy/uninstall.sh), and tells users when their VS Code extension or plugins are out of date.",
+ "latest": "v1.0.0: Kotl sets up and removes FPGA PCs itself (deploy/kotl/pc.sh), updates everything in one go (deploy/kotl/update.sh), uninstalls completely (deploy/uninstall.sh), and tells users when their VS Code extension or plugins are out of date. Since: lab notes (what worked before, per tool) with a skill per adapter, and FireSim run packages: remote users build on their own PC and run on the boards through Kotl.",
  "canvas": {
   "w": 1520,
   "h": 880
@@ -1484,6 +1484,10 @@
      "d": "The core knows nothing about FireSim. The FireSim adapter adds its checks, the XDMA repair, its cleanup and the <code>fsim0</code> console. Another tool is another adapter."
     },
     {
+     "t": "FireSim from your own PC",
+     "d": "Build with your own Chipyard anywhere, pack the run (kotl-firesim-pack), copy it to the workstation and run it on a board: Kotl flashes, runs the driver and brings back the results. No FireSim needed on the workstation."
+    },
+    {
      "t": "Results and notices",
      "d": "Every job's output, launcher log and status are kept: <code>kotl logs</code>, <code>kotl fetch</code>, <code>kotl history</code>. Notices when your ETA passes, your start slips, or a board goes down or comes back."
     },
@@ -1535,6 +1539,27 @@
       [
        "kotl setup",
        "add Kotl to your Claude Code and VS Code (again after an update)"
+      ]
+     ]
+    },
+    {
+     "who": "Remote user (FireSim from your own build)",
+     "rows": [
+      [
+       "kotl-firesim-pack -c CFG --out ~/kotl-runs/NAME",
+       "pack your run (in sims/firesim/deploy, after firesim builddriver)"
+      ],
+      [
+       "rsync -a ~/kotl-runs/NAME/ ws:kotl-runs/NAME/",
+       "copy it to the workstation"
+      ],
+      [
+       "ssh ws kotl run --eta 20m -- /opt/kotl/adapters/firesim/run-package.sh kotl-runs/NAME",
+       "run it on a board"
+      ],
+      [
+       "ssh ws kotl fetch JOB",
+       "the uartlog and outputs"
       ]
      ]
     },
