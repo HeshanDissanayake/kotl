@@ -79,3 +79,18 @@ def test_run_sh_only_runs_inside_a_kotl_job(chipyard, tmp_path):
     env = {k: v for k, v in os.environ.items() if not k.startswith("KOTL_")}
     r = subprocess.run(["bash", str(out / "run.sh")], capture_output=True, text=True, env=env, cwd=tmp_path)
     assert r.returncode == 1 and "KOTL RESULT: FAIL (run me inside a Kotl job" in r.stdout
+
+
+@pytest.mark.feature("notes")
+def test_run_sh_describes_itself_for_the_lab_notes(chipyard, tmp_path):
+    out = tmp_path / "pkg"
+    subprocess.run(["bash", str(MAKE), "--chipyard", str(chipyard), "--out", str(out)], check=True, capture_output=True)
+    env = {k: v for k, v in os.environ.items() if not k.startswith("KOTL_")}
+    r = subprocess.run(["bash", "-c", f"HERE={out}; " + "eval \"$(sed -n '/^facts() {/,/^}/p' " + str(out / "run.sh") + ")\"; facts"],
+                       capture_output=True, text=True, env=env, cwd=tmp_path)
+    from kotl.core.notes import output_facts
+    f = output_facts(r.stdout.encode())
+    assert f["tool"] == "firesim" and f["package"] == str(out)
+    assert f["bitstream"] == "ref-2026-06-03-xilinx_vcu118_firesim_rocket_singlecore_4GB_no_nic"
+    assert f["driver"].endswith("FireSimRocket32KBL1NoL2Config-BaseXilinxVCU118Config")
+    assert f["workload"] == "linux-poweroff" and len(f["bit_sha256"]) == 12 and f["chipyard"] == "?"

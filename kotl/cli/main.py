@@ -13,6 +13,10 @@
   kotl history | logs JOB [-f] | fetch JOB [--to DIR]
   kotl attach [JOB]                    your job's console on its PC (FireSim: fsim0; Ctrl-a d detaches)
   kotl notices [--all] [--peek]        ETA, start-time and board notices for you (--peek: don't mark read)
+  kotl notes [TOOL [PAGE]]             the lab notes: what works on the boards, past runs (read first)
+  kotl notes add TOOL "text"           add a dated, signed note (TOOL: general, firesim, ...)
+  kotl notes set TOOL PAGE < file      replace setup.md or compatible.md (the old one is kept)
+  kotl notes history TOOL              earlier versions of those pages
   kotl board list | add NAME TYPE HOST | remove NAME | drain NAME | resume NAME | check   (admin)
                                        (a new PC: deploy/kotl/pc.sh add, which also sets up the PC)
   kotl version [--build]               Kotl's version, and the installed build
@@ -309,6 +313,23 @@ def unread_count():
     return len(json.loads(out or b"[]")) if rc == 0 else 0
 
 
+def cmd_notes(words):
+    """kotl notes ...: read by hand, not argparse, so a note may hold any words (even -x)."""
+    w = list(words)
+    if w and w[0] in ("-h", "--help"):
+        print("\n".join(l for l in __doc__.splitlines() if l.strip().startswith("kotl notes")))
+        return 0
+    if w and w[0] in ("add", "set", "history"):
+        act, w = w[0], w[1:]
+    else:
+        act = "show"
+    if act == "add":
+        if len(w) < 2:
+            die('kotl notes add TOOL "text"')
+        return launch("notes", "add", w[0], stdin_bytes=" ".join(w[1:]).encode())
+    return launch("notes", act, *w)
+
+
 def cmd_board(a):
     if a.action == "list":
         return launch("boards")
@@ -325,6 +346,8 @@ def main(argv=None):
     if "--" in argv:
         i = argv.index("--")
         argv, command = argv[:i], argv[i + 1:]
+    if argv[:1] == ["notes"]:
+        return cmd_notes(argv[1:] + command)
     ap = argparse.ArgumentParser(prog="kotl", description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -347,6 +370,7 @@ def main(argv=None):
     sub.add_parser("history").add_argument("--limit", type=int, default=20)
     lg = sub.add_parser("logs"); lg.add_argument("job", type=int); lg.add_argument("-f", "--follow", action="store_true")
     fe = sub.add_parser("fetch"); fe.add_argument("job", type=int); fe.add_argument("--to", default="kotl-results")
+    sub.add_parser("notes", help="the lab notes: read before a run, add what you learn").add_argument("words", nargs="*")
     b = sub.add_parser("board"); bs = b.add_subparsers(dest="action", required=True)
     bs.add_parser("list")
     ba = bs.add_parser("add"); ba.add_argument("name"); ba.add_argument("type"); ba.add_argument("host")

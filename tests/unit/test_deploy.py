@@ -530,3 +530,20 @@ def test_uninstall_runs_every_undo_in_reverse(tmp_path):
     assert [out.index(x) for x in order] == sorted(out.index(x) for x in order)
     r = as_admin(tmp_path, "uninstall.sh", "--keep-pcs")
     assert "pc/setup.sh --undo" not in r.stdout and "--purge" not in r.stdout
+
+
+@pytest.mark.feature("notes")
+def test_install_brings_the_enabled_adapters_skills_and_tools(tmp_path):
+    fake_etc(tmp_path, adapters="firesim")
+    dry("kotl/install.sh", root=tmp_path)                               # from kotl.conf
+    plug = tmp_path / "opt/kotl/plugin/skills"
+    assert (plug / "kotl/SKILL.md").exists() and (plug / "kotl-firesim/SKILL.md").exists()
+    smoke = tmp_path / "opt/kotl/adapters/firesim/firesim-smoke.sh"
+    assert smoke.exists() and os.access(smoke, os.X_OK) and "managed by kotl" in smoke.read_text()
+    assert not (tmp_path / "opt/kotl/adapters/firesim/firesim-smoke.sh.kotl-orig").exists()
+    dry("kotl/install.sh", "--adapters", "", root=tmp_path)            # off: its skill and tools go
+    assert (plug / "kotl/SKILL.md").exists() and not (plug / "kotl-firesim").exists()
+    assert not (tmp_path / "opt/kotl/adapters").exists()
+    dry("kotl/install.sh", "--adapters", "firesim", root=tmp_path)
+    r = dry("kotl/install.sh", "--undo", root=tmp_path)
+    assert not (tmp_path / "opt/kotl/adapters").exists() and "lab notes (/srv/kotl)" in r.stdout

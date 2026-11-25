@@ -7,7 +7,8 @@
 #       an SSH client entry per board (/etc/ssh/ssh_config.d/kotl.conf: your job key during a lease),
 #       the Kotl daemon (kotl-daemon.service: kotld, Kotl's one always-running process),
 #       the Claude Code plugin (/opt/kotl/plugin, a marketplace at /opt/kotl: users add it with
-#       /plugin marketplace add /opt/kotl), Kotl's rules for every Claude Code session
+#       /plugin marketplace add /opt/kotl; each enabled adapter's skill with it, and its user tools
+#       in /opt/kotl/adapters), Kotl's rules for every Claude Code session
 #       (/etc/claude-code/CLAUDE.md, kept as is if the admin wrote their own), the notifier's systemd timer (every minute), adds each board to the registry, and makes
 #       kotl a Slurm admin (its guards cancel hung jobs; its health check holds a down board's
 #       license with a reservation). Re-run after every update of the repo.
@@ -19,7 +20,8 @@
 source "$(dirname "$0")/../lib.sh"
 
 REPO=$(cd "$DEPLOY_DIR/.." && pwd)
-usage() { sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'; exit "${1:-0}"; }
+ADAPTER_TOOLS=(firesim/firesim-smoke.sh)   # installed as /opt/kotl/adapters/<path> when the adapter is on
+usage() { sed -n '2,19p' "$0" | sed 's/^# \{0,1\}//'; exit "${1:-0}"; }
 
 py_wrapper() {  # py_wrapper MODULE   -> a tiny entry script; -I ignores the caller's Python env
   cat <<EOF
@@ -127,7 +129,24 @@ install_all() {
   find "$plug" -name '*.sh' -exec chmod 755 {} +
   if [ "$KOTL_DRY_RUN" != 1 ]; then chown -R root:root "$plug"; fi
   printf '%s\n' "$BUILD" >"$plug/BUILD"
-  say "copied plugin/ to /opt/kotl/plugin"
+  # each adapter brings a skill (plugin/skills/kotl-<adapter>): keep only the enabled adapters'
+  local on sk
+  if [ "$ADAPTERS" != unset ]; then on=$ADAPTERS; else on=$(get_conf /etc/kotl/kotl.conf adapters); fi
+  for sk in "$plug"/skills/kotl-*; do
+    [ -d "$sk" ] || continue
+    case ",${on// /}," in *",${sk##*/kotl-},"*) ;; *) rm -rf "$sk" ;; esac
+  done
+  say "copied plugin/ to /opt/kotl/plugin (adapter skills: ${on:-none})"
+  # the adapters' tools for users (e.g. FireSim's smoke run), readable and runnable by everyone
+  rm -rf "$(p /opt/kotl/adapters)"
+  local a
+  for a in $(tr ',' ' ' <<<"$on"); do
+    for t in "${ADAPTER_TOOLS[@]}"; do
+      [ "${t%%/*}" = "$a" ] || continue
+      make_dir "/opt/kotl/adapters/$a" 755 root:root
+      put_file "/opt/kotl/adapters/$t" 755 root:root <"$DEPLOY_DIR/adapters/$t"
+    done
+  done
   local band
   band=$(p /opt/kotl/plugin-band)
   rm -rf "$band"
@@ -196,7 +215,7 @@ undo_all() {
   lib=$(p /opt/kotl/lib)
   rm -rf "$lib"     # under the dry-run folder in a dry run
   say "removed /opt/kotl/lib"
-  rm -rf "$(p /opt/kotl/plugin)" "$(p /opt/kotl/plugin-band)"     # under the dry-run folder in a dry run
+  rm -rf "$(p /opt/kotl/plugin)" "$(p /opt/kotl/plugin-band)" "$(p /opt/kotl/adapters)"   # under the dry-run folder in a dry run
   remove_file /opt/kotl/.claude-plugin/marketplace.json
   remove_file /opt/kotl/kotl-status.vsix
   remove_file /opt/kotl/client/install.sh
@@ -221,7 +240,7 @@ undo_all() {
   run rm -f /usr/local/bin/kotl
   # Slurm still names the epilog: leave a no-op so the node never drains
   printf '#!/bin/sh\n# %s: no-op after kotl/install.sh --undo\nexit 0\n' "$MARK" | put_file /opt/kotl/epilog.sh 755 root:root
-  say "kept the registry (/var/lib/kotl) and results (/srv/kotl)"
+  say "kept the registry (/var/lib/kotl), results and lab notes (/srv/kotl)"
 }
 
 ACTION=install BOARDS=() ADAPTERS=unset

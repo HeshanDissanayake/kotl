@@ -1,6 +1,6 @@
 ---
 name: kotl
-description: Use the lab's FPGA boards (VCU118) through Kotl, the lab's board queue. Use whenever a task runs anything on an FPGA board or its PC (FireSim infrasetup/runworkload, a bitstream, a driver test, ssh to an FPGA PC), or when the person asks about the board queue, their Kotl jobs, results, logs or notices.
+description: Use the lab's FPGA boards (VCU118) through Kotl, the lab's board queue. Use whenever a task runs anything on an FPGA board or its PC (FireSim infrasetup/runworkload, a bitstream, a driver test, ssh to an FPGA PC), or when the person asks about the board queue, their Kotl jobs, results, logs, notices or the lab notes (what worked before). For FireSim also read the kotl-firesim skill.
 ---
 
 # Kotl: the lab's FPGA board queue
@@ -34,30 +34,46 @@ kotl run --eta 30m -- <command>
 - Inside the job, the command has `KOTL_JOB`, `KOTL_BOARD`, `KOTL_PC` (user@address of the board's
   PC) and an ssh-agent holding only the job key: `ssh "$KOTL_PC" ...` works, FireSim's own ssh too.
 - Exit code 0 = `succeeded`. A line `KOTL RESULT: PASS` or `KOTL RESULT: FAIL` in the output sets
-  `passed`/`failed` instead. Print one when the exit code alone can't tell (see FireSim below).
+  `passed`/`failed` instead. Print one when the exit code alone can't tell (the tool's skill says
+  how).
 - `kotl run` waits and streams the output. For a long run, add `--no-wait` (it prints the job
   number), then follow with `kotl logs JOB -f` or check `kotl status`. Run long waits in the
   background rather than blocking the conversation.
 
-### FireSim
+## Tools on the boards: each has its own skill, and lab notes
 
-Run FireSim from the person's own Chipyard, with their environment active (`source env.sh` and
-`sourceme-manager.sh --skip-ssh-setup` in the same shell), from `sims/firesim/deploy`:
+Kotl itself is generic: it queues the board and gives the job access. What one tool needs lives
+in that tool's adapter, and each adapter brings a skill. Before running a tool on a board, read its
+skill (it is installed next to this one) and its lab notes.
+
+| Tool | Skill | Lab notes |
+| --- | --- | --- |
+| FireSim | `kotl-firesim` | `kotl notes firesim` |
+| anything else (a driver test, `ls` on the PC) | this skill | `kotl notes general` |
+
+## Lab notes: what the lab knows, kept by Kotl
+
+`/srv/kotl/notes/` on the workstation holds what worked before, per tool. The paths never change:
 
 ```sh
-kotl run --eta 30m -- sh -c "firesim infrasetup -c CFG && firesim runworkload -c CFG"
+kotl notes                      # the index: every tool's pages, and its last good run
+kotl notes firesim              # setup.md, compatible.md, the latest runs, notes.md
+kotl notes firesim runs.md      # one page, whole
+kotl notes add firesim "text"   # a dated, signed note: what you learned, what to avoid
 ```
 
-- The workload must power off by itself (FireMarshal `run`/`command`, or a script ending in
-  `poweroff`); otherwise `runworkload` waits until `--max` stops the job.
-- `runworkload` reports "completed" even when the driver failed to start: check the uartlog in
-  `results-workload/<newest>/*/uartlog` and print `KOTL RESULT: PASS` only if it shows the real
-  end (e.g. `reboot: Power down`). The lab's `deploy/adapters/firesim/firesim-smoke.sh` does this.
-- If `kotl board list` warns that glibc differs between the workstation and the PC, FireSim's
-  bundled glibc must be removed on the PC after infrasetup: use
-  `deploy/adapters/firesim/firesim-smoke.sh --use-pc-glibc CFG`, or
-  `ssh "$KOTL_PC" "cd <sim dir>/sim_slot_0 && rm -f libc.so.6 libm.so.6 libpthread.so.0 libdl.so.2 librt.so.1"`
-  between the two commands.
+- **Read them before a run**: `setup.md` (what the board's PC has), `compatible.md` (what works
+  together), `runs.md` (every run Kotl saw, `ok`/`FAIL`, with what it used), `notes.md` (free
+  notes). Compare what the person is about to run with the last good runs, and say so if it
+  differs (another commit, config or bitstream) before using the queue.
+- **Kotl adds the run line itself** when a `kotl run` of a tool ends. A command can describe
+  itself with `KOTL FACT: key=value` lines in its output (they replace what the adapter finds).
+- **Add a note** when you learn something the next person needs: a fix, a known-bad combination,
+  a step that was missing. One or two lines, facts only. Runs done in a lease get no automatic
+  line: add one.
+- `kotl notes set TOOL setup.md|compatible.md < file` replaces a curated page (the old one is kept;
+  `kotl notes history TOOL`). Change these only with facts from runs, and tell the person.
+- Lab facts in the notes come from the lab; don't invent them.
 
 ## Work by hand: `kotl lease`
 
@@ -111,4 +127,6 @@ guard stopped it), `idle` (a lease with nothing running), `released`, `cancelled
 - Don't stop FireSim, screens or processes on a board's PC that aren't your own job's.
 - Don't cancel other people's jobs (Kotl won't let you anyway).
 - Don't leave a lease running: release it.
+- Don't start a tool's run without reading its lab notes first, and don't leave what you learned
+  out of them.
 - Don't guess an ETA of hours for a minutes-long run: ETAs order the queue for everyone.

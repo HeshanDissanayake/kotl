@@ -16,6 +16,10 @@ or from the kotl CLI. Every subcommand checks who is asking:
   notify                     (kotl only) one pass of the ETA notifier
   daemon                     (kotl only) the Kotl daemon (kotld): runs forever, under systemd
   notices [--unread] [--read]    your notices; --read marks them read
+  facts-script JOB           the shell lines that describe the job's run (its adapter's), or nothing
+  facts JOB                  the owner saves their output (key=value lines, stdin) with the job
+  notes show [TOOL [PAGE]] | add TOOL (text on stdin) | set TOOL PAGE (stdin) | history TOOL
+                             the lab notes (/srv/kotl/notes): anyone reads and adds; see notes.py
   board-add NAME TYPE HOST | board-remove NAME | board-drain NAME | board-resume NAME    admin only
 """
 import argparse
@@ -28,6 +32,7 @@ import time
 
 from kotl import slurm as slurm_mod
 from kotl import ssh as ssh_mod
+from kotl.core import notes as notes_mod
 from kotl.core import results
 from kotl.core.config import Config, caller, fmt_duration, parse_duration
 from kotl.core.registry import Registry, RegistryError
@@ -92,6 +97,54 @@ class Launcher:
 
     def dir_for(self, j):
         return results.job_dir(self.cfg.out, j["user"], j["job_id"])
+
+    @property
+    def notes(self):
+        return notes_mod.Notes(self.cfg.notes, self.adapters, clock=self.clock)
+
+    # --- lab notes: what a run used, for its line in runs.md
+    def facts_script(self, job_id):
+        """The facts lines of the adapter this job's run belongs to ('' if none)."""
+        from kotl.adapters import run_of
+        j = self.own_job(job_id)
+        a = run_of(self.adapters, j["command"])
+        return (a.facts or "") if a else ""
+
+    def save_facts(self, job_id, stream):
+        j = self.own_job(job_id)
+        facts = notes_mod.parse_facts(stream.read(16384).decode("utf-8", "replace"))
+        with open(os.path.join(self.dir_for(j), "facts.json"), "w", encoding="utf-8") as f:
+            json.dump(facts, f, indent=1)
+        return facts
+
+    def run_facts(self, j):
+        """What the run reported: its own 'KOTL FACT:' lines if it printed any, else facts.json."""
+        d = self.dir_for(j)
+        try:
+            with open(os.path.join(d, "output.log"), "rb") as f:
+                said = notes_mod.output_facts(f.read())
+        except FileNotFoundError:
+            said = {}
+        if said:
+            return said
+        try:
+            with open(os.path.join(d, "facts.json"), encoding="utf-8") as f:
+                return json.load(f)
+        except (FileNotFoundError, ValueError):
+            return {}
+
+    def record_run(self, j):
+        """A line in the lab notes for a finished run of a tool (never fails the end step)."""
+        from kotl.adapters import run_of
+        try:
+            facts = self.run_facts(j)
+            a = run_of(self.adapters, j["command"], facts)
+            if a and j["mode"] == "run":
+                line = self.notes.record(a.name, j, None, facts)
+                if line:
+                    results.log(self.dir_for(j), f"notes: added to {a.name}/runs.md")
+        except Exception as e:  # noqa: BLE001 - the notes must never break the end step
+            results.log(self.dir_for(j), f"notes: could not record the run: {e}")
 
     # --- the lease
     def start(self, job_id, mode, max_=None, idle=None, command="", pubkey=None):
@@ -220,6 +273,7 @@ class Launcher:
             results.write_status(d, self.status_doc(j, state="done"))
             results.log(d, f"end: {result}" + (f" (exit {rc})" if rc is not None else "") +
                         (" [epilog]" if epilog else "") + f"; {j['board']} freed")
+            self.record_run(j)
         return result
 
     def marker(self, j):
@@ -397,6 +451,10 @@ def main(argv=None):
     sub.add_parser("daemon")
     no = sub.add_parser("notices"); no.add_argument("--unread", action="store_true")
     no.add_argument("--read", action="store_true"); no.add_argument("--json", action="store_true")
+    sub.add_parser("facts-script").add_argument("job", type=int)
+    sub.add_parser("facts").add_argument("job", type=int)
+    nn = sub.add_parser("notes"); nn.add_argument("action", choices=["show", "add", "set", "history"])
+    nn.add_argument("words", nargs="*")
     a = ap.parse_args(argv)
     os.umask(0o077)   # everything the launcher writes is kotl's alone
 
@@ -460,6 +518,31 @@ def main(argv=None):
                     print("(no notices)")
             if a.read:
                 L.reg.mark_read(L.who)
+        elif a.cmd == "facts-script":
+            sys.stdout.write(L.facts_script(a.job))
+        elif a.cmd == "facts":
+            L.save_facts(a.job, sys.stdin.buffer)
+        elif a.cmd == "notes":
+            os.umask(0o022)   # the notes are for everyone to read
+            n, w = L.notes, a.words
+            if a.action == "show":
+                if len(w) > 2:
+                    raise Refused("kotl notes [TOOL [PAGE]]")
+                sys.stdout.write(n.show(*w))
+            elif a.action == "add":
+                if len(w) != 1:
+                    raise Refused('kotl notes add TOOL "text"')
+                n.add(w[0], L.who, sys.stdin.read())
+                print(f"kotl: added to {n.path(w[0], 'notes.md')}")
+            elif a.action == "set":
+                if len(w) != 2:
+                    raise Refused("kotl notes set TOOL PAGE < file")
+                old = n.set(w[0], w[1], L.who, sys.stdin.read(notes_mod.MAX_SET + 1))
+                print(f"kotl: replaced {n.path(w[0], w[1])} (the old one: {old})")
+            else:
+                if len(w) != 1:
+                    raise Refused("kotl notes history TOOL")
+                print(n.history(w[0]))
         elif a.cmd == "board-add":
             L.need_admin(); L.reg.add_board(a.name, a.host, a.type); print(L.boards_table())
         elif a.cmd == "board-remove":
@@ -481,7 +564,7 @@ def main(argv=None):
             L.reg.set_state(a.name, "idle")
             L.slurm.release_hold(f"kotl-maint-{a.name}")
             print(L.boards_table())
-    except (Refused, RegistryError, slurm_mod.SlurmError, ssh_mod.SSHError) as ex:
+    except (Refused, RegistryError, notes_mod.NotesError, slurm_mod.SlurmError, ssh_mod.SSHError) as ex:
         print(f"kotl: {ex}", file=sys.stderr)
         return 1
     return 0

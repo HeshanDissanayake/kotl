@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "updated": "2026-11-24T14:11:26Z",
-  "repo_commit": "afc8927856b75d3f2aaea30092055291d0266313",
+  "updated": "2026-11-25T01:16:40Z",
+  "repo_commit": "7d5eb0372ca5d87b4ac7b3aa3c18b055a7bc506a",
   "watch": [
     "deploy/",
     "kotl/",
@@ -50,7 +50,7 @@
         "unit": {
           "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-24T14:11:26Z"
+          "ran_at": "2026-11-25T01:16:40Z"
         },
         "hardware": null
       },
@@ -108,14 +108,14 @@
         "unit": {
           "passed": 4,
           "failed": 0,
-          "ran_at": "2026-11-24T14:11:26Z"
+          "ran_at": "2026-11-25T01:16:40Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "ce7c72864fa89b4304fd198c018493fdf73088f8",
-        "message": "M1: deploy scripts for the workstation and PC (not yet run)",
-        "date": "2026-11-22T01:39:10+11:00"
+        "hash": "1e997fcff46c06c50efe2e030e3d7cae3866197b",
+        "message": "Kotl 1.0.0 (milestone P): PC onboarding, one-command update, full uninstall, update nudge",
+        "date": "2026-11-25T01:13:20+11:00"
       },
       "issues": [],
       "log": [
@@ -146,14 +146,14 @@
         "unit": {
           "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-24T14:11:26Z"
+          "ran_at": "2026-11-25T01:16:40Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "65e9fe3e5447e83bfc57ac00aeb3d38934ddb713",
-        "message": "Fix: health.sh and epilog.sh had no PATH under Slurm, so they did nothing",
-        "date": "2026-11-23T19:39:26+11:00"
+        "hash": "1e997fcff46c06c50efe2e030e3d7cae3866197b",
+        "message": "Kotl 1.0.0 (milestone P): PC onboarding, one-command update, full uninstall, update nudge",
+        "date": "2026-11-25T01:13:20+11:00"
       },
       "issues": [],
       "log": [
@@ -191,14 +191,14 @@
         "unit": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-24T14:11:26Z"
+          "ran_at": "2026-11-25T01:16:40Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "ce7c72864fa89b4304fd198c018493fdf73088f8",
-        "message": "M1: deploy scripts for the workstation and PC (not yet run)",
-        "date": "2026-11-22T01:39:10+11:00"
+        "hash": "1e997fcff46c06c50efe2e030e3d7cae3866197b",
+        "message": "Kotl 1.0.0 (milestone P): PC onboarding, one-command update, full uninstall, update nudge",
+        "date": "2026-11-25T01:13:20+11:00"
       },
       "issues": [],
       "log": [
@@ -224,14 +224,14 @@
         "unit": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-24T14:11:26Z"
+          "ran_at": "2026-11-25T01:16:40Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "ce7c72864fa89b4304fd198c018493fdf73088f8",
-        "message": "M1: deploy scripts for the workstation and PC (not yet run)",
-        "date": "2026-11-22T01:39:10+11:00"
+        "hash": "1e997fcff46c06c50efe2e030e3d7cae3866197b",
+        "message": "Kotl 1.0.0 (milestone P): PC onboarding, one-command update, full uninstall, update nudge",
+        "date": "2026-11-25T01:13:20+11:00"
       },
       "issues": [],
       "log": [
@@ -266,7 +266,7 @@
         "unit": {
           "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-24T14:11:26Z"
+          "ran_at": "2026-11-25T01:16:40Z"
         },
         "hardware": null
       },
@@ -315,7 +315,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-24T14:11:26Z"
+          "ran_at": "2026-11-25T01:16:40Z"
         },
         "hardware": {
           "passed": 1,
@@ -324,9 +324,9 @@
         }
       },
       "last_commit": {
-        "hash": "ce7c72864fa89b4304fd198c018493fdf73088f8",
-        "message": "M1: deploy scripts for the workstation and PC (not yet run)",
-        "date": "2026-11-22T01:39:10+11:00"
+        "hash": "1e997fcff46c06c50efe2e030e3d7cae3866197b",
+        "message": "Kotl 1.0.0 (milestone P): PC onboarding, one-command update, full uninstall, update nudge",
+        "date": "2026-11-25T01:13:20+11:00"
       },
       "issues": [],
       "log": [
@@ -360,7 +360,7 @@
         "unit": {
           "passed": 4,
           "failed": 0,
-          "ran_at": "2026-11-24T14:11:26Z"
+          "ran_at": "2026-11-25T01:16:40Z"
         },
         "hardware": {
           "passed": 2,
@@ -369,9 +369,9 @@
         }
       },
       "last_commit": {
-        "hash": "c136deebe90ccff1cc683a48115082ce3ef4afb0",
-        "message": "Never stop work outside Kotl: the end step stops only the job's own; say who and how long",
-        "date": "2026-11-24T22:41:15+11:00"
+        "hash": "1e997fcff46c06c50efe2e030e3d7cae3866197b",
+        "message": "Kotl 1.0.0 (milestone P): PC onboarding, one-command update, full uninstall, update nudge",
+        "date": "2026-11-25T01:13:20+11:00"
       },
       "issues": [],
       "log": [
@@ -422,9 +422,9 @@
         "hardware": null
       },
       "last_commit": {
-        "hash": "c136deebe90ccff1cc683a48115082ce3ef4afb0",
-        "message": "Never stop work outside Kotl: the end step stops only the job's own; say who and how long",
-        "date": "2026-11-24T22:41:15+11:00"
+        "hash": "1e997fcff46c06c50efe2e030e3d7cae3866197b",
+        "message": "Kotl 1.0.0 (milestone P): PC onboarding, one-command update, full uninstall, update nudge",
+        "date": "2026-11-25T01:13:20+11:00"
       },
       "issues": [],
       "log": [
@@ -446,14 +446,14 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-24T14:11:26Z"
+          "ran_at": "2026-11-25T01:16:40Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "688a48eb06bf0eec5e2cd06deace89ac5239adae",
-        "message": "The Kotl daemon (kotld): Kotl's one always-running process",
-        "date": "2026-11-24T18:58:11+11:00"
+        "hash": "1e997fcff46c06c50efe2e030e3d7cae3866197b",
+        "message": "Kotl 1.0.0 (milestone P): PC onboarding, one-command update, full uninstall, update nudge",
+        "date": "2026-11-25T01:13:20+11:00"
       },
       "issues": [],
       "log": [
@@ -500,14 +500,14 @@
         "unit": {
           "passed": 36,
           "failed": 0,
-          "ran_at": "2026-11-24T14:11:26Z"
+          "ran_at": "2026-11-25T01:16:40Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "afc8927856b75d3f2aaea30092055291d0266313",
-        "message": "deploy/kotl/update.sh: update Kotl everywhere in one go (workstation, then each board's PC)",
-        "date": "2026-11-25T00:56:58+11:00"
+        "hash": "1e997fcff46c06c50efe2e030e3d7cae3866197b",
+        "message": "Kotl 1.0.0 (milestone P): PC onboarding, one-command update, full uninstall, update nudge",
+        "date": "2026-11-25T01:13:20+11:00"
       },
       "issues": [],
       "log": [
@@ -574,6 +574,10 @@
         {
           "date": "2026-11-25",
           "text": "v1.0.0: kotl/__init__.py __version__; install.sh writes /opt/kotl/BUILD (version+commit) and a copy into the plugins and the vsix; the daemon's file and kotl status --json carry it; kotl version. update.sh now runs pc.sh update for the PCs."
+        },
+        {
+          "date": "2026-11-25",
+          "text": "Lab notes: end step adds a run line for a tool's run (never fails the end step); job.sh saves the run's facts first; install.sh: enabled adapters' skills only, /opt/kotl/adapters/<a>/ user tools (firesim-smoke.sh)."
         }
       ]
     },
@@ -590,14 +594,14 @@
         "unit": {
           "passed": 18,
           "failed": 0,
-          "ran_at": "2026-11-24T14:11:26Z"
+          "ran_at": "2026-11-25T01:16:40Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "7c471bb71fc7b204a811d1f533ea7ab3bf32cb39",
-        "message": "FireSim out of the generic core, into the FireSim adapter",
-        "date": "2026-11-24T19:41:14+11:00"
+        "hash": "1e997fcff46c06c50efe2e030e3d7cae3866197b",
+        "message": "Kotl 1.0.0 (milestone P): PC onboarding, one-command update, full uninstall, update nudge",
+        "date": "2026-11-25T01:13:20+11:00"
       },
       "issues": [],
       "log": [
@@ -648,6 +652,10 @@
         {
           "date": "2026-11-24",
           "text": "kotl status and status --json read the daemon's file when fresh; kotl daemon shows it."
+        },
+        {
+          "date": "2026-11-25",
+          "text": "kotl notes [TOOL [PAGE]] | add TOOL text | set TOOL PAGE < file | history TOOL (words read by hand, so a note may hold any words)."
         }
       ]
     },
@@ -663,7 +671,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-24T14:11:26Z"
+          "ran_at": "2026-11-25T01:16:40Z"
         },
         "hardware": null
       },
@@ -695,9 +703,9 @@
       ],
       "tests": {
         "unit": {
-          "passed": 11,
+          "passed": 12,
           "failed": 0,
-          "ran_at": "2026-11-24T14:11:26Z"
+          "ran_at": "2026-11-25T01:16:40Z"
         },
         "hardware": {
           "passed": 1,
@@ -763,6 +771,10 @@
         {
           "date": "2026-11-24",
           "text": "User decision: never stop work outside Kotl; show who and how long and warn. Job 69's end step likely ended a colleague's direct FireSim run. Now the end step stops only what started during the job (job age passed to kotl-keys --max-age and kotl-firesim-stop N), older work is left and logged as outside Kotl. Fixed: pkill -f matched kotl-keys' own arguments and killed it (job 68's 'exit 255'); matching is by process name now."
+        },
+        {
+          "date": "2026-11-25",
+          "text": "Lab notes: is_run (command mentions firesim), facts lines (FireSim and Chipyard commits, hw config, bitstream, workload; read-only git), seed setup.md/compatible.md; the test package prints KOTL FACT lines (MANIFEST now records the Chipyard and FireSim commits); firesim-smoke.sh is installed as /opt/kotl/adapters/firesim/firesim-smoke.sh."
         }
       ]
     },
@@ -781,7 +793,7 @@
         "unit": {
           "passed": 22,
           "failed": 0,
-          "ran_at": "2026-11-24T14:11:26Z"
+          "ran_at": "2026-11-25T01:16:40Z"
         },
         "hardware": null
       },
@@ -873,7 +885,7 @@
         "unit": {
           "passed": 6,
           "failed": 0,
-          "ran_at": "2026-11-24T14:11:26Z"
+          "ran_at": "2026-11-25T01:16:40Z"
         },
         "hardware": null
       },
@@ -910,7 +922,7 @@
         "unit": {
           "passed": 7,
           "failed": 0,
-          "ran_at": "2026-11-24T14:11:26Z"
+          "ran_at": "2026-11-25T01:16:40Z"
         },
         "hardware": null
       },
@@ -953,16 +965,16 @@
       ],
       "tests": {
         "unit": {
-          "passed": 22,
+          "passed": 23,
           "failed": 0,
-          "ran_at": "2026-11-24T14:11:26Z"
+          "ran_at": "2026-11-25T01:16:40Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "ac4797eafeec33600b5acd88e879008da22ca6a0",
-        "message": "Claude sessions know Kotl up front: skill, session start and a workstation-wide CLAUDE.md; daemon and plugin built",
-        "date": "2026-11-25T00:34:24+11:00"
+        "hash": "1e997fcff46c06c50efe2e030e3d7cae3866197b",
+        "message": "Kotl 1.0.0 (milestone P): PC onboarding, one-command update, full uninstall, update nudge",
+        "date": "2026-11-25T01:13:20+11:00"
       },
       "issues": [],
       "log": [
@@ -1017,6 +1029,10 @@
         {
           "date": "2026-11-25",
           "text": "Update nudge: the session-start hook and the VS Code extension compare their BUILD with the installed one and ask for kotl setup (a remote user: a new client bundle). On the workstation the plugins load from /opt/kotl in place, so only the extension needs kotl setup. Plugins and extension are 1.0.0."
+        },
+        {
+          "date": "2026-11-25",
+          "text": "Skills split: the general kotl skill (lab notes, a table of tool skills) and kotl-firesim (read the notes and compare, run, add). Session start and /etc/claude-code/CLAUDE.md point at kotl notes."
         }
       ]
     },
@@ -1128,7 +1144,7 @@
         "unit": {
           "passed": 28,
           "failed": 0,
-          "ran_at": "2026-11-24T14:11:26Z"
+          "ran_at": "2026-11-25T01:16:40Z"
         },
         "hardware": {
           "passed": 2,
@@ -1211,14 +1227,14 @@
         "unit": {
           "passed": 7,
           "failed": 0,
-          "ran_at": "2026-11-24T14:11:26Z"
+          "ran_at": "2026-11-25T01:16:40Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "c136deebe90ccff1cc683a48115082ce3ef4afb0",
-        "message": "Never stop work outside Kotl: the end step stops only the job's own; say who and how long",
-        "date": "2026-11-24T22:41:15+11:00"
+        "hash": "1e997fcff46c06c50efe2e030e3d7cae3866197b",
+        "message": "Kotl 1.0.0 (milestone P): PC onboarding, one-command update, full uninstall, update nudge",
+        "date": "2026-11-25T01:13:20+11:00"
       },
       "issues": [],
       "drawn": false,
@@ -1247,11 +1263,15 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-24T14:11:26Z"
+          "ran_at": "2026-11-25T01:16:40Z"
         },
         "hardware": null
       },
-      "last_commit": null,
+      "last_commit": {
+        "hash": "1e997fcff46c06c50efe2e030e3d7cae3866197b",
+        "message": "Kotl 1.0.0 (milestone P): PC onboarding, one-command update, full uninstall, update nudge",
+        "date": "2026-11-25T01:13:20+11:00"
+      },
       "issues": [],
       "drawn": false,
       "title": "Full uninstall",
@@ -1281,7 +1301,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-24T14:11:26Z"
+          "ran_at": "2026-11-25T01:16:40Z"
         },
         "hardware": null
       },
@@ -1327,14 +1347,14 @@
         "unit": {
           "passed": 7,
           "failed": 0,
-          "ran_at": "2026-11-24T14:11:26Z"
+          "ran_at": "2026-11-25T01:16:40Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "688a48eb06bf0eec5e2cd06deace89ac5239adae",
-        "message": "The Kotl daemon (kotld): Kotl's one always-running process",
-        "date": "2026-11-24T18:58:11+11:00"
+        "hash": "1e997fcff46c06c50efe2e030e3d7cae3866197b",
+        "message": "Kotl 1.0.0 (milestone P): PC onboarding, one-command update, full uninstall, update nudge",
+        "date": "2026-11-25T01:13:20+11:00"
       },
       "issues": [],
       "log": [
@@ -1345,6 +1365,10 @@
         {
           "date": "2026-11-25",
           "text": "Installed and running (systemd, enabled); kotl status, kotl top, the band and the extension read its file."
+        },
+        {
+          "date": "2026-11-25",
+          "text": "New task: notes, every 5 min (folders and pages exist, INDEX.md current)."
         }
       ]
     },
@@ -1362,7 +1386,7 @@
         "unit": {
           "passed": 7,
           "failed": 0,
-          "ran_at": "2026-11-24T14:11:26Z"
+          "ran_at": "2026-11-25T01:16:40Z"
         },
         "hardware": null
       },
@@ -1381,6 +1405,39 @@
         {
           "date": "2026-11-24",
           "text": "The client installer carries Kotl's mark; install.sh drops the stale .kotl-orig."
+        }
+      ]
+    },
+    "notes": {
+      "title": "Lab notes",
+      "status": "tested",
+      "milestone": "P",
+      "now": "/srv/kotl/notes: INDEX.md, general/, one folder per adapter (setup.md, compatible.md, runs.md, notes.md). kotl notes [TOOL [PAGE]] | add | set (history kept) | history. The end step of a tool's kotl run adds a line to its runs.md with what the run used (adapter facts as the user, or the run's KOTL FACT lines). Skills split: general kotl + kotl-firesim.",
+      "code": [
+        "kotl/core/notes.py",
+        "plugin/skills/kotl-firesim/"
+      ],
+      "tests": {
+        "unit": {
+          "passed": 21,
+          "failed": 0,
+          "ran_at": "2026-11-25T01:16:40Z"
+        },
+        "hardware": null
+      },
+      "last_commit": null,
+      "issues": [
+        "Not yet installed: needs bash deploy/kotl/update.sh; then fill firesim/setup.md (a draft is ready, see the run sheet).",
+        "Runs in a lease get no automatic line (the skill asks Claude to add a note)."
+      ],
+      "log": [
+        {
+          "date": "2026-11-25",
+          "text": "Planned with the user: adapter skills (the general skill points to them), lab notes per tool at fixed paths, a run line per tool run, free notes; anyone may replace the curated pages, with history; failed runs get a short line too."
+        },
+        {
+          "date": "2026-11-25",
+          "text": "Built: kotl/core/notes.py; launcher notes/facts/facts-script; job.sh collects the adapter's facts as the user before the end step; FireSim facts (commits, hw config, bitstream, workload) and seed pages; the test package prints KOTL FACT lines from its MANIFEST; the daemon keeps the notes and index; install.sh installs only the enabled adapters' skills and their user tools (/opt/kotl/adapters)."
         }
       ]
     }

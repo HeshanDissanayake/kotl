@@ -167,3 +167,20 @@ def test_vscode_extension_carries_the_build(tmp_path):
     assert zipfile.ZipFile(r.stdout.strip()).read("extension/BUILD") == b"1.0.0+abc\n"
     src = (VSCODE / "extension.js").read_text()
     assert "Kotl was updated" in src and "kotl setup" in src and "'kotl.nudged'" in src
+
+
+@pytest.mark.feature("notes")
+def test_each_adapter_brings_a_skill_and_both_point_at_the_notes():
+    general = (PLUGIN / "skills/kotl/SKILL.md").read_text()
+    for must in ("kotl notes firesim", "kotl-firesim", "kotl notes add", "KOTL FACT"):
+        assert must in general
+    assert "firesim infrasetup -c CFG" not in general                 # FireSim's how-to moved to its skill
+    fs = (PLUGIN / "skills/kotl-firesim/SKILL.md").read_text()
+    front = fs.split("---")[1]
+    assert "name: kotl-firesim" in front and "description:" in front
+    for must in ("kotl notes firesim", "runs.md", "compatible.md", "firesim infrasetup -c CFG",
+                 "/opt/kotl/adapters/firesim/firesim-smoke.sh", "kotl notes add firesim"):
+        assert must in fs
+    from kotl.adapters import KNOWN
+    for name in KNOWN:                                                  # every adapter has one
+        assert (PLUGIN / f"skills/kotl-{name}/SKILL.md").exists()

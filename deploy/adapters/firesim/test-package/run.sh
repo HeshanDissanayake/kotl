@@ -13,6 +13,8 @@
 #   5. waits for the simulated Linux to power off (or the time limit), copies the uartlog back
 #   6. removes its folder on the PC, and prints KOTL RESULT: PASS only on "reboot: Power down"
 #
+# It prints 'KOTL FACT: key=value' lines (from MANIFEST: what the package was built from), so its
+# line in the lab notes (kotl notes firesim) says which bitstream and driver ran.
 # Results: ./firesim-test-results/JOB/ (uartlog, and the driver's other logs).
 # Settings (environment): KOTL_TEST_TIMEOUT (seconds, default 900), KOTL_TEST_KEEP=1 keeps the
 # folder on the PC, KOTL_TEST_OUT (results folder).
@@ -37,6 +39,21 @@ who_connected() {   # workstation accounts with an SSH connection to the PC now 
 [ -d "$HERE/payload/sim" ] && [ -f "$HERE/payload/bitstream/firesim.bit" ] || fail "payload/ is incomplete; rebuild the package"
 mkdir -p "$OUT" || fail "can't write results to $OUT (run from a folder you can write to, or set KOTL_TEST_OUT)"
 . "$HERE/payload/sim/args.sh"            # SIM_ARGS: the driver's arguments (from the FireSim run it came from)
+
+# what this package is, for the lab notes (kotl notes firesim: runs.md)
+facts() {
+  local m="$HERE/MANIFEST"
+  echo "KOTL FACT: tool=firesim"
+  echo "KOTL FACT: package=$HERE"
+  [ -f "$m" ] || return 0
+  sed -n '1s/.*built \([0-9-]*\).*/KOTL FACT: package_built=\1/p' "$m"
+  sed -n 's#^chipyard: *\([^ ]*\)$#KOTL FACT: chipyard=\1#p; s#^firesim: *\([^ ]*\)$#KOTL FACT: firesim=\1#p' "$m"
+  sed -n 's#^bitstream: .*/\([^/]*\)/[^/]*$#KOTL FACT: bitstream=\1#p' "$m"
+  sed -n 's#^driver: .*/\([^/]*\)/[^/]*$#KOTL FACT: driver=\1#p' "$m"
+  sed -n 's#^workload: *[^ ]*/\([^/ ]*\) .*#KOTL FACT: workload=\1#p' "$m"
+  awk '$2 == "payload/bitstream/firesim.bit" { print "KOTL FACT: bit_sha256=" substr($1, 1, 12) }' "$m"
+}
+facts
 
 step "1/6 checking the board's PC ($KOTL_PC)"
 PC_CHECK=$(cat <<'EOF'

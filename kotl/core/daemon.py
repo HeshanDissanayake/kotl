@@ -8,6 +8,9 @@ It runs a list of small tasks, each on its own interval, and never stops for a t
            kotl status, kotl top, the Claude band and the VS Code extension read this file
            instead of each asking Slurm and the launcher themselves.
 
+  notes    every 5 min: the lab notes' folders and pages exist (/srv/kotl/notes, so their paths
+           work from the start) and INDEX.md is current
+
 More tasks join later (the user's plan): add a Task subclass to TASKS.
 If the daemon is down, every reader falls back to asking directly (slower, same answers).
 """
@@ -54,7 +57,18 @@ class StatusTask(Task):
         write_atomic(d.cfg.status_file, json.dumps(doc))
 
 
-TASKS = [StatusTask]
+class NotesTask(Task):
+    """The lab notes are there, for every enabled adapter, with a current index."""
+    name = "notes"
+    every = 300.0
+
+    def run(self, d):
+        from kotl.adapters import enabled
+        from kotl.core.notes import Notes
+        Notes(d.cfg.notes, enabled(d.cfg), clock=d.clock).ensure()
+
+
+TASKS = [StatusTask, NotesTask]
 
 
 def write_atomic(path, text, mode=0o644):

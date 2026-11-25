@@ -66,6 +66,8 @@ chmod 755 "$tmp/run.sh" "$tmp/payload/sim/FireSim-xilinx_vcu118"
   echo "driver:    $DRV/driver-bundle.tar.gz"
   echo "workload:  $WL + $IMG/br-base-bin-dwarf"
   echo "args from: $SIMRUN"
+  echo "chipyard:  $(git -C "$CY" rev-parse --short=10 HEAD 2>/dev/null || echo '?')"
+  echo "firesim:   $(git -C "$FS" rev-parse --short=10 HEAD 2>/dev/null || echo '?')"
   echo
   (cd "$tmp" && find payload run.sh README.md -type f -print0 | sort -z | xargs -0 sha256sum)
 } >"$tmp/MANIFEST"

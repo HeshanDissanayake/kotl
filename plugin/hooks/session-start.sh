@@ -6,6 +6,7 @@ status=$(timeout 15 sh "$HERE/kotl-cmd.sh" status 2>/dev/null) || exit 0
 [ -n "$status" ] || exit 0
 echo "Kotl (the lab's FPGA board queue): use a board only through kotl run / kotl lease (the kotl skill), and"
 echo "never stop board work that isn't this person's Kotl job; report who runs it, how long, outside Kotl."
+echo "Before a tool's run (e.g. FireSim), read its lab notes: kotl notes <tool> (what worked before)."
 echo
 echo "Kotl right now:"
 echo "$status"

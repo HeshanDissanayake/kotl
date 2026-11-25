@@ -6,7 +6,8 @@
 #      on the board's PC, and starts the guards
 #   2) your command runs as you, with an ssh-agent holding only the job key and
 #      KOTL_JOB, KOTL_BOARD, KOTL_PC (user@address) set; its output goes to output.log
-#   3) the end step: frees the board and writes status.json (Slurm's epilog repeats it)
+#   3) when it was a tool's run (e.g. FireSim), what it used, for its line in the lab notes
+#   4) the end step: frees the board and writes status.json (Slurm's epilog repeats it)
 # Settings come from the kotl CLI: KOTL_MODE (run|lease), KOTL_MAX and KOTL_IDLE (seconds).
 set -u
 JOB=${SLURM_JOB_ID:?not inside a Slurm job}
@@ -55,6 +56,15 @@ done
 for _ in $(seq 1 50); do kill -0 "$logpid" 2>/dev/null || break; sleep 0.2; done
 kill "$logpid" 2>/dev/null; wait "$logpid" 2>/dev/null
 rm -f "$fifo"
+
+# what the run used, for its line in the lab notes: the adapter's facts lines, run as you, here
+# (at most 20 s; skipped when the job is being stopped, so the end step comes first)
+if [ "$stopping" = 0 ]; then
+  facts=$("${LAUNCH[@]}" facts-script "$JOB" 2>/dev/null)
+  if [ -n "$facts" ]; then
+    KOTL_COMMAND="$*" timeout 20 bash -c "$facts" </dev/null 2>/dev/null | "${LAUNCH[@]}" facts "$JOB" 2>/dev/null
+  fi
+fi
 
 if [ "$stopping" = 1 ]; then
   "${LAUNCH[@]}" end "$JOB" --signal

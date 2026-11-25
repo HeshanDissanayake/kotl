@@ -42,6 +42,8 @@ class Config:
     @property
     def out(self): return self.path("/srv/kotl/out")
     @property
+    def notes(self): return self.path("/srv/kotl/notes")
+    @property
     def run_dir(self): return self.path("/run/kotl")
     @property
     def status_file(self): return self.path("/run/kotl/status.json")

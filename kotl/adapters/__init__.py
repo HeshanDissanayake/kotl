@@ -11,6 +11,13 @@ about any tool. An adapter adds what one tool needs, through these hooks, all op
   stop_procs   process patterns the end step stops (pkill -f, as the PC account)
   work_procs   process name prefixes that count as work for the lease idle guard
   console      the screen session `kotl attach` opens
+  title        the tool's name for people, e.g. "FireSim" (lab notes headings)
+  notes_seed   {page: text}: how its lab notes pages start (kotl/core/notes.py: setup.md, ...)
+  is_run(cmd)  is a job with this command a run of this tool (a line in its notes' runs.md)?
+  facts        shell lines run as the user, in the job's folder, when such a run ends; they print
+               key=value lines for its runs.md line (versions, config, workload). KOTL_COMMAND
+               holds the job's command. A command that prints 'KOTL FACT: key=value' lines itself
+               is taken at its word instead
   end_commands(age)  commands the end step runs on the board's PC (as kotl, over its SSH key)
                after the job's key is removed, e.g. a root helper that stops what the board account
                can't; age is the job's age in seconds (stop only what started during the job)
@@ -33,6 +40,13 @@ class Adapter:
     stop_procs = ()
     work_procs = ()
     console = ""
+    title = ""
+    notes_seed = {}
+    facts = ""
+
+    def is_run(self, command):
+        return False
+
     def end_commands(self, age):
         return []
 
@@ -87,6 +101,15 @@ def work_args(adapters):
 def end_commands(adapters, age=None):
     """Every adapter's end-step commands, in order (argv lists run on the PC)."""
     return [list(c) for a in adapters for c in a.end_commands(age)]
+
+
+def run_of(adapters, command, facts=None):
+    """The adapter a job's run belongs to: named by a 'tool' fact, or the first whose is_run says so."""
+    named = (facts or {}).get("tool")
+    for a in adapters:
+        if a.name == named:
+            return a
+    return next((a for a in adapters if a.is_run(command or "")), None)
 
 
 def console(adapters):
