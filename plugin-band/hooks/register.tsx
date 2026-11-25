@@ -7,9 +7,15 @@ import type { KotlSnapshot } from '../types'
 // (/run/kotl/status.json), with no process started. When that file is missing or stale (the
 // daemon is down, or this is a user's own PC), it runs `kotl status --json` instead, locally or
 // over `ssh $KOTL_SSH`, at most every 5 s. Read-only: it never starts or stops a job.
+// Collapsed (the default): one line. Expanded: the boards, your jobs, and everyone waiting, in
+// order. The ▸/▾ button (or k, once the band has the focus) and /kotl-band expand|collapse
+// switch; the choice is kept for the next session.
 const snapshot = atom({ plugin: 'kotl-band', key: 'snapshot' } as const, null)
 const isHidden = atom({ plugin: 'kotl-band', key: 'isHidden' } as const, false)
+const isExpanded = atom({ plugin: 'kotl-band', key: 'isExpanded' } as const, false)
 const error = atom({ plugin: 'kotl-band', key: 'error' } as const, null)
+const EXPANDED_KEY = 'expanded'      // in $.store: the choice, across sessions
+const MAX_WAITING_ROWS = 8
 
 const POLL_MS = 1_000
 const SHARED = '/run/kotl/status.json'
@@ -42,6 +48,16 @@ function startsAt(start: string): string {
 }
 function ordinal(n: number): string {
   return n === 1 ? '1st' : n === 2 ? '2nd' : n === 3 ? '3rd' : `${n}th`
+}
+
+async function setExpanded($: EngineInterface, on: boolean): Promise<void> {
+  await update($, isExpanded, () => on)
+  try { await $.store.set(EXPANDED_KEY, on) } catch { /* kept for this session only */ }
+}
+
+function warningsOf(w: string | null | undefined): string[] {
+  if (!w || w === '[]') return []
+  try { const v = JSON.parse(w); return Array.isArray(v) ? v.map(String) : [String(w)] } catch { return [String(w)] }
 }
 
 let inflight: Promise<void> | null = null
@@ -117,10 +133,13 @@ export const register: Register = on => {
     void poll($)
     $.clock.every(POLL_MS, () => poll($))
     try {
+      if ((await $.store.get(EXPANDED_KEY)) === true) await update($, isExpanded, () => true)
+    } catch { /* no saved choice: collapsed */ }
+    try {
       // not /kotl: that name belongs to the kotl plugin's skill
       await $.command.register({
         name: 'kotl-band',
-        description: 'The Kotl band above the prompt: /kotl-band (refresh), /kotl-band hide, /kotl-band show',
+        description: 'The Kotl band above the prompt: /kotl-band (refresh), expand, collapse, hide, show',
       })
     } catch (err) {
       $.ui.log(`kotl-band: /kotl-band not registered: ${String(err).slice(0, 200)}`, { to: 'debug' })
@@ -130,6 +149,11 @@ export const register: Register = on => {
 
   on('command.run', { command: 'kotl-band' }, async ($, e) => {
     const arg = e.args.trim()
+    if (arg === 'expand' || arg === 'collapse') {
+      await setExpanded($, arg === 'expand')
+      await update($, isHidden, () => false)
+      return { text: arg === 'expand' ? 'Kotl band expanded: boards, your jobs and everyone waiting.' : 'Kotl band collapsed to one line.' }
+    }
     if (arg === 'hide') {
       await update($, isHidden, () => true)
       return { text: 'Kotl band hidden (/kotl-band show brings it back).' }
@@ -151,22 +175,48 @@ export const register: Register = on => {
     const byJob = new Map(s.queue.map(q => [q.job, q]))
     const waiting = s.queue.filter(q => q.state === 'PENDING')
     const mine = s.queue.filter(q => q.user === s.user)
-    const warned = s.boards.filter(b => b.warnings && b.warnings !== '[]').length
+    const warned = s.boards.filter(b => warningsOf(b.warnings).length).length
+    const expanded = await read($, isExpanded)
+    const { Button } = $.ui.resolve(e)
+    const toggle = (
+      <Button key="kotl-band-toggle" plain hotkey="k" label={expanded ? '\u25BE' : '\u25B8'}
+        onPress={() => setExpanded($, !expanded)} />
+    )
+    const boardsRow = s.boards.length ? s.boards.map(b => {
+      const q = b.job_id ? byJob.get(String(b.job_id)) : undefined
+      const color = b.state === 'idle' ? 'success' : b.state === 'busy' ? 'warning' : 'error'
+      return (
+        <Text key={b.name}>
+          {b.name} <Text color={color}>{b.state}</Text>
+          {q ? <Text>: {q.user === s.user ? 'you' : q.user} <Text dimColor>· {kind(q.name)} · {usedOfEta(q)}</Text></Text> : null}
+          {'   '}
+        </Text>
+      )
+    }) : <Text dimColor>no boards   </Text>
+    const unread = s.unread ? <Text color="warning"> · {s.unread} unread notice{s.unread > 1 ? 's' : ''} (kotl notices)</Text> : null
+
+    if (!expanded) {
+      const first = mine.find(q => q.state === 'RUNNING') ?? mine[0]
+      const mineText = !first ? 'you: no jobs' : first.state === 'RUNNING'
+        ? `you: ${first.job} ${kind(first.name)} running ${usedOfEta(first)}${mine.length > 1 ? ` (+${mine.length - 1})` : ''}`
+        : `you: ${mine.length} waiting, next starts ${startsAt(first.start)}`
+      return (
+        <Box flexDirection="row">
+          {toggle}
+          <Text color="claude" weight="bold"> Kotl  </Text>
+          {boardsRow}
+          <Text dimColor>· {waiting.length ? `${waiting.length} waiting` : 'nobody waiting'} · {mineText}</Text>
+          {unread}
+        </Box>
+      )
+    }
+
     return (
       <Box flexDirection="column">
         <Box flexDirection="row">
-          <Text color="claude" weight="bold">Kotl  </Text>
-          {s.boards.length ? s.boards.map(b => {
-            const q = b.job_id ? byJob.get(String(b.job_id)) : undefined
-            const color = b.state === 'idle' ? 'success' : b.state === 'busy' ? 'warning' : 'error'
-            return (
-              <Text key={b.name}>
-                {b.name} <Text color={color}>{b.state}</Text>
-                {q ? <Text>: {q.user === s.user ? 'you' : q.user} <Text dimColor>· {kind(q.name)} · {usedOfEta(q)}</Text></Text> : null}
-                {'   '}
-              </Text>
-            )
-          }) : <Text dimColor>no boards   </Text>}
+          {toggle}
+          <Text color="claude" weight="bold"> Kotl  </Text>
+          {boardsRow}
           <Text dimColor>· {waiting.length ? `${waiting.length} waiting` : 'nobody waiting'}</Text>
           {warned ? <Text dimColor> · {warned} warning{warned > 1 ? 's' : ''} (kotl board list)</Text> : null}
         </Box>
@@ -177,8 +227,17 @@ export const register: Register = on => {
               {' '}· {q.job} {q.state === 'RUNNING' ? `${kind(q.name)} running ${usedOfEta(q)}` : `${kind(q.name)} waiting, starts ${startsAt(q.start)} (${ordinal(waiting.indexOf(q) + 1)} in line)`}
             </Text>
           ))}
-          {s.unread ? <Text color="warning"> · {s.unread} unread notice{s.unread > 1 ? 's' : ''} (kotl notices)</Text> : null}
+          {unread}
         </Box>
+        {waiting.slice(0, MAX_WAITING_ROWS).map((q, i) => (
+          <Text key={`w${q.job}`} dimColor>
+            {'      '}{ordinal(i + 1)} in line: {q.job} {q.user === s.user ? 'you' : q.user} · {kind(q.name)} · ETA {fmtMin(minutes(q.eta))} · starts {startsAt(q.start)}{q.reason && q.reason !== 'None' ? ` · ${q.reason}` : ''}
+          </Text>
+        ))}
+        {waiting.length > MAX_WAITING_ROWS ? <Text dimColor>{'      '}and {waiting.length - MAX_WAITING_ROWS} more (kotl status)</Text> : null}
+        {s.boards.flatMap(b => warningsOf(b.warnings).map((w, i) => (
+          <Text key={`!${b.name}${i}`} color="warning">{'      '}! {b.name}: {w}</Text>
+        )))}
       </Box>
     )
   })

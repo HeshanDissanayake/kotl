@@ -14,7 +14,7 @@ const SNAP = {
 
 const BAND = { plugin: 'kotl-band', component: 'AbovePrompt', props: { hasSurvey: false } } as const
 
-test('the band shows the board, who holds it, the queue and unread notices', async ($, on) => {
+test('expanded, the band shows the board, who holds it, the queue and unread notices', async ($, on) => {
   on('command.register', () => ({ value: { command: 'kotl-band' } }))
   on('clock.every', () => ({ value: undefined }))
   on('clock.now', () => ({ value: 1_000 }))
@@ -24,6 +24,7 @@ test('the band shows the board, who holds it, the queue and unread notices', asy
 
   await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
   await $.command.run({ command: 'kotl-band', args: '' })
+  await $.command.run({ command: 'kotl-band', args: 'expand' })
 
   for (const surface of ['terminal', 'desktop', 'vscode', 'mobile'] as const) {
     const ui = await $.ui.mount({ ...BAND, surface })
@@ -35,6 +36,8 @@ test('the band shows the board, who holds it, the queue and unread notices', asy
     expect((await ui.find({ type: 'Text', text: /42 lease waiting, starts ~10:52 \(1st in line\)/ }))).toBeTruthy()
     expect((await ui.find({ type: 'Text', text: /43 run waiting, starts when a board frees \(2nd in line\)/ }))).toBeTruthy()
     expect((await ui.find({ type: 'Text', text: /2 unread notices/ }))).toBeTruthy()
+    expect((await ui.find({ type: 'Text', text: /1st in line: 42 you · lease · ETA 1h00m · starts ~10:52 · Licenses/ }))).toBeTruthy()
+    expect((await ui.find({ type: 'Text', text: /! vcu118-pc1: glibc differs/ }))).toBeTruthy()
     await ui.unmount()
   }
 })
@@ -103,6 +106,7 @@ test('your own running job shows as you, with its time against its ETA', async (
   on('session.start', (_, e) => ({ cwd: e.cwd }))
   await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
   await $.command.run({ command: 'kotl-band', args: '' })
+  await $.command.run({ command: 'kotl-band', args: 'expand' })
   const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
   expect((await ui.find({ type: 'Text', text: /: you/ }))).toBeTruthy()
   expect((await ui.find({ type: 'Text', text: /you: 1 job$/ }))).toBeTruthy()
@@ -140,9 +144,64 @@ test('reads the Kotl daemon\'s shared file, with no process per refresh', async 
 
   await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
   await $.command.run({ command: 'kotl-band', args: '' })
+  await $.command.run({ command: 'kotl-band', args: 'expand' })
   const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
   expect((await ui.find({ type: 'Text', text: /you: 2 jobs/ }))).toBeTruthy()
   expect((await ui.find({ type: 'Text', text: /3 unread notices/ }))).toBeTruthy()
   expect(runs).toBe(0)                                          // only `id -un`, once
+  await ui.unmount()
+})
+
+function fakes(on: Parameters<Parameters<typeof test>[1]>[1], store: Record<string, unknown>) {
+  on('command.register', () => ({ value: { command: 'kotl-band' } }))
+  on('clock.every', () => ({ value: undefined }))
+  on('clock.now', () => ({ value: 1_000 }))
+  on('process.run', () => ({ value: { exitCode: 0, stdout: JSON.stringify(SNAP), stderr: '' } }))
+  on('fs.read', () => { throw new Error('ENOENT') })
+  on('store.get', (_, e) => ({ value: store[e.key] ?? null }))
+  on('store.set', (_, e) => { store[e.key] = e.value; return { value: undefined } })
+  on('session.start', (_, e) => ({ cwd: e.cwd }))
+}
+
+test('collapsed (the default), the band is one line', async ($, on) => {
+  fakes(on, {})
+  await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+  await $.command.run({ command: 'kotl-band', args: '' })
+  const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect((await ui.find({ type: 'Text', text: /vcu118-pc1/ }))?.text).toContain('vcu118-pc1 busy')
+  expect((await ui.find({ type: 'Text', text: /2 waiting · you: 2 waiting, next starts ~10:52/ }))).toBeTruthy()
+  expect((await ui.find({ type: 'Text', text: /2 unread notices/ }))).toBeTruthy()
+  expect((await ui.find({ type: 'Text', text: /in line:/ }))).toBeFalsy()
+  expect((await ui.find({ type: 'Button' }))?.text).toBe('\u25B8')
+  await ui.unmount()
+})
+
+test('the button expands and collapses it, and the choice is kept', async ($, on) => {
+  const store: Record<string, unknown> = {}
+  fakes(on, store)
+  await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+  await $.command.run({ command: 'kotl-band', args: '' })
+  const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  await ui.press({ key: 'kotl-band-toggle' })
+  expect((await ui.find({ type: 'Text', text: /1st in line: 42/ }))).toBeTruthy()
+  expect(store.expanded).toBe(true)
+  await ui.press({ key: 'kotl-band-toggle' })
+  expect((await ui.find({ type: 'Text', text: /in line:/ }))).toBeFalsy()
+  expect(store.expanded).toBe(false)
+  await ui.unmount()
+})
+
+test('a saved choice opens it expanded; /kotl-band collapse folds it', async ($, on) => {
+  const store: Record<string, unknown> = { expanded: true }
+  fakes(on, store)
+  await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+  await $.command.run({ command: 'kotl-band', args: '' })
+  let ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect((await ui.find({ type: 'Text', text: /2nd in line: 43/ }))).toBeTruthy()
+  await ui.unmount()
+  await $.command.run({ command: 'kotl-band', args: 'collapse' })
+  ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect((await ui.find({ type: 'Text', text: /in line:/ }))).toBeFalsy()
+  expect(store.expanded).toBe(false)
   await ui.unmount()
 })

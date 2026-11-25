@@ -13,6 +13,6 @@ export type KotlSnapshot = {
 
 declare module 'claude-code' {
   interface PluginState {
-    'kotl-band': { snapshot: KotlSnapshot | null; isHidden: boolean; error: string | null }
+    'kotl-band': { snapshot: KotlSnapshot | null; isHidden: boolean; isExpanded: boolean; error: string | null }
   }
 }

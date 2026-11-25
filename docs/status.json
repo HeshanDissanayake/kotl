@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "updated": "2026-11-25T02:35:23Z",
-  "repo_commit": "2453bd12e7d3e1a3814aa34db7b1386e709e4cd2",
+  "updated": "2026-11-25T03:00:17Z",
+  "repo_commit": "68023f3bf1fb5e6cad152e84c369ebfb4e894f58",
   "watch": [
     "deploy/",
     "kotl/",
@@ -50,14 +50,14 @@
         "unit": {
           "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-25T02:35:23Z"
+          "ran_at": "2026-11-25T03:00:17Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "6eefbe42e9a10b9b7ed626ba3d79365243246bb8",
-        "message": "View: every arrow gets its own start, end and line (routed, checked)",
-        "date": "2026-11-24T20:35:13+11:00"
+        "hash": "68023f3bf1fb5e6cad152e84c369ebfb4e894f58",
+        "message": "Move the architecture view to docs/ so GitHub Pages serves it at the site root",
+        "date": "2026-11-25T13:36:12+11:00"
       },
       "issues": [],
       "log": [
@@ -108,7 +108,7 @@
         "unit": {
           "passed": 4,
           "failed": 0,
-          "ran_at": "2026-11-25T02:35:23Z"
+          "ran_at": "2026-11-25T03:00:17Z"
         },
         "hardware": null
       },
@@ -146,7 +146,7 @@
         "unit": {
           "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-25T02:35:23Z"
+          "ran_at": "2026-11-25T03:00:17Z"
         },
         "hardware": null
       },
@@ -191,7 +191,7 @@
         "unit": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-25T02:35:23Z"
+          "ran_at": "2026-11-25T03:00:17Z"
         },
         "hardware": null
       },
@@ -224,7 +224,7 @@
         "unit": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-25T02:35:23Z"
+          "ran_at": "2026-11-25T03:00:17Z"
         },
         "hardware": null
       },
@@ -266,7 +266,7 @@
         "unit": {
           "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-25T02:35:23Z"
+          "ran_at": "2026-11-25T03:00:17Z"
         },
         "hardware": null
       },
@@ -315,7 +315,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-25T02:35:23Z"
+          "ran_at": "2026-11-25T03:00:17Z"
         },
         "hardware": {
           "passed": 1,
@@ -360,7 +360,7 @@
         "unit": {
           "passed": 4,
           "failed": 0,
-          "ran_at": "2026-11-25T02:35:23Z"
+          "ran_at": "2026-11-25T03:00:17Z"
         },
         "hardware": {
           "passed": 2,
@@ -446,7 +446,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-25T02:35:23Z"
+          "ran_at": "2026-11-25T03:00:17Z"
         },
         "hardware": null
       },
@@ -500,7 +500,7 @@
         "unit": {
           "passed": 36,
           "failed": 0,
-          "ran_at": "2026-11-25T02:35:23Z"
+          "ran_at": "2026-11-25T03:00:17Z"
         },
         "hardware": null
       },
@@ -594,7 +594,7 @@
         "unit": {
           "passed": 18,
           "failed": 0,
-          "ran_at": "2026-11-25T02:35:23Z"
+          "ran_at": "2026-11-25T03:00:17Z"
         },
         "hardware": null
       },
@@ -675,7 +675,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-25T02:35:23Z"
+          "ran_at": "2026-11-25T03:00:17Z"
         },
         "hardware": null
       },
@@ -709,7 +709,7 @@
         "unit": {
           "passed": 25,
           "failed": 0,
-          "ran_at": "2026-11-25T02:35:23Z"
+          "ran_at": "2026-11-25T03:00:17Z"
         },
         "hardware": {
           "passed": 1,
@@ -807,7 +807,7 @@
         "unit": {
           "passed": 22,
           "failed": 0,
-          "ran_at": "2026-11-25T02:35:23Z"
+          "ran_at": "2026-11-25T03:00:17Z"
         },
         "hardware": null
       },
@@ -899,7 +899,7 @@
         "unit": {
           "passed": 6,
           "failed": 0,
-          "ran_at": "2026-11-25T02:35:23Z"
+          "ran_at": "2026-11-25T03:00:17Z"
         },
         "hardware": null
       },
@@ -936,7 +936,7 @@
         "unit": {
           "passed": 7,
           "failed": 0,
-          "ran_at": "2026-11-25T02:35:23Z"
+          "ran_at": "2026-11-25T03:00:17Z"
         },
         "hardware": null
       },
@@ -981,7 +981,7 @@
         "unit": {
           "passed": 24,
           "failed": 0,
-          "ran_at": "2026-11-25T02:35:23Z"
+          "ran_at": "2026-11-25T03:00:17Z"
         },
         "hardware": null
       },
@@ -1051,6 +1051,10 @@
         {
           "date": "2026-11-25",
           "text": "kotl-firesim skill: two routes (a run package from a Chipyard anywhere; FireSim itself from one on the workstation), the pack/copy/run/fetch steps."
+        },
+        {
+          "date": "2026-11-25",
+          "text": "kotl-band expands and collapses (user's request): collapsed one line by default; expanded adds your jobs, everyone waiting in order and board warnings; ▸/▾ button (hotkey k) or /kotl-band expand|collapse; the choice kept in the plugin store across sessions. Band tests 10/10."
         }
       ]
     },
@@ -1162,7 +1166,7 @@
         "unit": {
           "passed": 28,
           "failed": 0,
-          "ran_at": "2026-11-25T02:35:23Z"
+          "ran_at": "2026-11-25T03:00:17Z"
         },
         "hardware": {
           "passed": 2,
@@ -1245,7 +1249,7 @@
         "unit": {
           "passed": 7,
           "failed": 0,
-          "ran_at": "2026-11-25T02:35:23Z"
+          "ran_at": "2026-11-25T03:00:17Z"
         },
         "hardware": null
       },
@@ -1281,7 +1285,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-25T02:35:23Z"
+          "ran_at": "2026-11-25T03:00:17Z"
         },
         "hardware": null
       },
@@ -1319,7 +1323,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-25T02:35:23Z"
+          "ran_at": "2026-11-25T03:00:17Z"
         },
         "hardware": null
       },
@@ -1365,7 +1369,7 @@
         "unit": {
           "passed": 7,
           "failed": 0,
-          "ran_at": "2026-11-25T02:35:23Z"
+          "ran_at": "2026-11-25T03:00:17Z"
         },
         "hardware": null
       },
@@ -1404,7 +1408,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-25T02:35:23Z"
+          "ran_at": "2026-11-25T03:00:17Z"
         },
         "hardware": null
       },
@@ -1439,7 +1443,7 @@
         "unit": {
           "passed": 21,
           "failed": 0,
-          "ran_at": "2026-11-25T02:35:23Z"
+          "ran_at": "2026-11-25T03:00:17Z"
         },
         "hardware": null
       },
