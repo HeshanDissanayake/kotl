@@ -1,7 +1,7 @@
 // Routes the architecture map's arrows in every fold state (as index.html does) and prints the
-// result as JSON for tools/arrows.py. Usage: node tools/arrows-check.js docs/architecture
+// result as JSON for tools/arrows.py. Usage: node tools/arrows-check.js docs
 const path = require("path");
-const dir = path.resolve(process.argv[2] || "docs/architecture");
+const dir = path.resolve(process.argv[2] || "docs");
 const { route } = require(path.join(dir, "router.js"));
 const A = require(path.join(dir, "architecture.json"));
 

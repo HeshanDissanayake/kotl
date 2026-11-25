@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Keep docs/architecture (architecture.json + status.json) in step with the code.
+"""Keep docs/ (architecture.json + status.json) in step with the code.
 
   python3 tools/status.py check            consistency + coverage of all tracked files
   python3 tools/status.py check --staged   same, plus pre-commit rules for staged files
@@ -17,9 +17,9 @@ import subprocess
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ARCH = os.path.join(ROOT, "docs", "architecture", "architecture.json")
-STATUS = os.path.join(ROOT, "docs", "architecture", "status.json")
-STATUS_REL = "docs/architecture/status.json"
+ARCH = os.path.join(ROOT, "docs", "architecture.json")
+STATUS = os.path.join(ROOT, "docs", "status.json")
+STATUS_REL = "docs/status.json"
 RESULTS = os.path.join(ROOT, ".kotl", "test-results.json")
 
 VALID = {"planned", "in_progress", "built", "tested", "failing", "blocked", "later", "parked"}

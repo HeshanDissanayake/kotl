@@ -1,6 +1,6 @@
 # Kotl: rules for Claude in this repo
 
-Read `HANDOFF.md` first. The design lives in `docs/architecture/architecture.json`, and build status in `docs/architecture/status.json`. `index.html` only draws them; serve the folder with `python3 -m http.server`.
+Read `HANDOFF.md` first. The design lives in `docs/architecture.json`, and build status in `docs/status.json`. `index.html` only draws them; serve the folder with `python3 -m http.server`.
 
 ## Always
 - Keep the view true, in the **same commit** as the code:
@@ -26,4 +26,4 @@ Read `HANDOFF.md` first. The design lives in `docs/architecture/architecture.jso
 - Code tests: `pytest -m "not hw"`
 - Refresh the view's status: `python3 tools/status.py refresh`
 - Check code, status and design agree: `python3 tools/status.py check`
-- View: `cd docs/architecture && python3 -m http.server 8000`
+- View: `cd docs && python3 -m http.server 8000`

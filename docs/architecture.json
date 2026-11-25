@@ -2436,7 +2436,7 @@
        "c": "python3 tools/status.py refresh"
       },
       {
-       "c": "cd docs/architecture && python3 -m http.server 8000"
+       "c": "cd docs && python3 -m http.server 8000"
       }
      ]
     }

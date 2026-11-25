@@ -19,8 +19,8 @@ def run(cwd, *args, check=True):
 def repo(tmp_path):
     """A throwaway git repo with the shipped tooling and the hook enabled."""
     for rel in ("tools/status.py", "tools/arrows.py", "tools/arrows-check.js", ".githooks/pre-commit",
-                "docs/architecture/architecture.json", "docs/architecture/status.json",
-                "docs/architecture/router.js"):
+                "docs/architecture.json", "docs/status.json",
+                "docs/router.js"):
         (tmp_path / rel).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(ROOT / rel, tmp_path / rel)
     run(tmp_path, "git", "init", "-q")
@@ -51,17 +51,17 @@ def test_code_change_without_status_is_refused(repo):
 
 def test_code_change_with_status_is_accepted(repo):
     (repo / "tools/status.py").write_text((repo / "tools/status.py").read_text() + "\n# edit\n")
-    st = json.loads((repo / "docs/architecture/status.json").read_text())
+    st = json.loads((repo / "docs/status.json").read_text())
     st["features"]["tooling"]["log"].append({"date": "2026-11-21", "text": "edit"})
-    (repo / "docs/architecture/status.json").write_text(json.dumps(st, indent=2))
-    r = commit(repo, "tools/status.py", "docs/architecture/status.json")
+    (repo / "docs/status.json").write_text(json.dumps(st, indent=2))
+    r = commit(repo, "tools/status.py", "docs/status.json")
     assert r.returncode == 0, r.stdout
 
 
 def test_unowned_file_is_refused(repo):
     (repo / "kotl").mkdir()
     (repo / "kotl/orphan.py").write_text("x = 1\n")
-    r = commit(repo, "kotl/orphan.py", "docs/architecture/status.json")
+    r = commit(repo, "kotl/orphan.py", "docs/status.json")
     assert r.returncode != 0
     assert "'kotl/orphan.py' belongs to no feature" in r.stdout + r.stderr
 
@@ -73,7 +73,7 @@ def test_init_files_need_no_owner(repo):
 
 
 def _refresh(repo, feature, status, outcome):
-    st_path = repo / "docs/architecture/status.json"
+    st_path = repo / "docs/status.json"
     st = json.loads(st_path.read_text())
     st["features"][feature]["status"] = status
     st_path.write_text(json.dumps(st))
@@ -99,7 +99,7 @@ def test_refresh_leaves_in_progress_alone(repo):
 
 
 def test_agent_cannot_claim_tested(repo):
-    st_path = repo / "docs/architecture/status.json"
+    st_path = repo / "docs/status.json"
     st = json.loads(st_path.read_text())
     st["features"]["registry"]["status"] = "tested"
     st["features"]["registry"]["tests"] = {"unit": None, "hardware": None}   # no results to back it

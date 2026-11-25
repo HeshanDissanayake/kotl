@@ -2,10 +2,10 @@
 
 Kotl manages the lab's FPGAs and servers. Version 1 queues and runs FireSim jobs on the lab's VCU118 (one board today; a second later). Later versions add board programming/reset, driver tests, power monitoring and more boards.
 
-The full design is the architecture view in `docs/architecture/`. `index.html` only draws; everything it shows comes from `architecture.json` (the design) and `status.json` (build status). Serve that folder and open it in a browser:
+The full design is the architecture view in `docs/`. `index.html` only draws; everything it shows comes from `architecture.json` (the design) and `status.json` (build status). Serve that folder and open it in a browser:
 
 ```sh
-cd docs/architecture && python3 -m http.server 8000   # then open http://localhost:8000
+cd docs && python3 -m http.server 8000   # then open http://localhost:8000
 ```
 
 Click any box for its commands and config files. The tabs show what Kotl is, where it meets Slurm, three flows step by step, and build progress. **Read the view before writing code.** The config files shown in it are starting sketches, not tested configs.
@@ -72,7 +72,7 @@ tests/
   unit/                # fakes for Slurm and SSH; run anywhere
   integration/         # real Slurm on the workstation, `kotl run` with a dummy command, no FPGA
   hw/                  # real VCU118; marked hw; only submitted through Kotl
-docs/architecture/
+docs/
   index.html           # renderer only; don't put content here
   architecture.json    # boxes, arrows, details, commands, files, flows
   status.json          # build status per part
@@ -130,8 +130,8 @@ docs/architecture/
 ## 6. Keeping the view in sync
 
 Two files, both checked on every commit:
-- **`docs/architecture/architecture.json`** is the design: `canvas`, `zones`, `texts`, `dividers`, `nodes` (boxes), `edges` (arrows), `flows` (the step-through tabs), `details` (the panel for each box) and `files` (the file cards).
-- **`docs/architecture/status.json`** is build status. It has one entry per box, keyed by the box's `detail` or `id`, plus non-drawn entries like `tooling` (`"drawn": false`). It also holds `watch` (folders whose files must belong to a feature), `shared` (paths no feature needs to own) and `milestones`.
+- **`docs/architecture.json`** is the design: `canvas`, `zones`, `texts`, `dividers`, `nodes` (boxes), `edges` (arrows), `flows` (the step-through tabs), `details` (the panel for each box) and `files` (the file cards).
+- **`docs/status.json`** is build status. It has one entry per box, keyed by the box's `detail` or `id`, plus non-drawn entries like `tooling` (`"drawn": false`). It also holds `watch` (folders whose files must belong to a feature), `shared` (paths no feature needs to own) and `milestones`.
 
 **`python3 tools/status.py check`** (also run by the pre-commit hook, with `--staged`) refuses a commit when:
 - a box has no details entry, or no status entry (users excepted);
@@ -175,7 +175,7 @@ Whenever the system gains a part (an adapter, a board type, a check, a service),
    - Other optional fields: `later: true` (dashed outline), `style: "chip"` (a small teal chip, with `inside: "<parent id>"`), `slurm: true` (a Kotl box that talks to Slurm), and `detail` (share another box's details and status).
    - Box sizes follow the grid: core and adapter boxes are 170×70 in the four Kotl columns (x = 281, 477, 673, 869; rows y = 280, 400, 520, 650). PCs are 150 wide at x = 1340.
    - **Group it:** add the box's id (or its `detail` key) to one group's `items` in `architecture.json` → `groups` (the view's sidebar and collapsible boxes). Planned parts go in the `later` group, which is collapsed in the map until expanded. `tools/status.py check` fails if a box is in no group. A group folds into one box in the map with `"collapse": "box"` (its members' outline, for a row like Slurm) or `"collapse": "chip"` plus a `chip` rect placed on one of its **own** members' slots (so it never covers another box); `keep` lists members that stay drawn (e.g. the plugin chips inside the user boxes). Arrows into a folded group are redrawn to its box automatically.
-2. **Arrows:** an arrow starts at the part that **acts** and points at what it acts on (calls, reads, starts, writes to). Keep an arrow only if the code really does that. Add edges with `from`, `to`, `style` (`solid`, `bg` for background checks, `fut` for later), `slurm: true` if it is a Kotl ↔ Slurm link, a short `label` (`{text}`) and a one-line `why` (shown on hover). **No paths:** the view routes every arrow itself (`docs/architecture/router.js`) so that each has its own start and end point, no two share a line, and none runs through a box, in every fold state. `tools/status.py check` runs the router over every fold state (needs `node`) and fails if any arrow can't be placed cleanly or has no `why`.
+2. **Arrows:** an arrow starts at the part that **acts** and points at what it acts on (calls, reads, starts, writes to). Keep an arrow only if the code really does that. Add edges with `from`, `to`, `style` (`solid`, `bg` for background checks, `fut` for later), `slurm: true` if it is a Kotl ↔ Slurm link, a short `label` (`{text}`) and a one-line `why` (shown on hover). **No paths:** the view routes every arrow itself (`docs/router.js`) so that each has its own start and end point, no two share a line, and none runs through a box, in every fold state. `tools/status.py check` runs the router over every fold state (needs `node`) and fails if any arrow can't be placed cleanly or has no `why`.
 3. **Details:** add `details["<id>"]` with `kind`, `title`, `what`, `bullets`, `term` (commands as `{host, lines:[{c}|{o}|{k}]}`) and `files` (keys into `files`). Add any new config file to `files` with `name`, `path`, `ext`, `desc` and `body`.
 4. **Status:** add `features["<id>"]` to `status.json` with `title`, `status`, `milestone` and `code` paths.
 5. **Flows:** if a flow now passes through the new part, add its box and arrow ids to that step.

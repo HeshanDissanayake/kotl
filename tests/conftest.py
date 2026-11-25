@@ -1,6 +1,6 @@
 """Records which architecture feature each test covers, for tools/status.py refresh.
 
-Tag tests with   @pytest.mark.feature("launcher")   (keys come from docs/architecture/status.json)
+Tag tests with   @pytest.mark.feature("launcher")   (keys come from docs/status.json)
 and board tests also with   @pytest.mark.hw
 Results go to .kotl/test-results.json (git-ignored).
 """

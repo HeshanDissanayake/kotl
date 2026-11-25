@@ -1,6 +1,6 @@
 """Arrow checks for the architecture map.
 
-The view routes its arrows live (docs/architecture/router.js). This routes them the same way in
+The view routes its arrows live (docs/router.js). This routes them the same way in
 every fold state (through node, tools/arrows-check.js) and checks, independently of the router:
 every arrow is drawn, has its own start point and its own end point, no two arrows run along the
 same line, and no arrow passes through a box. Arrows may cross. Used by tools/status.py check:
@@ -15,7 +15,7 @@ import re
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ARCH = os.path.join(ROOT, "docs", "architecture", "architecture.json")
+ARCH = os.path.join(ROOT, "docs", "architecture.json")
 NEAR = 6        # two endpoints closer than this count as the same point
 GAP = 5         # parallel segments closer than this count as the same line
 

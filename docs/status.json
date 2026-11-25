@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "updated": "2026-11-25T02:28:42Z",
-  "repo_commit": "64201140cf8c02b4c01b78a61d26d2e594b77a34",
+  "updated": "2026-11-25T02:35:23Z",
+  "repo_commit": "2453bd12e7d3e1a3814aa34db7b1386e709e4cd2",
   "watch": [
     "deploy/",
     "kotl/",
@@ -50,7 +50,7 @@
         "unit": {
           "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-25T02:28:42Z"
+          "ran_at": "2026-11-25T02:35:23Z"
         },
         "hardware": null
       },
@@ -87,7 +87,7 @@
         },
         {
           "date": "2026-11-24",
-          "text": "Arrows are routed by the view (docs/architecture/router.js): each has its own start and end point, no two share a line, none runs through a box, in every fold state. architecture.json keeps only from/to/style/label/why. status.py check runs tools/arrows.py (node) over all 32 fold states."
+          "text": "Arrows are routed by the view (docs/router.js): each has its own start and end point, no two share a line, none runs through a box, in every fold state. architecture.json keeps only from/to/style/label/why. status.py check runs tools/arrows.py (node) over all 32 fold states."
         },
         {
           "date": "2026-11-24",
@@ -108,7 +108,7 @@
         "unit": {
           "passed": 4,
           "failed": 0,
-          "ran_at": "2026-11-25T02:28:42Z"
+          "ran_at": "2026-11-25T02:35:23Z"
         },
         "hardware": null
       },
@@ -146,7 +146,7 @@
         "unit": {
           "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-25T02:28:42Z"
+          "ran_at": "2026-11-25T02:35:23Z"
         },
         "hardware": null
       },
@@ -191,7 +191,7 @@
         "unit": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-25T02:28:42Z"
+          "ran_at": "2026-11-25T02:35:23Z"
         },
         "hardware": null
       },
@@ -224,7 +224,7 @@
         "unit": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-25T02:28:42Z"
+          "ran_at": "2026-11-25T02:35:23Z"
         },
         "hardware": null
       },
@@ -266,7 +266,7 @@
         "unit": {
           "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-25T02:28:42Z"
+          "ran_at": "2026-11-25T02:35:23Z"
         },
         "hardware": null
       },
@@ -315,7 +315,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-25T02:28:42Z"
+          "ran_at": "2026-11-25T02:35:23Z"
         },
         "hardware": {
           "passed": 1,
@@ -360,7 +360,7 @@
         "unit": {
           "passed": 4,
           "failed": 0,
-          "ran_at": "2026-11-25T02:28:42Z"
+          "ran_at": "2026-11-25T02:35:23Z"
         },
         "hardware": {
           "passed": 2,
@@ -446,7 +446,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-25T02:28:42Z"
+          "ran_at": "2026-11-25T02:35:23Z"
         },
         "hardware": null
       },
@@ -500,7 +500,7 @@
         "unit": {
           "passed": 36,
           "failed": 0,
-          "ran_at": "2026-11-25T02:28:42Z"
+          "ran_at": "2026-11-25T02:35:23Z"
         },
         "hardware": null
       },
@@ -594,7 +594,7 @@
         "unit": {
           "passed": 18,
           "failed": 0,
-          "ran_at": "2026-11-25T02:28:42Z"
+          "ran_at": "2026-11-25T02:35:23Z"
         },
         "hardware": null
       },
@@ -675,7 +675,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-25T02:28:42Z"
+          "ran_at": "2026-11-25T02:35:23Z"
         },
         "hardware": null
       },
@@ -709,7 +709,7 @@
         "unit": {
           "passed": 25,
           "failed": 0,
-          "ran_at": "2026-11-25T02:28:42Z"
+          "ran_at": "2026-11-25T02:35:23Z"
         },
         "hardware": {
           "passed": 1,
@@ -718,9 +718,9 @@
         }
       },
       "last_commit": {
-        "hash": "0aa5bec0ba88949cd5b74a2d3ec0668d19ed23c2",
-        "message": "FireSim run packages: remote users run their own FireSim builds through Kotl",
-        "date": "2026-11-25T13:09:33+11:00"
+        "hash": "2453bd12e7d3e1a3814aa34db7b1386e709e4cd2",
+        "message": "FireSim notes: compatible.md warns about the FireSim version (the PC's XDMA setup)",
+        "date": "2026-11-25T13:28:42+11:00"
       },
       "issues": [
         "Run packages: not yet run on the real board (needs the user's OK): kotl run --eta 20m -- /opt/kotl/adapters/firesim/run-package.sh <a package of linux-poweroff>."
@@ -807,7 +807,7 @@
         "unit": {
           "passed": 22,
           "failed": 0,
-          "ran_at": "2026-11-25T02:28:42Z"
+          "ran_at": "2026-11-25T02:35:23Z"
         },
         "hardware": null
       },
@@ -899,7 +899,7 @@
         "unit": {
           "passed": 6,
           "failed": 0,
-          "ran_at": "2026-11-25T02:28:42Z"
+          "ran_at": "2026-11-25T02:35:23Z"
         },
         "hardware": null
       },
@@ -936,7 +936,7 @@
         "unit": {
           "passed": 7,
           "failed": 0,
-          "ran_at": "2026-11-25T02:28:42Z"
+          "ran_at": "2026-11-25T02:35:23Z"
         },
         "hardware": null
       },
@@ -981,7 +981,7 @@
         "unit": {
           "passed": 24,
           "failed": 0,
-          "ran_at": "2026-11-25T02:28:42Z"
+          "ran_at": "2026-11-25T02:35:23Z"
         },
         "hardware": null
       },
@@ -1162,7 +1162,7 @@
         "unit": {
           "passed": 28,
           "failed": 0,
-          "ran_at": "2026-11-25T02:28:42Z"
+          "ran_at": "2026-11-25T02:35:23Z"
         },
         "hardware": {
           "passed": 2,
@@ -1245,7 +1245,7 @@
         "unit": {
           "passed": 7,
           "failed": 0,
-          "ran_at": "2026-11-25T02:28:42Z"
+          "ran_at": "2026-11-25T02:35:23Z"
         },
         "hardware": null
       },
@@ -1281,7 +1281,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-25T02:28:42Z"
+          "ran_at": "2026-11-25T02:35:23Z"
         },
         "hardware": null
       },
@@ -1319,7 +1319,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-25T02:28:42Z"
+          "ran_at": "2026-11-25T02:35:23Z"
         },
         "hardware": null
       },
@@ -1365,7 +1365,7 @@
         "unit": {
           "passed": 7,
           "failed": 0,
-          "ran_at": "2026-11-25T02:28:42Z"
+          "ran_at": "2026-11-25T02:35:23Z"
         },
         "hardware": null
       },
@@ -1404,7 +1404,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-25T02:28:42Z"
+          "ran_at": "2026-11-25T02:35:23Z"
         },
         "hardware": null
       },
@@ -1439,7 +1439,7 @@
         "unit": {
           "passed": 21,
           "failed": 0,
-          "ran_at": "2026-11-25T02:28:42Z"
+          "ran_at": "2026-11-25T02:35:23Z"
         },
         "hardware": null
       },
