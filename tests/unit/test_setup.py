@@ -117,3 +117,13 @@ def test_client_installer_on_a_users_pc(tmp_path, opt):
     assert r.returncode == 0 and not (home / ".kotl-client").exists()
     assert "env" not in json.loads((home / ".claude/settings.json").read_text())
     assert "code --uninstall-extension kotl.kotl-status" in log.read_text()
+
+
+@pytest.mark.feature("fsmod")
+def test_client_bundle_carries_the_adapters_tools(opt):
+    names = set(tarfile.open(fileobj=io.BytesIO(client.bundle(opt=str(opt)))).getnames())
+    assert not any(n.startswith("kotl-client/adapters") for n in names)      # none enabled: none shipped
+    (opt / "adapters/firesim").mkdir(parents=True)
+    (opt / "adapters/firesim/kotl-firesim-pack").write_text("#!/usr/bin/env python3\n")
+    names = set(tarfile.open(fileobj=io.BytesIO(client.bundle(opt=str(opt)))).getnames())
+    assert "kotl-client/adapters/firesim/kotl-firesim-pack" in names

@@ -1,7 +1,8 @@
 """kotl client-bundle: everything a user's own PC needs, as a tar on stdout.
 
   ssh <workstation> kotl client-bundle > kotl-client.tar && tar xf kotl-client.tar
-  ./kotl-client/install.sh            (deploy/client/install.sh: plugins, extension, KOTL_SSH)
+  ./kotl-client/install.sh            (deploy/client/install.sh: plugins, extension, KOTL_SSH,
+                                      and the adapters' tools in ~/.kotl-client/adapters/)
 
 The bundle is read from /opt/kotl (published by deploy/kotl/install.sh).
 """
@@ -14,6 +15,7 @@ import tarfile
 OPT = "/opt/kotl"
 PARTS = {"plugin": "plugin", "plugin-band": "plugin-band", ".claude-plugin": ".claude-plugin",
          "kotl-status.vsix": "kotl-status.vsix", "client/install.sh": "install.sh"}
+OPTIONAL = {"adapters": "adapters"}   # the enabled adapters' user tools (e.g. FireSim's kotl-firesim-pack)
 
 
 def bundle(opt=OPT, workstation=None):
@@ -25,6 +27,9 @@ def bundle(opt=OPT, workstation=None):
     with tarfile.open(fileobj=buf, mode="w") as t:
         for src, dst in PARTS.items():
             t.add(os.path.join(opt, src), arcname=f"kotl-client/{dst}")
+        for src, dst in OPTIONAL.items():
+            if os.path.exists(os.path.join(opt, src)):
+                t.add(os.path.join(opt, src), arcname=f"kotl-client/{dst}")
         name = (workstation or socket.getfqdn() or socket.gethostname()).encode() + b"\n"
         info = tarfile.TarInfo("kotl-client/workstation")
         info.size, info.mode = len(name), 0o644

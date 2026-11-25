@@ -7,7 +7,8 @@
 #   ./kotl-client/install.sh [--ssh <workstation ssh name>]     install (re-run after updates)
 #   ./kotl-client/install.sh --undo                             remove it all again
 #
-# It keeps its files in ~/.kotl-client, sets KOTL_SSH for Claude Code (~/.claude/settings.json)
+# It keeps its files in ~/.kotl-client (with the adapters' tools for your own builds, e.g.
+# ~/.kotl-client/adapters/firesim/kotl-firesim-pack), sets KOTL_SSH for Claude Code (~/.claude/settings.json)
 # and tells the VS Code extension the workstation's name (~/.kotl-client/ssh). Needs ssh to the
 # workstation with a key (no password prompt), python3, and Claude Code and/or VS Code.
 set -u
@@ -19,7 +20,7 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --ssh) SSH=${2:-}; shift ;;
     --undo) UNDO=1 ;;
-    -h|--help) sed -n '3,15p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help) sed -n '3,13p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "unknown option $1" >&2; exit 2 ;;
   esac
   shift
@@ -87,4 +88,5 @@ if command -v code >/dev/null; then
 else
   echo "- VS Code: the 'code' command isn't on PATH; skipped (in VS Code: Shell Command: Install 'code' command, then re-run)"
 fi
+[ -x "$DEST/adapters/firesim/kotl-firesim-pack" ] && echo "- FireSim: $DEST/adapters/firesim/kotl-firesim-pack packs a run of your own build for the boards"
 echo "Done. Start a new Claude Code session; in VS Code, Kotl is in the status bar and the Kotl panel."

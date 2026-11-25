@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "updated": "2026-11-25T01:16:40Z",
-  "repo_commit": "7d5eb0372ca5d87b4ac7b3aa3c18b055a7bc506a",
+  "updated": "2026-11-25T02:08:49Z",
+  "repo_commit": "5cd29f0d1be8c7a45bc7b7271f3c6f1fcfdca65a",
   "watch": [
     "deploy/",
     "kotl/",
@@ -50,7 +50,7 @@
         "unit": {
           "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-25T01:16:40Z"
+          "ran_at": "2026-11-25T02:08:48Z"
         },
         "hardware": null
       },
@@ -108,7 +108,7 @@
         "unit": {
           "passed": 4,
           "failed": 0,
-          "ran_at": "2026-11-25T01:16:40Z"
+          "ran_at": "2026-11-25T02:08:48Z"
         },
         "hardware": null
       },
@@ -146,7 +146,7 @@
         "unit": {
           "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-25T01:16:40Z"
+          "ran_at": "2026-11-25T02:08:48Z"
         },
         "hardware": null
       },
@@ -191,7 +191,7 @@
         "unit": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-25T01:16:40Z"
+          "ran_at": "2026-11-25T02:08:48Z"
         },
         "hardware": null
       },
@@ -224,7 +224,7 @@
         "unit": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-25T01:16:40Z"
+          "ran_at": "2026-11-25T02:08:48Z"
         },
         "hardware": null
       },
@@ -266,7 +266,7 @@
         "unit": {
           "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-25T01:16:40Z"
+          "ran_at": "2026-11-25T02:08:48Z"
         },
         "hardware": null
       },
@@ -315,7 +315,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-25T01:16:40Z"
+          "ran_at": "2026-11-25T02:08:48Z"
         },
         "hardware": {
           "passed": 1,
@@ -360,7 +360,7 @@
         "unit": {
           "passed": 4,
           "failed": 0,
-          "ran_at": "2026-11-25T01:16:40Z"
+          "ran_at": "2026-11-25T02:08:48Z"
         },
         "hardware": {
           "passed": 2,
@@ -446,7 +446,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-25T01:16:40Z"
+          "ran_at": "2026-11-25T02:08:48Z"
         },
         "hardware": null
       },
@@ -500,14 +500,14 @@
         "unit": {
           "passed": 36,
           "failed": 0,
-          "ran_at": "2026-11-25T01:16:40Z"
+          "ran_at": "2026-11-25T02:08:48Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "1e997fcff46c06c50efe2e030e3d7cae3866197b",
-        "message": "Kotl 1.0.0 (milestone P): PC onboarding, one-command update, full uninstall, update nudge",
-        "date": "2026-11-25T01:13:20+11:00"
+        "hash": "5cd29f0d1be8c7a45bc7b7271f3c6f1fcfdca65a",
+        "message": "Lab notes and adapter skills: what worked before, per tool, at fixed paths",
+        "date": "2026-11-25T12:16:47+11:00"
       },
       "issues": [],
       "log": [
@@ -594,14 +594,14 @@
         "unit": {
           "passed": 18,
           "failed": 0,
-          "ran_at": "2026-11-25T01:16:40Z"
+          "ran_at": "2026-11-25T02:08:48Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "1e997fcff46c06c50efe2e030e3d7cae3866197b",
-        "message": "Kotl 1.0.0 (milestone P): PC onboarding, one-command update, full uninstall, update nudge",
-        "date": "2026-11-25T01:13:20+11:00"
+        "hash": "5cd29f0d1be8c7a45bc7b7271f3c6f1fcfdca65a",
+        "message": "Lab notes and adapter skills: what worked before, per tool, at fixed paths",
+        "date": "2026-11-25T12:16:47+11:00"
       },
       "issues": [],
       "log": [
@@ -656,6 +656,10 @@
         {
           "date": "2026-11-25",
           "text": "kotl notes [TOOL [PAGE]] | add TOOL text | set TOOL PAGE < file | history TOOL (words read by hand, so a note may hold any words)."
+        },
+        {
+          "date": "2026-11-25",
+          "text": "client-bundle carries /opt/kotl/adapters (the enabled adapters' user tools, e.g. kotl-firesim-pack); the client installer says where."
         }
       ]
     },
@@ -671,7 +675,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-25T01:16:40Z"
+          "ran_at": "2026-11-25T02:08:48Z"
         },
         "hardware": null
       },
@@ -703,9 +707,9 @@
       ],
       "tests": {
         "unit": {
-          "passed": 12,
+          "passed": 25,
           "failed": 0,
-          "ran_at": "2026-11-25T01:16:40Z"
+          "ran_at": "2026-11-25T02:08:48Z"
         },
         "hardware": {
           "passed": 1,
@@ -714,11 +718,13 @@
         }
       },
       "last_commit": {
-        "hash": "ac4797eafeec33600b5acd88e879008da22ca6a0",
-        "message": "Claude sessions know Kotl up front: skill, session start and a workstation-wide CLAUDE.md; daemon and plugin built",
-        "date": "2026-11-25T00:34:24+11:00"
+        "hash": "5cd29f0d1be8c7a45bc7b7271f3c6f1fcfdca65a",
+        "message": "Lab notes and adapter skills: what worked before, per tool, at fixed paths",
+        "date": "2026-11-25T12:16:47+11:00"
       },
-      "issues": [],
+      "issues": [
+        "Run packages: not yet run on the real board (needs the user's OK): kotl run --eta 20m -- /opt/kotl/adapters/firesim/run-package.sh <a package of linux-poweroff>."
+      ],
       "log": [
         {
           "date": "2026-11-22",
@@ -775,6 +781,10 @@
         {
           "date": "2026-11-25",
           "text": "Lab notes: is_run (command mentions firesim), facts lines (FireSim and Chipyard commits, hw config, bitstream, workload; read-only git), seed setup.md/compatible.md; the test package prints KOTL FACT lines (MANIFEST now records the Chipyard and FireSim commits); firesim-smoke.sh is installed as /opt/kotl/adapters/firesim/firesim-smoke.sh."
+        },
+        {
+          "date": "2026-11-25",
+          "text": "Run packages (user's design: remote users run their own FireSim builds): kotl-firesim-pack packs bitstream, driver + libraries (no glibc), workload, and the driver's arguments computed as FireSim's get_boot_simulation_command does (identical to job 49's on the real Chipyard; same files byte for byte as the test package); run-package.sh runs it inside kotl run with no FireSim on the workstation (PC check incl. glibc vs the driver's need, flash, fsim0, outputs back and into the job's results, KOTL RESULT, KOTL FACT). Installed in /opt/kotl/adapters/firesim/ and shipped in the client bundle. Tested end to end on a fake PC; not yet on the board."
         }
       ]
     },
@@ -793,7 +803,7 @@
         "unit": {
           "passed": 22,
           "failed": 0,
-          "ran_at": "2026-11-25T01:16:40Z"
+          "ran_at": "2026-11-25T02:08:48Z"
         },
         "hardware": null
       },
@@ -885,7 +895,7 @@
         "unit": {
           "passed": 6,
           "failed": 0,
-          "ran_at": "2026-11-25T01:16:40Z"
+          "ran_at": "2026-11-25T02:08:48Z"
         },
         "hardware": null
       },
@@ -922,7 +932,7 @@
         "unit": {
           "passed": 7,
           "failed": 0,
-          "ran_at": "2026-11-25T01:16:40Z"
+          "ran_at": "2026-11-25T02:08:48Z"
         },
         "hardware": null
       },
@@ -965,16 +975,16 @@
       ],
       "tests": {
         "unit": {
-          "passed": 23,
+          "passed": 24,
           "failed": 0,
-          "ran_at": "2026-11-25T01:16:40Z"
+          "ran_at": "2026-11-25T02:08:48Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "1e997fcff46c06c50efe2e030e3d7cae3866197b",
-        "message": "Kotl 1.0.0 (milestone P): PC onboarding, one-command update, full uninstall, update nudge",
-        "date": "2026-11-25T01:13:20+11:00"
+        "hash": "5cd29f0d1be8c7a45bc7b7271f3c6f1fcfdca65a",
+        "message": "Lab notes and adapter skills: what worked before, per tool, at fixed paths",
+        "date": "2026-11-25T12:16:47+11:00"
       },
       "issues": [],
       "log": [
@@ -1033,6 +1043,10 @@
         {
           "date": "2026-11-25",
           "text": "Skills split: the general kotl skill (lab notes, a table of tool skills) and kotl-firesim (read the notes and compare, run, add). Session start and /etc/claude-code/CLAUDE.md point at kotl notes."
+        },
+        {
+          "date": "2026-11-25",
+          "text": "kotl-firesim skill: two routes (a run package from a Chipyard anywhere; FireSim itself from one on the workstation), the pack/copy/run/fetch steps."
         }
       ]
     },
@@ -1144,7 +1158,7 @@
         "unit": {
           "passed": 28,
           "failed": 0,
-          "ran_at": "2026-11-25T01:16:40Z"
+          "ran_at": "2026-11-25T02:08:48Z"
         },
         "hardware": {
           "passed": 2,
@@ -1227,7 +1241,7 @@
         "unit": {
           "passed": 7,
           "failed": 0,
-          "ran_at": "2026-11-25T01:16:40Z"
+          "ran_at": "2026-11-25T02:08:48Z"
         },
         "hardware": null
       },
@@ -1263,7 +1277,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-25T01:16:40Z"
+          "ran_at": "2026-11-25T02:08:48Z"
         },
         "hardware": null
       },
@@ -1301,7 +1315,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-25T01:16:40Z"
+          "ran_at": "2026-11-25T02:08:48Z"
         },
         "hardware": null
       },
@@ -1347,14 +1361,14 @@
         "unit": {
           "passed": 7,
           "failed": 0,
-          "ran_at": "2026-11-25T01:16:40Z"
+          "ran_at": "2026-11-25T02:08:48Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "1e997fcff46c06c50efe2e030e3d7cae3866197b",
-        "message": "Kotl 1.0.0 (milestone P): PC onboarding, one-command update, full uninstall, update nudge",
-        "date": "2026-11-25T01:13:20+11:00"
+        "hash": "5cd29f0d1be8c7a45bc7b7271f3c6f1fcfdca65a",
+        "message": "Lab notes and adapter skills: what worked before, per tool, at fixed paths",
+        "date": "2026-11-25T12:16:47+11:00"
       },
       "issues": [],
       "log": [
@@ -1384,9 +1398,9 @@
       ],
       "tests": {
         "unit": {
-          "passed": 7,
+          "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-25T01:16:40Z"
+          "ran_at": "2026-11-25T02:08:48Z"
         },
         "hardware": null
       },
@@ -1421,11 +1435,15 @@
         "unit": {
           "passed": 21,
           "failed": 0,
-          "ran_at": "2026-11-25T01:16:40Z"
+          "ran_at": "2026-11-25T02:08:48Z"
         },
         "hardware": null
       },
-      "last_commit": null,
+      "last_commit": {
+        "hash": "5cd29f0d1be8c7a45bc7b7271f3c6f1fcfdca65a",
+        "message": "Lab notes and adapter skills: what worked before, per tool, at fixed paths",
+        "date": "2026-11-25T12:16:47+11:00"
+      },
       "issues": [
         "Not yet installed: needs bash deploy/kotl/update.sh; then fill firesim/setup.md (a draft is ready, see the run sheet).",
         "Runs in a lease get no automatic line (the skill asks Claude to add a note)."

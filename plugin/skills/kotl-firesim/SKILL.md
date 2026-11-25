@@ -1,6 +1,6 @@
 ---
 name: kotl-firesim
-description: Run FireSim on the lab's FPGA boards (VCU118) through Kotl. Use whenever a task runs FireSim (infrasetup, runworkload, a bitstream or driver from a Chipyard/FireSim build) on a board, checks whether a FireSim build will work on the lab's boards, or asks what FireSim setup worked before. Read the kotl skill too, for the queue itself.
+description: Run FireSim on the lab's FPGA boards (VCU118) through Kotl, from a Chipyard on the workstation or on the person's own PC (a run package). Use whenever a task runs FireSim (infrasetup, runworkload, a bitstream or driver from a Chipyard/FireSim build) on a board, packs a FireSim build to run it there, checks whether a build will work on the lab's boards, or asks what FireSim setup worked before. Read the kotl skill too, for the queue itself.
 ---
 
 # FireSim on the lab's boards, through Kotl
@@ -28,6 +28,55 @@ queue. If `setup.md` lists something the PC needs and the person's build expects
 (e.g. another XDMA or Vivado version), stop and ask.
 
 ## 2. Run it
+
+Two ways. Which one depends on where the person's Chipyard is:
+
+| Their Chipyard is | Use |
+| --- | --- |
+| on their own PC (Kotl's client bundle, `KOTL_SSH` set) | **a run package** (2a): build there, pack, copy, run |
+| on the workstation | **FireSim itself** (2b), or a run package too |
+
+### 2a. A run package: build anywhere, run through Kotl (no FireSim on the workstation)
+
+The FPGA PCs are reachable only from the workstation, so FireSim's manager can't drive a board
+from the person's own PC. Instead, pack what FireSim would copy to the board's PC and let Kotl's
+runner do the rest. Requirements: one simulation, no network (`topology: no_net_config`,
+`no_net_num_nodes: 1`), a `xilinx_vcu118` bitstream, a workload that ends by itself.
+
+1. Build on their PC, in their FireSim environment: the bitstream (or one they already have, in
+   `config_hwdb.yaml` as a local `bitstream_tar`), `firesim builddriver -c CFG`, and the
+   FireMarshal workload (`marshal build` + `marshal install`).
+2. Pack it, in `sims/firesim/deploy` (on their own PC the tool is
+   `~/.kotl-client/adapters/firesim/kotl-firesim-pack`; on the workstation
+   `/opt/kotl/adapters/firesim/kotl-firesim-pack`):
+
+   ```sh
+   kotl-firesim-pack -c CFG --out ~/kotl-runs/NAME [--timeout 30m] [--pass REGEX]
+   ```
+
+   It reads, never changes, their FireSim. It tells you what it packed (hardware config,
+   workload, driver, the glibc the driver needs) and the next two commands. If it refuses, it
+   says why (no driver built, a network topology, a bitstream that isn't local, ...): fix that,
+   don't work around it.
+3. Copy it and run it (the eta covers copy-to-PC, flash and the simulation):
+
+   ```sh
+   rsync -a --partial ~/kotl-runs/NAME/ "$KOTL_SSH":kotl-runs/NAME/
+   ssh "$KOTL_SSH" kotl run --eta 20m -- /opt/kotl/adapters/firesim/run-package.sh kotl-runs/NAME
+   ```
+
+   The runner checks the PC (and that the PC's glibc is new enough for the driver), flashes the
+   bitstream, runs the driver in screen `fsim0` (`kotl attach` shows it), copies back the
+   uartlog and what the run wrote, and prints `KOTL RESULT: PASS` only on a pass line
+   (`*** PASSED ***` or `reboot: Power down`, or `--pass REGEX` from the pack). It prints the
+   package's `KOTL FACT` lines, so the run's line in the notes says what it used.
+4. Results: `ssh "$KOTL_SSH" kotl fetch JOB` (into `kotl-results/JOB/` in their workstation
+   home; the uartlog and what the run wrote are in `outputs/`), then
+   `rsync -a "$KOTL_SSH":kotl-results/JOB/ kotl-results/JOB/` to bring them to their PC.
+5. Remove the package on the workstation when done (`ssh "$KOTL_SSH" rm -rf kotl-runs/NAME`):
+   root filesystems are large.
+
+### 2b. FireSim itself, from a Chipyard on the workstation
 
 Run FireSim from the person's own Chipyard, with their environment active (`source env.sh` and
 `sourceme-manager.sh --skip-ssh-setup` in the same shell), from `sims/firesim/deploy`:

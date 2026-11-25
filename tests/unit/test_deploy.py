@@ -16,7 +16,7 @@ SCRIPTS = {  # script -> feature it belongs to
     "lib.sh": "os", "accounts.sh": "os", "verify-m1.sh": "os",
     "slurm/install.sh": "queue", "epilog.sh": "starter", "health.sh": "health",
     "ssh/setup-kotl-key.sh": "key", "pc/setup.sh": "pc1", "adapters/firesim/check.sh": "fsmod",
-    "kotl/install.sh": "launcher", "job.sh": "launcher",
+    "kotl/install.sh": "launcher", "job.sh": "launcher", "adapters/firesim/run-package.sh": "fsmod",
     "pc/kotl-keys": "access", "kotl/pc.sh": "pc_onboard", "kotl/update.sh": "launcher", "uninstall.sh": "uninstall", "adapters/firesim/pc-setup.sh": "fsmod", "adapters/firesim/kotl-firesim-stop": "fsmod",
 }
 
@@ -538,8 +538,9 @@ def test_install_brings_the_enabled_adapters_skills_and_tools(tmp_path):
     dry("kotl/install.sh", root=tmp_path)                               # from kotl.conf
     plug = tmp_path / "opt/kotl/plugin/skills"
     assert (plug / "kotl/SKILL.md").exists() and (plug / "kotl-firesim/SKILL.md").exists()
-    smoke = tmp_path / "opt/kotl/adapters/firesim/firesim-smoke.sh"
-    assert smoke.exists() and os.access(smoke, os.X_OK) and "managed by kotl" in smoke.read_text()
+    for tool in ("firesim-smoke.sh", "run-package.sh", "kotl-firesim-pack"):
+        smoke = tmp_path / "opt/kotl/adapters/firesim" / tool
+        assert smoke.exists() and os.access(smoke, os.X_OK) and "managed by kotl" in smoke.read_text(), tool
     assert not (tmp_path / "opt/kotl/adapters/firesim/firesim-smoke.sh.kotl-orig").exists()
     dry("kotl/install.sh", "--adapters", "", root=tmp_path)            # off: its skill and tools go
     assert (plug / "kotl/SKILL.md").exists() and not (plug / "kotl-firesim").exists()

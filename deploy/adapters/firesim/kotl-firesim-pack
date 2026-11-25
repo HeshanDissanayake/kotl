@@ -1,0 +1,405 @@
+#!/usr/bin/env python3
+# managed by kotl (deploy/kotl/install.sh, as /opt/kotl/adapters/firesim/kotl-firesim-pack)
+"""kotl-firesim-pack: put one FireSim run into a folder that Kotl can run on a board.
+
+Build as usual with your own Chipyard (bitstream, `firesim builddriver`, your FireMarshal
+workload), then, in your FireSim deploy folder (or with --deploy):
+
+  kotl-firesim-pack --out ~/kotl-runs/myrun                 the run config_runtime.yaml describes
+  kotl-firesim-pack --out DIR -c my_runtime.yaml [-a my_hwdb.yaml] [--hw NAME] [--workload W.json]
+
+Copy the folder to the workstation and run it there through Kotl (no FireSim needed there):
+
+  rsync -a ~/kotl-runs/myrun/ <workstation>:kotl-runs/myrun/
+  ssh <workstation> kotl run --eta 20m -- /opt/kotl/adapters/firesim/run-package.sh kotl-runs/myrun
+
+It reads, never changes, your FireSim. The folder holds what FireSim itself would copy to the
+board's PC: the bitstream, the driver and its libraries (not glibc: the PC uses its own), the
+runtime config, the workload's boot binary, rootfs and simulation inputs, and the driver's
+arguments worked out from config_runtime.yaml the way FireSim does (run.conf), plus a MANIFEST
+saying what it was built from (for the lab notes).
+
+One simulation on one FPGA, no network (topology: no_net_config, no_net_num_nodes: 1); a
+xilinx_vcu118 bitstream. Options: --job N (which job of a multi-job workload, default 0),
+--timeout 30m (the run's limit on the board), --pass REGEX / --fail REGEX (uartlog lines that
+decide the result; default: '*** PASSED ***' or 'reboot: Power down' / '*** FAILED ***'),
+--force (replace --out).
+"""
+import argparse
+import hashlib
+import json
+import os
+import re
+import shlex
+import shutil
+import socket
+import subprocess
+import sys
+import tarfile
+import time
+
+PLATFORMS = ("xilinx_vcu118",)
+GLIBC = re.compile(r"^(ld-linux.*|linux-vdso.*|lib(c|m|dl|rt|pthread|resolv|util|anl|crypt|nsl|BrokenLocale|thread_db|nss_\w+)(-[0-9.]+)?\.so(\.[0-9]+)*)$")
+PASS = r"\*\*\* PASSED \*\*\*|reboot: Power down"
+FAIL = r"\*\*\* FAILED \*\*\*"
+MAC0 = "00:12:6D:00:00:02"       # FireSim's first MAC address
+
+
+class PackError(Exception):
+    pass
+
+
+# ---- reading FireSim's YAML (PyYAML when there; else the simple two-level files FireSim uses)
+def mini_yaml(text):
+    root, stack = {}, [(-1, None)]
+    for raw in text.splitlines():
+        line = re.sub(r"\s+#.*$", "", raw.rstrip()) if not raw.lstrip().startswith("#") else ""
+        if not line.strip() or line.strip().startswith("- "):
+            continue
+        indent = len(line) - len(line.lstrip())
+        m = re.match(r"^\s*([^:]+):\s*(.*)$", line)
+        if not m:
+            continue
+        key, val = m.group(1).strip().strip("'\""), m.group(2).strip()
+        while stack and stack[-1][0] >= indent:
+            stack.pop()
+        parent = root if stack[-1][1] is None else stack[-1][1]
+        if val == "":
+            parent[key] = {}
+            stack.append((indent, parent[key]))
+        else:
+            parent[key] = scalar(val)
+    return root
+
+
+def scalar(v):
+    v = v.strip().strip("'\"") if (v[:1] in "'\"") else v.strip()
+    low = v.lower()
+    if low in ("yes", "true", "on"):
+        return True
+    if low in ("no", "false", "off"):
+        return False
+    if low in ("null", "~", "none"):
+        return None
+    try:
+        return int(v)
+    except ValueError:
+        return v
+
+
+def load_yaml(path):
+    with open(path, encoding="utf-8") as f:
+        text = f.read()
+    try:
+        import yaml
+        return yaml.safe_load(text) or {}
+    except ImportError:
+        return mini_yaml(text)
+
+
+def section(doc, name):
+    return doc.get(name) or {}
+
+
+def local_path(uri, base):
+    """A hwdb file:// URI (or a plain path) -> a local path; other URIs can't be packed."""
+    if uri is None:
+        return None
+    if "://" in uri and not uri.startswith("file://"):
+        raise PackError(f"{uri} isn't on this machine: download it and point config_hwdb.yaml at the file")
+    p = uri[len("file://"):] if uri.startswith("file://") else uri
+    return os.path.normpath(os.path.join(base, os.path.expanduser(p)))
+
+
+def find_deploy(given):
+    if given:
+        return os.path.abspath(given)
+    if os.path.exists("config_runtime.yaml"):
+        return os.getcwd()
+    fs = shutil.which("firesim")
+    if fs:
+        return os.path.dirname(os.path.realpath(fs))
+    raise PackError("run me in your FireSim deploy folder, or give --deploy DIR")
+
+
+def git_rev(path):
+    try:
+        c = subprocess.run(["git", "-C", path, "rev-parse", "--short=10", "HEAD"], capture_output=True, text=True,
+                           timeout=20).stdout.strip()
+        if not c:
+            return ""
+        dirty = subprocess.run(["git", "--no-optional-locks", "-C", path, "diff", "--quiet", "--ignore-submodules", "HEAD"],
+                               capture_output=True, timeout=20).returncode != 0
+        return c + ("+changes" if dirty else "")
+    except (OSError, subprocess.TimeoutExpired):
+        return ""
+
+
+def glibc_needed(paths):
+    """The highest GLIBC_2.x symbol version these ELF files ask for ('' if none)."""
+    best = (0, 0)
+    for p in paths:
+        try:
+            with open(p, "rb") as f:
+                for m in re.finditer(rb"GLIBC_2\.([0-9]+)(?:\.([0-9]+))?", f.read()):
+                    best = max(best, (int(m.group(1)), int(m.group(2) or 0)))
+        except OSError:
+            continue
+    return "" if best == (0, 0) else f"2.{best[0]}" + (f".{best[1]}" if best[1] else "")
+
+
+def shared_libs(driver):
+    """The driver's libraries, as ldd finds them, without glibc (the PC uses its own)."""
+    r = subprocess.run(["ldd", driver], capture_output=True, text=True)
+    libs, missing = [], []
+    for line in r.stdout.splitlines():
+        m = re.match(r"\s*(\S+)\s*=>\s*(\S+)?", line)
+        if not m:
+            continue
+        name, path = m.group(1), m.group(2)
+        if GLIBC.match(name):
+            continue
+        if not path or path == "not":
+            missing.append(name)
+        else:
+            libs.append(path)
+    if missing:
+        raise PackError(f"the driver's libraries aren't found here: {', '.join(missing)} (activate your Chipyard env)")
+    return libs
+
+
+def copy(src, dst):
+    if not os.path.isfile(src):
+        raise PackError(f"missing: {src}")
+    shutil.copy2(src, dst, follow_symlinks=True)
+
+
+def sha256(p):
+    h = hashlib.sha256()
+    with open(p, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def pack(a):
+    dep = find_deploy(a.deploy)
+    rt_path = os.path.abspath(a.c or os.path.join(dep, "config_runtime.yaml"))
+    hw_path = os.path.abspath(a.a or os.path.join(dep, "config_hwdb.yaml"))
+    rt = load_yaml(rt_path)
+    tc = section(rt, "target_config")
+    topo, nodes = tc.get("topology"), tc.get("no_net_num_nodes", 1)
+    if topo != "no_net_config" or int(nodes or 1) != 1:
+        raise PackError(f"Kotl runs one simulation on one FPGA without a network; {rt_path} has topology "
+                        f"{topo}, {nodes} node(s): set topology: no_net_config and no_net_num_nodes: 1")
+    hw = a.hw or tc.get("default_hw_config")
+    hwdb = load_yaml(hw_path)
+    entry = hwdb.get(hw)
+    if not isinstance(entry, dict):
+        raise PackError(f"no hardware config '{hw}' in {hw_path}")
+    if entry.get("agfi"):
+        raise PackError(f"{hw} is an AWS F1 image (agfi); Kotl's boards need a bitstream_tar")
+    bit_tar = local_path(entry.get("bitstream_tar"), dep)
+    if not bit_tar or not os.path.isfile(bit_tar):
+        raise PackError(f"{hw}: bitstream_tar {entry.get('bitstream_tar')} not found")
+
+    out = os.path.abspath(os.path.expanduser(a.out))
+    if os.path.exists(out):
+        if not a.force:
+            raise PackError(f"{out} exists (--force replaces it)")
+        shutil.rmtree(out)
+    tmp = out + ".partial"
+    shutil.rmtree(tmp, ignore_errors=True)
+    bitdir, sim = os.path.join(tmp, "payload", "bitstream"), os.path.join(tmp, "payload", "sim")
+    os.makedirs(bitdir)
+    os.makedirs(sim)
+
+    # the bitstream and its metadata (which says the design: the "quintuplet")
+    with tarfile.open(bit_tar) as t:
+        members = {os.path.basename(m.name): m for m in t.getmembers() if m.isfile()}
+        for name in ("firesim.bit", "metadata"):
+            if name not in members:
+                raise PackError(f"{bit_tar} has no {name}")
+            with t.extractfile(members[name]) as src, open(os.path.join(bitdir, name), "wb") as dst:
+                shutil.copyfileobj(src, dst)
+    meta = dict(kv.split(":", 1) for kv in open(os.path.join(bitdir, "metadata")).read().strip().split(",") if ":" in kv)
+    quint = entry.get("deploy_quintuplet_override") or meta.get("firesim-deployquintuplet", "")
+    parts = quint.split("-")
+    if len(parts) != 5:
+        raise PackError(f"can't read the design from {bit_tar}'s metadata ({quint!r})")
+    platform, design = parts[0], parts[2]
+    if platform not in PLATFORMS:
+        raise PackError(f"{hw} is for {platform}; Kotl's boards are {', '.join(PLATFORMS)}")
+    driver = f"{design}-{platform}"
+
+    # the driver and its libraries: the prebuilt bundle named in the hwdb, else the one
+    # `firesim builddriver` made (as FireSim's infrasetup bundles it), else a bundle left by infrasetup
+    outdir = os.path.normpath(os.path.join(dep, "..", "sim", "output", platform, quint))
+    drv_tar = local_path(entry.get("driver_tar"), dep)
+    built = os.path.join(outdir, driver)
+    if drv_tar or not os.path.isfile(built):
+        drv_tar = drv_tar or os.path.join(outdir, "driver-bundle.tar.gz")
+        if not os.path.isfile(drv_tar):
+            raise PackError(f"no driver for {quint}: run 'firesim builddriver -c {os.path.basename(rt_path)}' first")
+        with tarfile.open(drv_tar) as t:
+            for m in t.getmembers():
+                n = os.path.basename(m.name)
+                if m.isfile() and n and not GLIBC.match(n):
+                    with t.extractfile(m) as src, open(os.path.join(sim, n), "wb") as dst:
+                        shutil.copyfileobj(src, dst)
+        if not os.path.isfile(os.path.join(sim, driver)):
+            raise PackError(f"{drv_tar} has no {driver}")
+        driver_from = drv_tar
+    else:
+        copy(built, os.path.join(sim, driver))
+        for lib in shared_libs(built):
+            copy(lib, os.path.join(sim, os.path.basename(lib)))
+        driver_from = built
+    os.chmod(os.path.join(sim, driver), 0o755)
+    runtimeconf = ""
+    if entry.get("custom_runtime_config"):
+        rc = os.path.normpath(os.path.join(dep, "..", "sim", "custom-runtime-configs", entry["custom_runtime_config"]))
+        runtimeconf = os.path.basename(rc)
+        copy(rc, os.path.join(sim, runtimeconf))
+
+    # the workload (FireSim's rules: workloads/<json>, files in workloads/<benchmark_name>/)
+    wl_name = a.workload or section(rt, "workload").get("workload_name")
+    wl_file = wl_name if os.path.isabs(str(wl_name)) else os.path.join(dep, "workloads", str(wl_name))
+    if not os.path.isfile(wl_file):
+        raise PackError(f"no workload {wl_file}")
+    wl = json.load(open(wl_file))
+    bench = wl.get("benchmark_name")
+    base = os.path.join(os.path.dirname(wl_file), bench)
+    jobs = wl.get("workloads")
+    if jobs is None:
+        job, jobname = {}, f"{bench}{a.job}"
+    else:
+        if not 0 <= a.job < len(jobs):
+            raise PackError(f"{wl_file} has {len(jobs)} job(s); --job {a.job} isn't one")
+        job, jobname = jobs[a.job], jobs[a.job].get("name", f"{bench}{a.job}")
+    bootbin = job.get("bootbinary") or wl.get("common_bootbinary")
+    if not bootbin:
+        raise PackError(f"{wl_file} names no boot binary")
+    boot_src = os.path.normpath(os.path.join(base, bootbin))
+    boot_name = f"{jobname}-{os.path.basename(boot_src)}"
+    copy(boot_src, os.path.join(sim, boot_name))
+    for dwarf in (boot_src + "-dwarf", os.path.realpath(boot_src) + "-dwarf"):   # next to it, or to what it links to
+        if os.path.isfile(dwarf):
+            copy(dwarf, os.path.join(sim, boot_name + "-dwarf"))
+            break
+    if "rootfs" in job:
+        rootfs = None if job["rootfs"] is None else os.path.join(base, job["rootfs"])
+    elif "common_rootfs" in wl:
+        rootfs = None if wl["common_rootfs"] is None else os.path.join(base, wl["common_rootfs"])
+    else:
+        rootfs = os.path.join(base, jobname + ".ext2")
+    rootfs_name = None
+    if rootfs:
+        rootfs = os.path.normpath(rootfs)
+        if rootfs.endswith(".qcow2"):
+            raise PackError("qcow2 root filesystems need FireSim's nbd setup; use an .ext2/.img rootfs")
+        rootfs_name = f"{jobname}-{os.path.basename(rootfs)}"
+        copy(rootfs, os.path.join(sim, rootfs_name))
+    for x in job.get("simulation_inputs", []) + wl.get("common_simulation_inputs", []):
+        copy(os.path.join(base, x), os.path.join(sim, f"{jobname}-{x}"))
+
+    # the driver's arguments, as FireSim's get_boot_simulation_command builds them for one node
+    tr, ac, hd, sp = (section(rt, k) for k in ("tracing", "autocounter", "host_debug", "synth_print"))
+    args = []
+    if tc.get("profile_interval", -1) not in (-1, None):
+        args.append(f"+profile-interval={tc['profile_interval']}")
+    args += ["+zero-out-dram"] if hd.get("zero_out_dram") else []
+    args += ["+disable-asserts"] if hd.get("disable_synth_asserts") else []
+    args.append(f"+macaddr0={MAC0}")
+    if rootfs_name:
+        args.append(f"+blkdev0={rootfs_name}")
+    args.append("+niclog0=niclog0")
+    if rootfs_name:
+        args.append("+blkdev-log0=blkdev-log0")
+    args += ["+tracefile=TRACEFILE"] if tr.get("enable") else []
+    args += [f"+trace-select={tr.get('selector', 1)}", f"+trace-start={tr.get('start', 0)}",
+             f"+trace-end={tr.get('end', -1)}", f"+trace-output-format={tr.get('output_format', 0)}",
+             f"+dwarf-file-name={boot_name}-dwarf",
+             f"+autocounter-readrate={ac.get('read_rate', 0)}", "+autocounter-filename-base=AUTOCOUNTERFILE"]
+    args += [] if sp.get("cycle_prefix", True) else ["+print-no-cycle-prefix"]
+    args += [f"+print-start={sp.get('start', 0)}", f"+print-end={sp.get('end', -1)}",
+             f"+linklatency0={tc.get('link_latency', 6405)}", f"+netbw0={tc.get('net_bandwidth', 200)}",
+             "+shmemportname0=default"]
+    passthrough = str(tc.get("plusarg_passthrough") or "").strip()
+    need = glibc_needed([os.path.join(sim, n) for n in os.listdir(sim) if n == driver or ".so" in n])
+    timeout = parse_duration(a.timeout)
+
+    conf = {"DRIVER": driver, "SIM_ARGS": " ".join(args + ([passthrough] if passthrough else [])),
+            "PROGS": f"+prog0={boot_name}", "RUNTIME_CONF": runtimeconf, "GLIBC_NEED": need,
+            "TIMEOUT": str(timeout), "PASS_RE": a.pass_re, "FAIL_RE": a.fail_re}
+    with open(os.path.join(tmp, "run.conf"), "w") as f:
+        f.write("# the run, for /opt/kotl/adapters/firesim/run-package.sh (written by kotl-firesim-pack)\n")
+        for k, v in conf.items():
+            f.write(f"{k}={shlex.quote(v)}\n")
+
+    fsdir = os.path.normpath(os.path.join(dep, ".."))
+    cy = subprocess.run(["git", "-C", fsdir, "rev-parse", "--show-superproject-working-tree"], capture_output=True,
+                        text=True).stdout.strip()
+    facts = {"tool": "firesim", "package": os.path.basename(out), "firesim": git_rev(fsdir) or meta.get("firesim-commit", "")[:10],
+             "chipyard": git_rev(cy) if cy else "", "hw_config": hw,
+             "bitstream": os.path.basename(os.path.dirname(bit_tar)), "driver": quint,
+             "workload": f"{bench}/{jobname}", "glibc_need": need}
+    files = sorted(os.path.relpath(os.path.join(r, n), tmp) for r, _, ns in os.walk(tmp) for n in ns)
+    with open(os.path.join(tmp, "MANIFEST"), "w") as f:
+        f.write(f"Kotl FireSim run package, built {time.strftime('%Y-%m-%dT%H:%M:%S%z')} on {socket.gethostname()}\n")
+        f.write(f"runtime config: {rt_path}\nhwdb: {hw_path} ({hw})\nbitstream: {bit_tar}\ndriver: {driver_from}\n"
+                f"workload: {wl_file} (job {jobname})\n\n")
+        for k, v in facts.items():
+            if v:
+                f.write(f"fact: {k}={v}\n")
+        f.write("\n")
+        for p in files:
+            if p != "MANIFEST":
+                f.write(f"{sha256(os.path.join(tmp, p))}  {p}\n")
+    os.rename(tmp, out)
+    size = sum(os.path.getsize(os.path.join(r, n)) for r, _, ns in os.walk(out) for n in ns)
+    return out, conf, facts, size
+
+
+def parse_duration(t):
+    m = re.fullmatch(r"(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?", str(t).strip())
+    if str(t).strip().isdigit():
+        return int(t) * 60
+    if not m or not any(m.groups()):
+        raise PackError(f"--timeout: can't read '{t}' (try 30m, 1h)")
+    h, mi, s = (int(x or 0) for x in m.groups())
+    return h * 3600 + mi * 60 + s
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(prog="kotl-firesim-pack", description=__doc__,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--out", required=True)
+    ap.add_argument("--deploy")
+    ap.add_argument("-c", help="config_runtime.yaml (default: the deploy folder's)")
+    ap.add_argument("-a", help="config_hwdb.yaml (default: the deploy folder's)")
+    ap.add_argument("--hw", help="hardware config (default: default_hw_config)")
+    ap.add_argument("--workload", help="workload json (default: workload_name)")
+    ap.add_argument("--job", type=int, default=0)
+    ap.add_argument("--timeout", default="30m")
+    ap.add_argument("--pass", dest="pass_re", default=PASS)
+    ap.add_argument("--fail", dest="fail_re", default=FAIL)
+    ap.add_argument("--force", action="store_true")
+    a = ap.parse_args(argv)
+    try:
+        out, conf, facts, size = pack(a)
+    except PackError as e:
+        print(f"kotl-firesim-pack: {e}", file=sys.stderr)
+        return 1
+    ws = os.environ.get("KOTL_SSH") or "<workstation>"
+    name = os.path.basename(out)
+    print(f"packed {out} ({size / 1e6:.0f} MB): {facts['hw_config']}, {facts['workload']}, driver {conf['DRIVER']}"
+          + (f", needs glibc {conf['GLIBC_NEED']}" if conf["GLIBC_NEED"] else ""))
+    print("next:")
+    print(f"  rsync -a --partial {out}/ {ws}:kotl-runs/{name}/")
+    print(f"  ssh {ws} kotl run --eta 20m -- /opt/kotl/adapters/firesim/run-package.sh kotl-runs/{name}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

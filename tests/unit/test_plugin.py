@@ -184,3 +184,12 @@ def test_each_adapter_brings_a_skill_and_both_point_at_the_notes():
     from kotl.adapters import KNOWN
     for name in KNOWN:                                                  # every adapter has one
         assert (PLUGIN / f"skills/kotl-{name}/SKILL.md").exists()
+
+
+@pytest.mark.feature("fsmod")
+def test_firesim_skill_teaches_the_run_package():
+    fs = (PLUGIN / "skills/kotl-firesim/SKILL.md").read_text()
+    for must in ("kotl-firesim-pack", "~/.kotl-client/adapters/firesim/kotl-firesim-pack",
+                 "/opt/kotl/adapters/firesim/run-package.sh", "rsync -a --partial", "no_net_config",
+                 "firesim builddriver", "kotl fetch JOB"):
+        assert must in fs, must

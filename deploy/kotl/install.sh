@@ -20,7 +20,7 @@
 source "$(dirname "$0")/../lib.sh"
 
 REPO=$(cd "$DEPLOY_DIR/.." && pwd)
-ADAPTER_TOOLS=(firesim/firesim-smoke.sh)   # installed as /opt/kotl/adapters/<path> when the adapter is on
+ADAPTER_TOOLS=(firesim/firesim-smoke.sh firesim/run-package.sh firesim/kotl-firesim-pack)   # installed as /opt/kotl/adapters/<path> when the adapter is on
 usage() { sed -n '2,19p' "$0" | sed 's/^# \{0,1\}//'; exit "${1:-0}"; }
 
 py_wrapper() {  # py_wrapper MODULE   -> a tiny entry script; -I ignores the caller's Python env
