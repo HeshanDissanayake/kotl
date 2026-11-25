@@ -101,6 +101,14 @@ kotl notes set firesim compatible.md < file.
 ## Known bad
 
 (none written yet)
+
+## Watch out: the FireSim version
+
+The board's PC was set up (XDMA driver, poll_mode=1, xvsec) for one FireSim version. A design
+built with a much newer or older FireSim may expect another XDMA driver, and nothing checks
+that before the run: it shows as a flash or driver-start failure. Compare the run's firesim=
+commit with the ok lines in runs.md; the first run on a new FireSim version, pass or fail,
+belongs in this page.
 """,
 }
 STOP = "/usr/local/bin/kotl-firesim-stop"

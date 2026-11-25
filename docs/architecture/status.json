@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "updated": "2026-11-25T02:08:49Z",
-  "repo_commit": "5cd29f0d1be8c7a45bc7b7271f3c6f1fcfdca65a",
+  "updated": "2026-11-25T02:28:42Z",
+  "repo_commit": "64201140cf8c02b4c01b78a61d26d2e594b77a34",
   "watch": [
     "deploy/",
     "kotl/",
@@ -50,7 +50,7 @@
         "unit": {
           "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-25T02:08:48Z"
+          "ran_at": "2026-11-25T02:28:42Z"
         },
         "hardware": null
       },
@@ -108,7 +108,7 @@
         "unit": {
           "passed": 4,
           "failed": 0,
-          "ran_at": "2026-11-25T02:08:48Z"
+          "ran_at": "2026-11-25T02:28:42Z"
         },
         "hardware": null
       },
@@ -146,7 +146,7 @@
         "unit": {
           "passed": 5,
           "failed": 0,
-          "ran_at": "2026-11-25T02:08:48Z"
+          "ran_at": "2026-11-25T02:28:42Z"
         },
         "hardware": null
       },
@@ -191,7 +191,7 @@
         "unit": {
           "passed": 1,
           "failed": 0,
-          "ran_at": "2026-11-25T02:08:48Z"
+          "ran_at": "2026-11-25T02:28:42Z"
         },
         "hardware": null
       },
@@ -224,7 +224,7 @@
         "unit": {
           "passed": 2,
           "failed": 0,
-          "ran_at": "2026-11-25T02:08:48Z"
+          "ran_at": "2026-11-25T02:28:42Z"
         },
         "hardware": null
       },
@@ -266,7 +266,7 @@
         "unit": {
           "passed": 9,
           "failed": 0,
-          "ran_at": "2026-11-25T02:08:48Z"
+          "ran_at": "2026-11-25T02:28:42Z"
         },
         "hardware": null
       },
@@ -315,7 +315,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-25T02:08:48Z"
+          "ran_at": "2026-11-25T02:28:42Z"
         },
         "hardware": {
           "passed": 1,
@@ -360,7 +360,7 @@
         "unit": {
           "passed": 4,
           "failed": 0,
-          "ran_at": "2026-11-25T02:08:48Z"
+          "ran_at": "2026-11-25T02:28:42Z"
         },
         "hardware": {
           "passed": 2,
@@ -446,7 +446,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-25T02:08:48Z"
+          "ran_at": "2026-11-25T02:28:42Z"
         },
         "hardware": null
       },
@@ -500,14 +500,14 @@
         "unit": {
           "passed": 36,
           "failed": 0,
-          "ran_at": "2026-11-25T02:08:48Z"
+          "ran_at": "2026-11-25T02:28:42Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "5cd29f0d1be8c7a45bc7b7271f3c6f1fcfdca65a",
-        "message": "Lab notes and adapter skills: what worked before, per tool, at fixed paths",
-        "date": "2026-11-25T12:16:47+11:00"
+        "hash": "0aa5bec0ba88949cd5b74a2d3ec0668d19ed23c2",
+        "message": "FireSim run packages: remote users run their own FireSim builds through Kotl",
+        "date": "2026-11-25T13:09:33+11:00"
       },
       "issues": [],
       "log": [
@@ -594,14 +594,14 @@
         "unit": {
           "passed": 18,
           "failed": 0,
-          "ran_at": "2026-11-25T02:08:48Z"
+          "ran_at": "2026-11-25T02:28:42Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "5cd29f0d1be8c7a45bc7b7271f3c6f1fcfdca65a",
-        "message": "Lab notes and adapter skills: what worked before, per tool, at fixed paths",
-        "date": "2026-11-25T12:16:47+11:00"
+        "hash": "0aa5bec0ba88949cd5b74a2d3ec0668d19ed23c2",
+        "message": "FireSim run packages: remote users run their own FireSim builds through Kotl",
+        "date": "2026-11-25T13:09:33+11:00"
       },
       "issues": [],
       "log": [
@@ -675,7 +675,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-25T02:08:48Z"
+          "ran_at": "2026-11-25T02:28:42Z"
         },
         "hardware": null
       },
@@ -709,7 +709,7 @@
         "unit": {
           "passed": 25,
           "failed": 0,
-          "ran_at": "2026-11-25T02:08:48Z"
+          "ran_at": "2026-11-25T02:28:42Z"
         },
         "hardware": {
           "passed": 1,
@@ -718,9 +718,9 @@
         }
       },
       "last_commit": {
-        "hash": "5cd29f0d1be8c7a45bc7b7271f3c6f1fcfdca65a",
-        "message": "Lab notes and adapter skills: what worked before, per tool, at fixed paths",
-        "date": "2026-11-25T12:16:47+11:00"
+        "hash": "0aa5bec0ba88949cd5b74a2d3ec0668d19ed23c2",
+        "message": "FireSim run packages: remote users run their own FireSim builds through Kotl",
+        "date": "2026-11-25T13:09:33+11:00"
       },
       "issues": [
         "Run packages: not yet run on the real board (needs the user's OK): kotl run --eta 20m -- /opt/kotl/adapters/firesim/run-package.sh <a package of linux-poweroff>."
@@ -785,6 +785,10 @@
         {
           "date": "2026-11-25",
           "text": "Run packages (user's design: remote users run their own FireSim builds): kotl-firesim-pack packs bitstream, driver + libraries (no glibc), workload, and the driver's arguments computed as FireSim's get_boot_simulation_command does (identical to job 49's on the real Chipyard; same files byte for byte as the test package); run-package.sh runs it inside kotl run with no FireSim on the workstation (PC check incl. glibc vs the driver's need, flash, fsim0, outputs back and into the job's results, KOTL RESULT, KOTL FACT). Installed in /opt/kotl/adapters/firesim/ and shipped in the client bundle. Tested end to end on a fake PC; not yet on the board."
+        },
+        {
+          "date": "2026-11-25",
+          "text": "compatible.md seed: the FireSim version risk (the PC's XDMA setup fits one FireSim version; nothing checks it before a run; record the first run on a new version)."
         }
       ]
     },
@@ -803,7 +807,7 @@
         "unit": {
           "passed": 22,
           "failed": 0,
-          "ran_at": "2026-11-25T02:08:48Z"
+          "ran_at": "2026-11-25T02:28:42Z"
         },
         "hardware": null
       },
@@ -895,7 +899,7 @@
         "unit": {
           "passed": 6,
           "failed": 0,
-          "ran_at": "2026-11-25T02:08:48Z"
+          "ran_at": "2026-11-25T02:28:42Z"
         },
         "hardware": null
       },
@@ -932,7 +936,7 @@
         "unit": {
           "passed": 7,
           "failed": 0,
-          "ran_at": "2026-11-25T02:08:48Z"
+          "ran_at": "2026-11-25T02:28:42Z"
         },
         "hardware": null
       },
@@ -977,14 +981,14 @@
         "unit": {
           "passed": 24,
           "failed": 0,
-          "ran_at": "2026-11-25T02:08:48Z"
+          "ran_at": "2026-11-25T02:28:42Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "5cd29f0d1be8c7a45bc7b7271f3c6f1fcfdca65a",
-        "message": "Lab notes and adapter skills: what worked before, per tool, at fixed paths",
-        "date": "2026-11-25T12:16:47+11:00"
+        "hash": "0aa5bec0ba88949cd5b74a2d3ec0668d19ed23c2",
+        "message": "FireSim run packages: remote users run their own FireSim builds through Kotl",
+        "date": "2026-11-25T13:09:33+11:00"
       },
       "issues": [],
       "log": [
@@ -1158,7 +1162,7 @@
         "unit": {
           "passed": 28,
           "failed": 0,
-          "ran_at": "2026-11-25T02:08:48Z"
+          "ran_at": "2026-11-25T02:28:42Z"
         },
         "hardware": {
           "passed": 2,
@@ -1241,7 +1245,7 @@
         "unit": {
           "passed": 7,
           "failed": 0,
-          "ran_at": "2026-11-25T02:08:48Z"
+          "ran_at": "2026-11-25T02:28:42Z"
         },
         "hardware": null
       },
@@ -1277,7 +1281,7 @@
         "unit": {
           "passed": 3,
           "failed": 0,
-          "ran_at": "2026-11-25T02:08:48Z"
+          "ran_at": "2026-11-25T02:28:42Z"
         },
         "hardware": null
       },
@@ -1315,7 +1319,7 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-25T02:08:48Z"
+          "ran_at": "2026-11-25T02:28:42Z"
         },
         "hardware": null
       },
@@ -1361,7 +1365,7 @@
         "unit": {
           "passed": 7,
           "failed": 0,
-          "ran_at": "2026-11-25T02:08:48Z"
+          "ran_at": "2026-11-25T02:28:42Z"
         },
         "hardware": null
       },
@@ -1400,14 +1404,14 @@
         "unit": {
           "passed": 8,
           "failed": 0,
-          "ran_at": "2026-11-25T02:08:48Z"
+          "ran_at": "2026-11-25T02:28:42Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "2f9d1fe28813824d8307c9946673264508660161",
-        "message": "Test package explains a busy console; client installer carries Kotl's mark",
-        "date": "2026-11-24T22:32:47+11:00"
+        "hash": "0aa5bec0ba88949cd5b74a2d3ec0668d19ed23c2",
+        "message": "FireSim run packages: remote users run their own FireSim builds through Kotl",
+        "date": "2026-11-25T13:09:33+11:00"
       },
       "issues": [],
       "drawn": false,
@@ -1435,14 +1439,14 @@
         "unit": {
           "passed": 21,
           "failed": 0,
-          "ran_at": "2026-11-25T02:08:48Z"
+          "ran_at": "2026-11-25T02:28:42Z"
         },
         "hardware": null
       },
       "last_commit": {
-        "hash": "5cd29f0d1be8c7a45bc7b7271f3c6f1fcfdca65a",
-        "message": "Lab notes and adapter skills: what worked before, per tool, at fixed paths",
-        "date": "2026-11-25T12:16:47+11:00"
+        "hash": "0aa5bec0ba88949cd5b74a2d3ec0668d19ed23c2",
+        "message": "FireSim run packages: remote users run their own FireSim builds through Kotl",
+        "date": "2026-11-25T13:09:33+11:00"
       },
       "issues": [
         "Not yet installed: needs bash deploy/kotl/update.sh; then fill firesim/setup.md (a draft is ready, see the run sheet).",
