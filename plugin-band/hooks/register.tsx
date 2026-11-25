@@ -7,8 +7,9 @@ import type { KotlSnapshot } from '../types'
 // (/run/kotl/status.json), with no process started. When that file is missing or stale (the
 // daemon is down, or this is a user's own PC), it runs `kotl status --json` instead, locally or
 // over `ssh $KOTL_SSH`, at most every 5 s. Read-only: it never starts or stops a job.
-// Collapsed (the default): one line. Expanded: the boards, your jobs, and everyone waiting, in
-// order. The ▸/▾ button (or k, once the band has the focus) and /kotl-band expand|collapse
+// Collapsed (the default): one short line. Expanded: the full status: each board (who, what,
+// time against ETA, last check), the running jobs, everyone waiting in order, your jobs. Board
+// warnings show only as a ⚠ count (details: kotl board list, or ask Claude). The ▸/▾ button (or k, once the band has the focus) and /kotl-band expand|collapse
 // switch; the choice is kept for the next session.
 const snapshot = atom({ plugin: 'kotl-band', key: 'snapshot' } as const, null)
 const isHidden = atom({ plugin: 'kotl-band', key: 'isHidden' } as const, false)
@@ -173,6 +174,7 @@ export const register: Register = on => {
     if (s.problem) return <Box><Text color="claude" weight="bold">Kotl </Text><Text color="warning">{s.problem}</Text></Box>
 
     const byJob = new Map(s.queue.map(q => [q.job, q]))
+    const running = s.queue.filter(q => q.state === 'RUNNING')
     const waiting = s.queue.filter(q => q.state === 'PENDING')
     const mine = s.queue.filter(q => q.user === s.user)
     const warned = s.boards.filter(b => warningsOf(b.warnings).length).length
@@ -182,62 +184,77 @@ export const register: Register = on => {
       <Button key="kotl-band-toggle" plain hotkey="k" label={expanded ? '\u25BE' : '\u25B8'}
         onPress={() => setExpanded($, !expanded)} />
     )
-    const boardsRow = s.boards.length ? s.boards.map(b => {
-      const q = b.job_id ? byJob.get(String(b.job_id)) : undefined
-      const color = b.state === 'idle' ? 'success' : b.state === 'busy' ? 'warning' : 'error'
-      return (
-        <Text key={b.name}>
-          {b.name} <Text color={color}>{b.state}</Text>
-          {q ? <Text>: {q.user === s.user ? 'you' : q.user} <Text dimColor>· {kind(q.name)} · {usedOfEta(q)}</Text></Text> : null}
-          {'   '}
-        </Text>
-      )
-    }) : <Text dimColor>no boards   </Text>
-    const unread = s.unread ? <Text color="warning"> · {s.unread} unread notice{s.unread > 1 ? 's' : ''} (kotl notices)</Text> : null
+    const who = (u: string) => (u === s.user ? 'you' : u)
+    const stateColor = (st: string) => (st === 'idle' ? 'success' : st === 'busy' ? 'warning' : 'error')
+    const warnIcon = warned ? <Text color="warning"> {'\u26A0'} {warned}</Text> : null
 
     if (!expanded) {
-      const first = mine.find(q => q.state === 'RUNNING') ?? mine[0]
-      const mineText = !first ? 'you: no jobs' : first.state === 'RUNNING'
-        ? `you: ${first.job} ${kind(first.name)} running ${usedOfEta(first)}${mine.length > 1 ? ` (+${mine.length - 1})` : ''}`
-        : `you: ${mine.length} waiting, next starts ${startsAt(first.start)}`
       return (
         <Box flexDirection="row">
           {toggle}
-          <Text color="claude" weight="bold"> Kotl  </Text>
-          {boardsRow}
-          <Text dimColor>· {waiting.length ? `${waiting.length} waiting` : 'nobody waiting'} · {mineText}</Text>
-          {unread}
+          <Text color="claude" weight="bold"> Kotl </Text>
+          {s.boards.length ? s.boards.map(b => (
+            <Text key={b.name}> {b.name} <Text color={stateColor(b.state)}>{b.state}</Text></Text>
+          )) : <Text dimColor> no boards</Text>}
+          {waiting.length ? <Text dimColor> · {waiting.length} waiting</Text> : null}
+          {mine.length ? <Text dimColor> · you {mine.length}</Text> : null}
+          {s.unread ? <Text color="warning"> · {s.unread} unread</Text> : null}
+          {warnIcon}
         </Box>
       )
     }
 
+    const label = (t: string) => <Text dimColor>{('  ' + t).padEnd(11)}</Text>
+    const left = (q: { used: string; eta: string }) => {
+      const u = minutes(q.used), e2 = minutes(q.eta)
+      if (u === null || e2 === null) return ''
+      return u <= e2 ? `, ~${fmtMin(e2 - u)} left` : `, ${fmtMin(u - e2)} over ETA`
+    }
+    const boardOf = new Map(s.boards.filter(b => b.job_id).map(b => [String(b.job_id), b.name]))
     return (
       <Box flexDirection="column">
         <Box flexDirection="row">
           {toggle}
-          <Text color="claude" weight="bold"> Kotl  </Text>
-          {boardsRow}
-          <Text dimColor>· {waiting.length ? `${waiting.length} waiting` : 'nobody waiting'}</Text>
-          {warned ? <Text dimColor> · {warned} warning{warned > 1 ? 's' : ''} (kotl board list)</Text> : null}
+          <Text color="claude" weight="bold"> Kotl </Text>
+          <Text dimColor> {s.boards.length} board{s.boards.length === 1 ? '' : 's'} · {running.length} running · {waiting.length} waiting</Text>
+          {warnIcon}{warned ? <Text dimColor> (kotl board list)</Text> : null}
         </Box>
+        {s.boards.map((b, i) => {
+          const q = b.job_id ? byJob.get(String(b.job_id)) : undefined
+          return (
+            <Box key={`b${b.name}`} flexDirection="row">
+              {label(i === 0 ? 'boards' : '')}
+              <Text>{b.name}{b.type ? <Text dimColor> ({b.type})</Text> : null} <Text color={stateColor(b.state)}>{b.state}</Text></Text>
+              {q ? <Text dimColor> · job {q.job} {who(q.user)} · {kind(q.name)} · {usedOfEta(q)}{left(q)}</Text> : null}
+              {b.last_healthy ? <Text dimColor> · checked {b.last_healthy.slice(-5)}</Text> : null}
+            </Box>
+          )
+        })}
+        {running.map((q, i) => (
+          <Box key={`r${q.job}`} flexDirection="row">
+            {label(i === 0 ? 'running' : '')}
+            <Text>{q.job} {who(q.user)}</Text>
+            <Text dimColor> · {kind(q.name)}{boardOf.get(q.job) ? ` on ${boardOf.get(q.job)}` : ''} · {usedOfEta(q)}{left(q)}</Text>
+          </Box>
+        ))}
+        {waiting.slice(0, MAX_WAITING_ROWS).map((q, i) => (
+          <Box key={`w${q.job}`} flexDirection="row">
+            {label(i === 0 ? 'waiting' : '')}
+            <Text>{i + 1}. {q.job} {who(q.user)}</Text>
+            <Text dimColor> · {kind(q.name)} · ETA {fmtMin(minutes(q.eta))} · starts {startsAt(q.start)}{q.reason && q.reason !== 'None' ? ` · ${q.reason}` : ''}</Text>
+          </Box>
+        ))}
+        {waiting.length > MAX_WAITING_ROWS ? <Box flexDirection="row">{label('')}<Text dimColor>and {waiting.length - MAX_WAITING_ROWS} more (kotl status)</Text></Box> : null}
         <Box flexDirection="row">
-          <Text>      you: {mine.length} job{mine.length === 1 ? '' : 's'}</Text>
+          {label('you')}
+          <Text>{mine.length ? `${mine.length} job${mine.length === 1 ? '' : 's'}` : 'no jobs'}</Text>
           {mine.map(q => (
-            <Text key={q.job} dimColor>
+            <Text key={`m${q.job}`} dimColor>
               {' '}· {q.job} {q.state === 'RUNNING' ? `${kind(q.name)} running ${usedOfEta(q)}` : `${kind(q.name)} waiting, starts ${startsAt(q.start)} (${ordinal(waiting.indexOf(q) + 1)} in line)`}
             </Text>
           ))}
-          {unread}
+          {s.unread ? <Text color="warning"> · {s.unread} unread notice{s.unread > 1 ? 's' : ''} (kotl notices)</Text> : null}
         </Box>
-        {waiting.slice(0, MAX_WAITING_ROWS).map((q, i) => (
-          <Text key={`w${q.job}`} dimColor>
-            {'      '}{ordinal(i + 1)} in line: {q.job} {q.user === s.user ? 'you' : q.user} · {kind(q.name)} · ETA {fmtMin(minutes(q.eta))} · starts {startsAt(q.start)}{q.reason && q.reason !== 'None' ? ` · ${q.reason}` : ''}
-          </Text>
-        ))}
-        {waiting.length > MAX_WAITING_ROWS ? <Text dimColor>{'      '}and {waiting.length - MAX_WAITING_ROWS} more (kotl status)</Text> : null}
-        {s.boards.flatMap(b => warningsOf(b.warnings).map((w, i) => (
-          <Text key={`!${b.name}${i}`} color="warning">{'      '}! {b.name}: {w}</Text>
-        )))}
       </Box>
     )
   })
