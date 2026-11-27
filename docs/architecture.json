@@ -1579,6 +1579,14 @@
        "take a board out and clean its PC"
       ],
       [
+       "sudo bash deploy/accounts.sh add-user USER · remove-user USER",
+       "give someone the queue (or take it away); they log in again, then kotl setup"
+      ],
+      [
+       "sudo bash deploy/accounts.sh set-admin USER",
+       "hand the admin role to another account (then run the scripts from their copy of the repo)"
+      ],
+      [
        "bash deploy/kotl/update.sh",
        "update Kotl on the workstation and every PC"
       ],

@@ -300,6 +300,10 @@
         {
           "date": "2026-11-24",
           "text": "add-user prints the new user's next steps (kotl setup, or the client bundle)."
+        },
+        {
+          "date": "2026-11-28",
+          "text": "The view's admin commands list accounts.sh add-user/remove-user and set-admin."
         }
       ]
     },
